@@ -1,4 +1,4 @@
-# Sentry v4.3.3 — GitHub-native trading brain (no MT5, no Mac, no Wine)
+# Sentry v4.4.0 — GitHub-native trading brain (no MT5, no Mac, no Wine)
 
 The same checklist engine from the Mac build (`sentry_mac.py` v3.1), ported to run entirely on
 **GitHub Actions**. One workflow run = one full scan cycle, every 10 minutes, 24/7 (crypto has no
@@ -29,10 +29,12 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
   API with retry, so two runners can never conflict the way `git push` did).
 
 ## Execution modes (one config line)
-- **`"execution": "coinbase"` (what ships):** Coinbase Exchange via `broker_coinbase.py` — **real
-  orders on a real book**. The key lives only in Actions Secrets. With no key in the runner it runs
-  the shadow ledger on the same host's public data and stamps `venue shadow-ledger(coinbase-no-key)`
-  into the journal line, so "did that touch real money?" is always answerable from the log.
+- **`"execution": "coinbase"` (what ships):** Coinbase via `broker_coinbase.py` — **real orders on
+  a real book**, on either Coinbase API (retail Advanced Trade or institutional Exchange; the
+  presence of a passphrase picks which, see "Going live"). The key lives only in Actions Secrets.
+  With no key in the runner it runs the shadow ledger on the same public data and stamps
+  `venue shadow-ledger(coinbase-no-key)` into the journal line, so "did that touch real money?" is
+  always answerable from the log.
 - **`"execution": "ledger"`:** shadow book only — real prices, simulated fills in `ledger.json`.
   Paper fills are honest about price (never worse than the tape) but have no depth model.
 - **`"execution": "alpaca"`:** Alpaca paper venue (resting orders on their engine). Needs
@@ -40,16 +42,38 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
 
 ## Going live on Coinbase
 
-1. Coinbase → Settings → **API keys** → create a key for **Exchange** with **View + Trade** only.
-   Never enable transfers/withdrawals. Keep the **passphrase** (the Exchange API requires it;
-   Advanced Trade does not — one reason this adapter speaks the Exchange API on
-   `api.exchange.coinbase.com`, which also serves the public candles).
-2. Actions → Secrets and variables → Actions → `COINBASE_API_KEY`, `COINBASE_API_SECRET`,
-   `COINBASE_API_PASSPHRASE`.
+There are **two** Coinbase APIs and one Coinbase bot. `broker_coinbase.py` speaks both; which one
+it uses is decided by the credentials you paste, not by a code change:
+
+| you have | set | host | what changes |
+|---|---|---|---|
+| a key from your **Coinbase account** (Settings → API keys → *Advanced Trade* / CDP) | `COINBASE_API_KEY` + `COINBASE_CDP_PEM` (or `COINBASE_API_SECRET` on a legacy key) | `api.coinbase.com/api/v3/brokerage` | JWT auth, terms nested in `order_configuration`, sizes as strings, `trigger`/`stop_direction` on the order itself |
+| a key from **exchange.coinbase.com → API** (institutional, separate signup, separate balance) | `COINBASE_API_KEY` + `COINBASE_API_SECRET` + `COINBASE_API_PASSPHRASE` | `api.exchange.coinbase.com` | HMAC headers, flat payload, `client_oid` must be a UUIDv4 |
+
+A passphrase in the environment selects `exchange`; anything else selects `advanced`. Override with
+`COINBASE_MODE` (an Actions *variable*, which the workflow already passes through, so switching
+venues never needs a commit). **A retail key cannot sign at the Exchange host** — that is a hard 401,
+so `run_cycle.py` fails at boot with that sentence instead of sending 80 orders into a wall.
+
+1. Mint the key with **View + Trade only** (never transfers/withdrawals). For retail, choose
+   *"Coinbase API Key"* (CDP, `organizations/…/apiKeys/…`) and paste the generated **private key**
+   into `COINBASE_CDP_PEM` — the retail API authenticates with a signed JWT, so the key pair alone
+   is not enough on current accounts.
+2. Actions → Secrets and variables → Actions → `COINBASE_API_KEY`, then `COINBASE_CDP_PEM` *or*
+   `COINBASE_API_SECRET` (+ `COINBASE_API_PASSPHRASE` for an Exchange key).
 3. `config.json`: `"execution": "coinbase"` (already set) **and `"live_ack": true`**. That flag is
    deliberately a repo file edit, not an env var: pasting a key must not be enough to start
    trading, and the flip is visible in the commit history.
-4. Fund it. Then read `journal.md`.
+4. Fund it (see **The wallet** below for the size that makes the signals actually fire). Then read
+   `journal.md`.
+5. The one thing still unproven end-to-end: **the cid ⇄ order-id round trip against a live venue**.
+   `test_data.py` pins both directions offline (map out, read back, normalize) and the DRY run shows
+   the exact bytes, but no order has ever been placed and re-found on a real account — no key has
+   been connected to do it with. The first funded cycle must therefore be watched: `ORDER SENT`
+   followed on the next cycle by `FILL — …` for the same symbol means the round trip worked. If the
+   journal says `ORDER SENT` and then `EXPIRED` with no fill, the order is on the venue and Sentry
+   cannot see it: stop, cancel by hand, tell the journal (`journal.md` is append-only — a wrong line
+   there is data, not noise).
 
 Until step 3 the bot scans, sizes, journals `GATE — …` and sends nothing. The four live gates
 (`live_gate()` in `run_cycle.py`) each trace to a real defect found on this account, not ceremony:
@@ -72,9 +96,58 @@ Two Exchange-API traps the adapter handles, both pinned by `test_data.py`:
   naive 0.15 % slack rounds *back onto* the trigger, so it widens to at least one full tick
   (Decimal, because `int(0.94 / 0.01)` is 93).
 
-No-money rehearsals: `COINBASE_DRY=1` builds and prints the exact payload it would send;
-`COINBASE_TEST=1` points at Coinbase's sandbox host (which also disarms the live gates);
-`python3 broker_coinbase.py` runs a read-only auth/account check and places nothing.
+No-money rehearsals: `COINBASE_DRY=1` builds and prints the exact payload it would send (and
+`COINBASE_DRY_EQUITY` rehearses any wallet size through the real sizing path); `COINBASE_TEST=1`
+points at Coinbase's Exchange sandbox host (which also disarms the live gates);
+`python3 broker_coinbase.py` runs a read-only auth/wallet check and places nothing.
+
+## The wallet: how big, and what the venue takes
+
+The account has to satisfy two independent floors. Both are measured through the shipped code, not
+estimated — this was rehearsed by running a live cycle against `COINBASE_DRY_EQUITY` at six sizes:
+
+| wallet | orders actually built | refused for size |
+|---|---|---|
+| $1,000 | 0 | 7 |
+| $2,500 | 0 | 7 |
+| $5,000 | 0 | 7 |
+| $10,000 | 2 | 5 |
+| $20,000 | 6 | 0 |
+| $50,000 | 6 | 0 |
+
+**Under ~$10k this playbook will not trade at all; ~$20k is the floor for it to fire at full rate.**
+That is arithmetic, not conservatism: risking $75–$200 through a 0.4–1.2 % stop *requires* $10k–$40k
+of notional per position, and `max_notional_frac` refuses to shrink the risk instead of the stop.
+$50k buys headroom and, on any venue, moves you up a fee tier.
+
+**Fee cost is a property of the strategy, so it is now priced in.** `config.json` carries
+`"fees": {"maker": 0.004, "taker": 0.006}` and every simulated *and* live-leg fill pays it: cash,
+realized P&L and the R that grading uses are all net. The number that matters is the round trip
+expressed in R — `(maker + taker) / stop_width` — because a 1R trade that pays 1.8R in fees is not a
+trade:
+
+| venue (base tier) | 0.40 % stop | 0.55 % | 0.67 % | 0.80 % | 1.20 % |
+|---|---|---|---|---|---|
+| Coinbase Advanced Trade retail 0.40/0.60 | 2.50R | 1.82R | 1.49R | 1.25R | 0.83R |
+| Kraken 0.16/0.26 | 1.05R | 0.76R | 0.63R | 0.52R | 0.35R |
+| Binance 0.10/0.10 | 0.50R | 0.36R | 0.30R | 0.25R | 0.17R |
+| Bitget perps ~0.02/0.05 | 0.17R | 0.13R | 0.10R | 0.09R | 0.06R |
+
+So on Coinbase's retail schedule at this strategy's own stop widths, **the venue takes more per round
+trip than the stop risks**, before any view on direction. Two honest responses, both of which are the
+user's decision and not the bot's:
+- **make the venue pay less**: a cheaper/maker-only venue (fees ≤ 0.25R at these stops), or
+- **trade less often at more edge**: which is what the score floor and `pending_ttl_h` already do —
+  *not* wider stops. Widening the stops to make the fees fit would change the risk the whole score
+  history was earned on, so the bot refuses to do it silently.
+
+`"live_max_fee_r": 0.25` turns that into a guard: a **live** order whose round-trip fee costs more
+than 0.25R of its own risk is refused with the dollars in the journal (`SKIP — venue fees cost
+1.72R (cap 0.25R) on a 0.70 % stop — $42.94 paid to trade for $25.00 of risk`), and if that refusal
+empties the cycle you get one `ALERT` line saying so. Set it to `0` to trade anyway. The shadow book
+is charged the same schedule, so its accuracy number — the number the sizer scales — is the venue's
+number, not a fee-free fantasy. Verified the day it shipped: a paper AVAX trade that closed at
+**+0.61R on the chart graded −0.61R net of 1.22R in fees**, and became a loss in the score history.
 
 ## Files you care about
 - **`STATUS.md`** — the page you look at: orders resting, positions, last signals, accuracy, sizing.

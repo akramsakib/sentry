@@ -31,13 +31,46 @@ COINBASE = "https://api.exchange.coinbase.com"
 
 START_CASH = 100000.0
 
+# --- what the venue charges, in dollars ------------------------------------------------------
+# The shadow book used to be free, and that quietly changed the strategy: a trade that risks 1R
+# through a 0.55 % stop and pays 0.40 % + 0.60 % to round-trip is not risking 1R, it is risking
+# 1R and donating 1.8R. Fees are therefore charged on every simulated fill and netted into the
+# R that grading uses, so the accuracy number the sizer scales off is the number the venue gives.
+# Rates are fractions per side; config.json "fees" overrides them (0 = a free book).
+FEES = {"maker": 0.0, "taker": 0.0}
+
+
+def set_fees(d):
+    for k in ("maker", "taker"):
+        try:
+            FEES[k] = max(0.0, float((d or {})[k]))
+        except (KeyError, TypeError, ValueError):
+            pass
+    return dict(FEES)
+
+
+def fee(qty, px, taker=True):
+    return round(float(qty) * float(px) * FEES["taker" if taker else "maker"], 8)
+
+
+def round_trip_fees(entry_px, exit_px, r_dist, qty=1.0):
+    """(dollars, R) for one long round trip, both legs taken as taker (a stop entry and a stop
+    exit both cross into a moving market; a resting limit that someone else walks into pays less,
+    and assuming the worst is the point of a guard). qty cancels out of the R figure: the drag is
+    a property of the price geometry, not of how big the account is."""
+    entry_px, exit_px, r_dist = float(entry_px), float(exit_px), float(r_dist or 0)
+    if not (FEES["maker"] or FEES["taker"]) or r_dist <= 0 or qty <= 0:
+        return 0.0, 0.0
+    dollars = fee(qty, entry_px) + fee(qty, exit_px)
+    return round(dollars, 4), round(dollars / (float(qty) * r_dist), 3)
+
 
 def _load():
     try:
         L = json.load(open(LEDGER_F))
     except Exception:
         L = {"cash": START_CASH, "realized": 0.0, "orders": [], "positions": []}
-    for k, d in (("cash", START_CASH), ("realized", 0.0), ("orders", []), ("positions", [])):
+    for k, d in (("cash", START_CASH), ("realized", 0.0), ("fees_paid", 0.0), ("orders", []), ("positions", [])):
         L.setdefault(k, d)
     # A hand-edited ledger.json once shipped "positions": {} and every cycle after the first
     # simulated fill died on dict.append. Coerce, don't crash: a bookkeeping file must never be
@@ -115,17 +148,19 @@ def _tick(L):
                 o["status"] = "filled"
                 o["filled_avg_price"] = fill
                 o["filled_qty"] = o["qty"]; o["filled_at"] = int(time.time())
-                L["cash"] -= o["filled_qty"] * fill
+                L["cash"] -= o["filled_qty"] * fill + _charge(L, o["filled_qty"], fill)
                 L["positions"].append({"symbol": sym, "qty": o["filled_qty"],
                                        "entry": fill, "cid": o["client_order_id"],
+                                       "fees": fee(o["filled_qty"], fill),
                                        "opened": int(time.time())})
             elif o["type"] == "stop" and o.get("stop_price") and px >= o["stop_price"]:
                 o["status"] = "filled"; o["filled_avg_price"] = o["stop_price"]
                 o["filled_qty"] = o["qty"]; o["filled_at"] = int(time.time())
                 cost = o["filled_qty"] * o["stop_price"]
-                L["cash"] -= cost
+                L["cash"] -= cost + _charge(L, o["filled_qty"], o["stop_price"])
                 L["positions"].append({"symbol": sym, "qty": o["filled_qty"],
                                         "entry": o["stop_price"], "cid": o["client_order_id"],
+                                        "fees": fee(o["filled_qty"], o["stop_price"]),
                                         "opened": int(time.time())})
         elif o["side"] == "sell" and o["type"] == "stop":
             pos = next((p for p in L["positions"] if p["symbol"] == sym), None)
@@ -152,11 +187,29 @@ def _tick(L):
     _save(L)
 
 
+def _charge(L, qty, px, taker=True):
+    """Take one venue fee out of the book and keep a running total for the journal."""
+    f = fee(qty, px, taker)
+    L["fees_paid"] = round(L.get("fees_paid", 0.0) + f, 8)
+    return f
+
+
 def _close_pos(L, pos, price):
+    """Remove a position and book the round trip. The exit leg pays a fee, and so did the entry
+    leg (already inside `pos["fees"]`); realized P&L is net of both, because 'what did I make'
+    means what is left, not what the chart says."""
     L["positions"].remove(pos)
-    pnl = (price - pos["entry"]) * pos["qty"]
-    L["cash"] += pos["qty"] * price
+    f_out = _charge(L, pos["qty"], price)
+    f_in = float(pos.get("fees") or 0.0)
+    pnl = (price - pos["entry"]) * pos["qty"] - f_out - f_in
+    L["cash"] += pos["qty"] * price - f_out
     L["realized"] += pnl
+
+
+def fee_stats():
+    """What the book has paid the venue, and the rates it is charging itself."""
+    L = _load()
+    return {"paid": round(float(L.get("fees_paid") or 0.0), 2), "maker": FEES["maker"], "taker": FEES["taker"]}
 
 
 def account():

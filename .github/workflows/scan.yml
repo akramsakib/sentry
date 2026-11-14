@@ -29,6 +29,7 @@ jobs:
       COINBASE_API_SECRET: ${{ secrets.COINBASE_API_SECRET }}
       COINBASE_API_PASSPHRASE: ${{ secrets.COINBASE_API_PASSPHRASE }}
       COINBASE_CDP_PEM: ${{ secrets.COINBASE_CDP_PEM }}
+      COINBASE_MODE: ${{ vars.COINBASE_MODE }}   # 'advanced' | 'exchange'; empty = auto-detect
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

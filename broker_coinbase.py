@@ -1,15 +1,31 @@
 #!/usr/bin/env python3
-"""Coinbase Exchange adapter — real orders on a real book.
+"""Coinbase adapter — real orders on a real book. Both Coinbase APIs, one file.
 
-Implements the same functions `run_cycle.py` already calls on `broker`, so going live is one
-config line:  "execution": "coinbase".   No SDK, no pip install — urllib + openssl only, and the
-data path is the same host the shadow ledger reads, so paper and live numbers stay comparable.
+  MODE "advanced"  api.coinbase.com/api/v3/brokerage  — the retail Coinbase account (the app, the
+      website, the key from Settings -> API keys). JWT only; no passphrase.
+  MODE "exchange"  api.exchange.coinbase.com          — Coinbase Exchange (institutional, separate
+      signup and separate keys, which carry a PASSPHRASE).
+
+A passphrase in the environment selects "exchange"; otherwise it is "advanced". Override with
+COINBASE_MODE. Market data always comes from the Exchange host's PUBLIC endpoints (candles, ticker,
+product metadata): no key needed, and the shadow ledger reads that same feed, so paper and live
+numbers stay comparable to the tick.
+
+Implements the same functions `run_cycle.py` already calls on `broker`, so going live is one config
+line:  "execution": "coinbase".   No SDK, no pip install — urllib + openssl only.
 
 Credentials (Actions Secrets; never in the repo, never printed):
-  legacy key  COINBASE_API_KEY + COINBASE_API_SECRET + COINBASE_API_PASSPHRASE
-  CDP  key    COINBASE_API_KEY + COINBASE_CDP_PEM        (ES256 JWT, signed with openssl)
+  advanced:  COINBASE_API_KEY + COINBASE_CDP_PEM           (CDP key, ES256 JWT — the supported way)
+             COINBASE_API_KEY + COINBASE_API_SECRET        legacy retail key, signed HS256
+  exchange:  COINBASE_API_KEY + COINBASE_API_SECRET + COINBASE_API_PASSPHRASE
   COINBASE_DRY=1        build and journal the exact payload, send nothing
-  COINBASE_TEST=1       hit api.exchange.coinbase.com sandbox instead of production
+  COINBASE_DRY_EQUITY   pretend-wallet size for a dry rehearsal
+  COINBASE_TEST=1       Exchange sandbox host (and forces LIVE off in run_cycle)
+
+Retail caveat, because it bites: a key whose name looks like `organizations/.../apiKeys/...` or
+`users/.../apiKeys/...` MUST be used as a CDP key (paste the generated private key into
+COINBASE_CDP_PEM). An old 10-character key+secret is signed HS256 instead; if Coinbase answers
+401/Unauthorized to that, mint a CDP key — the signature scheme, not the money, is the problem.
 
 Two things this file exists to get right, because both fail silently on Coinbase:
   * `client_oid` must be a lowercase UUIDv4 or the order is ACCEPTED BUT NEVER PROCESSED and
@@ -32,8 +48,20 @@ import urllib.parse
 import urllib.request
 import uuid
 
-PROD = "https://api.exchange.coinbase.com"
-BASE = os.environ.get("COINBASE_BASE") or (PROD if os.environ.get("COINBASE_TEST") != "1" else "https://api-public.sandbox.exchange.coinbase.com")
+EXCHANGE_PROD = "https://api.exchange.coinbase.com"
+EXCHANGE_SANDBOX = "https://api-public.sandbox.exchange.coinbase.com"
+ADV_PROD = "https://api.coinbase.com"
+TESTNET = os.environ.get("COINBASE_TEST") == "1"
+# A passphrase is only ever issued by the Exchange console, so its presence is the switch.
+MODE = (os.environ.get("COINBASE_MODE") or ("exchange" if os.environ.get("COINBASE_API_PASSPHRASE") else "advanced")).lower()
+if MODE not in ("advanced", "exchange"):
+    raise SystemExit(f"COINBASE_MODE must be 'advanced' or 'exchange', got {MODE!r}")
+ADV = MODE == "advanced"
+SANDBOX = TESTNET and not ADV                  # the retail API has no sandbox host
+TRADE = os.environ.get("COINBASE_TRADE_BASE") or (
+    EXCHANGE_SANDBOX if SANDBOX else (ADV_PROD if ADV else EXCHANGE_PROD))
+DATA = os.environ.get("COINBASE_BASE") or EXCHANGE_PROD   # public candles/ticker/products, always
+BASE = TRADE                                              # run_cycle sniffs this for paper/sandbox
 DRY = os.environ.get("COINBASE_DRY") == "1"      # builds payloads, reads nothing authenticated
 UA = "sentry-bot/4.3"
 GRAN = {"1Minute": 60, "5Minute": 300, "15Minute": 900, "1Hour": 3600, "6Hour": 21600, "1Day": 86400}
@@ -85,23 +113,47 @@ def _jwt_es256(signing_input, pem):
     return r.rjust(32, b"\0")[-32:] + s.rjust(32, b"\0")[-32:]      # JWS wants raw r||s, not DER
 
 
+def _jwt_hs256(signing_input, secret):
+    return _b64url(hmac.new(secret.encode(), signing_input.encode(), hashlib.sha256).digest())
+
+
+def _bearer(pem, key, sec):
+    """The retail API takes a JWT and nothing else. ES256 with a CDP private key is what Coinbase
+    issues now; HS256 with a legacy secret still verifies on accounts that kept the old key."""
+    ts = int(time.time())
+    alg = "ES256" if pem else "HS256"
+    h = _b64url(json.dumps({"alg": alg, "typ": "JWT", "kid": key}, separators=(",", ":")).encode())
+    c = _b64url(json.dumps({"sub": key, "iss": "coinbase-app", "nbf": ts - 5, "exp": ts + 120,
+                            "cnb": _b64url(hashlib.sha256(b"").digest())}, separators=(",", ":")).encode())
+    sig = _jwt_es256(f"{h}.{c}", pem) if pem else _jwt_hs256(f"{h}.{c}", sec)
+    return {"Authorization": f"Bearer {h}.{c}.{_b64url(sig)}", "CB-ACCESS-KEY": key}
+
+
 def _auth(method, path, body=b""):
     key = os.environ.get("COINBASE_API_KEY")
     sec = os.environ.get("COINBASE_API_SECRET")
     pass_ = os.environ.get("COINBASE_API_PASSPHRASE")
     pem = os.environ.get("COINBASE_CDP_PEM")
     if not key:
-        raise BrokerError("no Coinbase credentials — set COINBASE_API_KEY (+ COINBASE_API_SECRET and "
-                          "COINBASE_API_PASSPHRASE for a legacy key, or COINBASE_CDP_PEM for a CDP key)")
-    if pem:
+        raise BrokerError("no Coinbase credentials — set COINBASE_API_KEY + COINBASE_CDP_PEM (retail) "
+                          "or COINBASE_API_KEY + COINBASE_API_SECRET + COINBASE_API_PASSPHRASE (Exchange)")
+    if pem and ADV:
+        return _bearer(pem, key, sec)
+    if pem:                                              # Exchange accepts a JWT as CB-ACCESS-SIGN
         ts = int(time.time())
         h = _b64url(json.dumps({"alg": "ES256", "typ": "JWT"}, separators=(",", ":")).encode())
         c = _b64url(json.dumps({"sub": key, "iss": "coinbase-app", "nbf": ts - 5, "exp": ts + 120,
                                 "cnb": _b64url(hashlib.sha256(b"").digest())}, separators=(",", ":")).encode())
         tok = f"{h}.{c}.{_b64url(_jwt_es256(f'{h}.{c}', pem))}"
         return {"CB-ACCESS-KEY": key, "CB-ACCESS-SIGN": tok}
-    if not (sec and pass_):
-        raise BrokerError("legacy Coinbase key needs COINBASE_API_SECRET and COINBASE_API_PASSPHRASE")
+    if ADV:
+        if not sec:
+            raise BrokerError("the retail API signs a JWT: give COINBASE_CDP_PEM (preferred) or "
+                              "COINBASE_API_SECRET for a legacy key")
+        return _bearer(None, key, sec)
+    if not pass_:
+        raise BrokerError("a Coinbase Exchange key needs COINBASE_API_PASSPHRASE — or this is a "
+                          "retail account key, in which case set COINBASE_MODE=advanced")
     ts = str(int(time.time()))
     sig = hmac.new(sec.encode(), (ts + method + path).encode() + b"\n" + body, hashlib.sha256).hexdigest()
     return {"CB-ACCESS-KEY": key, "CB-ACCESS-SIGN": sig, "CB-ACCESS-TIMESTAMP": ts,
@@ -109,6 +161,9 @@ def _auth(method, path, body=b""):
 
 
 def _req(method, path, params=None, body=None, tries=3, public=False):
+    """public=True goes to the Exchange host with no signature (market data). Everything else is a
+    signed call on the venue MODE selected."""
+    base = DATA if public else TRADE
     qs = ""
     if params:
         qs = "?" + urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
@@ -118,7 +173,7 @@ def _req(method, path, params=None, body=None, tries=3, public=False):
         hdr.update(_auth(method, path + qs, payload))
     last = None
     for attempt in range(tries):
-        req = urllib.request.Request(BASE + path + qs, data=payload or None, method=method, headers=hdr)
+        req = urllib.request.Request(base + path + qs, data=payload or None, method=method, headers=hdr)
         try:
             with urllib.request.urlopen(req, timeout=25) as r:
                 txt = r.read().decode()
@@ -130,11 +185,11 @@ def _req(method, path, params=None, body=None, tries=3, public=False):
                 time.sleep(1.5 * (attempt + 1))
                 continue
             if e.code in (400, 401, 403, 404, 422):       # never blind-retry an order request
-                raise BrokerError(f"{method} {path}: {last}")
+                raise BrokerError(f"{method} {base.split(chr(47)*2)[1]}{path}: {last}" + (f" — retail keys cannot sign on the Exchange host; set COINBASE_MODE=advanced" if e.code == 401 and not ADV else ""))
         except Exception as e:                            # noqa: BLE001 — network, not logic
             last = f"{type(e).__name__}: {e}"
             time.sleep(1.5 * (attempt + 1))
-    raise BrokerError(f"{method} {path}: {last}")
+    raise BrokerError(f"{method} {base.split(chr(47)*2)[1]}{path}: {last}")
 
 
 # ---------- product metadata (increments are enforced strictly by the matching engine) ----------
@@ -237,9 +292,29 @@ def last_price(symbol):
 # ---------- account ----------
 
 def account():
+    """The wallet: what can be spent (USD/USDC) plus coins already held, marked at the tape. This
+    single number is what live_risk_cap() sizes every trade against, so it must be the real one."""
     if DRY:
         eq = float(os.environ.get("COINBASE_DRY_EQUITY") or 100000.0)   # rehearse any account size
         return {"equity": eq, "cash": eq, "crypto_value": 0.0}
+    if ADV:
+        rows = ((_req("GET", "/api/v3/brokerage/accounts",
+                      params={"limit": 250, "product_type": "SPOT"}) or {}).get("accounts")) or []
+        usd = other = 0.0
+        for a in rows:
+            try:
+                av = float((a.get("available_balance") or {}).get("value") or 0)
+            except (TypeError, ValueError):
+                continue
+            cur = str(((a.get("currency") or {}).get("id")) or a.get("name") or "").upper()
+            if cur in ("USD", "USDC"):
+                usd += av
+            elif av > 0:
+                try:
+                    other += av * last_price(cur + "/USD")
+                except (BrokerError, ValueError, KeyError):
+                    pass
+        return {"equity": round(usd + other, 2), "cash": round(usd, 2), "crypto_value": round(other, 2)}
     rows = _req("GET", "/accounts")
     usd = 0.0
     other = 0.0
@@ -264,6 +339,20 @@ def positions():
     needs symbol / qty / current_price from this; entry, SL and TP live in state.json."""
     if DRY:
         return []
+    if ADV:
+        rows = (_req("GET", "/api/v3/brokerage/positions") or {}).get("positions") or []
+        out = []
+        for p in rows:
+            try:
+                qty = float(p.get("net_size") or p.get("available_size") or 0)
+            except (TypeError, ValueError):
+                continue
+            if qty <= 0:
+                continue
+            out.append({"symbol": str(p.get("product_id") or "").replace("-", "/"), "qty": qty,
+                        "current_price": float(p.get("mark_price") or 0) or None,
+                        "avg_entry_price": float(p.get("entry_price") or 0) or None})
+        return out
     rows = _req("GET", "/accounts")
     out = []
     for a in rows if isinstance(rows, list) else []:
@@ -284,26 +373,48 @@ def positions():
 
 # ---------- orders ----------
 
+def _adv_cfg(o):
+    """Advanced Trade nests size/price inside order_configuration.{kind}; unwrap the one sub-object."""
+    for v in (o.get("order_configuration") or {}).values():
+        if isinstance(v, dict):
+            return v
+    return {}
+
+
 def _norm(o):
     fs = float(o.get("filled_size") or 0)
     ev = float(o.get("executed_value") or 0)
-    st = (o.get("status") or "").lower()
+    st = (o.get("status") or "open").lower()      # a fresh POST response carries no status yet
     if st in ("open", "pending", "received", "active", "placed"):
         st = "open"
-    elif st in ("done", "filled", "settled"):
+    elif st in ("done", "filled", "settled", "completed"):
         st = "filled" if fs > 0 else "canceled"
-    return {"id": o.get("id"), "client_order_id": o.get("client_oid"),
+    elif st in ("canceled", "cancelled", "expired", "rejected"):
+        st = "canceled"
+    cfg = _adv_cfg(o)                                    # {} on the Exchange shape
+    kind = [k for k in (o.get("order_configuration") or {}) if isinstance(o["order_configuration"][k], dict)]
+    otype = (o.get("type") or ("stop_limit" if kind and "stop" in kind[0] else
+                                "market" if kind and "market" in kind[0] else
+                                "limit" if kind else "")).lower()
+    return {"id": o.get("order_id") or o.get("id"),
+            "client_order_id": o.get("client_oid") or o.get("client_order_id"),
             "symbol": (o.get("product_id") or "").replace("-", "/"), "side": (o.get("side") or "").lower(),
-            "type": (o.get("type") or "").lower(), "status": st,
-            "qty": float(o.get("size") or 0), "filled_qty": fs,
-            "filled_avg_price": round(ev / fs, 8) if fs and ev else (float(o.get("avg_fill_price")) if o.get("avg_fill_price") else None),
-            "limit_price": float(o["price"]) if o.get("price") else None,
-            "stop_price": float(o["stop_price"]) if o.get("stop_price") else None}
+            "type": otype, "status": st,
+            "qty": float(o.get("size") or cfg.get("base_size") or 0), "filled_qty": fs,
+            "filled_avg_price": (round(ev / fs, 8) if fs and ev else None)
+            or next((float(o[k]) for k in ("avg_fill_price", "average_fill_price") if o.get(k)), None),
+            "limit_price": float(o["price"]) if o.get("price") else (float(cfg["limit_price"]) if cfg.get("limit_price") else None),
+            "stop_price": float(o["stop_price"]) if o.get("stop_price") else (float(cfg["stop_price"]) if cfg.get("stop_price") else None)}
 
 
 def open_orders(symbol=None):
     if DRY:
         return []
+    if ADV:
+        d = _req("GET", "/api/v3/brokerage/orders",
+                 params={"order_status": "OPEN", "limit": 200,
+                         "product_id": _product(symbol) if symbol else None})
+        return [_norm(o) for o in (d.get("orders") or [])]
     rows = _req("GET", "/orders", params={"status": "open", "limit": 100,
                                          "product_id": _product(symbol) if symbol else None})
     return [_norm(o) for o in (rows if isinstance(rows, list) else [])]
@@ -312,14 +423,21 @@ def open_orders(symbol=None):
 def order_by_cid(cid):
     if DRY:
         return None
+    oid = oid_for(cid)
     try:
-        o = _req("GET", f"/orders/client/{oid_for(cid)}")
-        if isinstance(o, dict) and o.get("id"):
-            return _norm(o)
+        if ADV:
+            o = (_req("GET", "/api/v3/brokerage/orders/historical/find_by_client_oid",
+                      params={"client_oid": oid}) or {}).get("order") or {}
+            if isinstance(o, dict) and (o.get("order_id") or o.get("id")):
+                return _norm(o)
+        else:
+            o = _req("GET", f"/orders/client/{oid}")
+            if isinstance(o, dict) and o.get("id"):
+                return _norm(o)
     except BrokerError:
         pass
     for o in open_orders():
-        if o.get("client_order_id") == oid_for(cid):
+        if o.get("client_order_id") == oid:
             return o
     return None
 
@@ -327,11 +445,47 @@ def order_by_cid(cid):
 def fills(symbol=None, order_id=None):
     if DRY:
         return []
+    if ADV:
+        rows = (_req("GET", "/api/v3/brokerage/orders/historical/fills",
+                     params={"product_id": _product(symbol) if symbol else None, "order_id": order_id})
+                or {}).get("fills") or []
+        return [{"price": float(f.get("price") or 0), "size": float(f.get("size") or 0),
+                 "side": (f.get("side") or "").lower(), "order_id": f.get("order_id"),
+                 "time": f.get("transaction_time") or f.get("time"),
+                 "fee": float(f.get("commission") or 0)} for f in rows]
     rows = _req("GET", "/fills", params={"product_id": _product(symbol) if symbol else None,
                                         "order_id": order_id})
     return [{"price": float(f.get("price") or 0), "size": float(f.get("size") or 0),
              "side": f.get("side"), "order_id": f.get("order_id"), "time": f.get("time")}
             for f in (rows if isinstance(rows, list) else [])]
+
+
+def _orders_path():
+    return "/api/v3/brokerage/orders" if ADV else "/orders"
+
+
+def _adv_body(b):
+    """Exchange payload -> Advanced Trade payload.
+
+    Same order, different grammar: the retail API wraps the terms in `order_configuration`, wants
+    every number as a string, and calls the client id `client_order_id`. Sizes already came from
+    the same Decimal flooring, so nothing is re-rounded here (re-rounding is how a stop ends up
+    above its own trigger). A market BUY is quoted in money on the Exchange and in money on
+    Advanced Trade too, but under a different key (`quote_size`).
+    """
+    out = {"client_order_id": b.pop("client_oid", None) or f"sentry{int(time.time() * 1000)}",
+           "product_id": b["product_id"], "side": b["side"].upper()}
+    out = {k: v for k, v in out.items() if v}
+    if b["type"] == "market":
+        cfg = {"quote_size": b["funds"]} if b["side"] == "buy" else {"base_size": b["size"]}
+        out["order_configuration"] = {"market_market_ioc": cfg}
+    elif b["type"] == "limit":
+        out["order_configuration"] = {"limit_limit_gtc": {"base_size": b["size"], "limit_price": b["price"]}}
+    else:                                               # stop_limit -> STOP_UP on a buy, STOP_DOWN on a sell
+        out["order_configuration"] = {"stop_limit_stop_limit_gtc": {
+            "base_size": b["size"], "limit_price": b["price"], "stop_price": b["stop_price"],
+            "stop_direction": "STOP_DIRECTION_STOP_UP" if b["side"] == "buy" else "STOP_DIRECTION_STOP_DOWN"}}
+    return out
 
 
 def place_order(side, symbol, qty=None, notional=None, otype="limit", limit_price=None,
@@ -360,7 +514,7 @@ def place_order(side, symbol, qty=None, notional=None, otype="limit", limit_pric
         body.pop("time_in_force")
         if side == "buy":
             body["funds"] = _quant(qty * float(ref), m["quote"])
-            body.pop("size")
+            body.pop("size")          # a market buy is sized in money on the Exchange, coins on ADV
     elif otype == "limit":
         body["type"] = "limit"
         body["price"] = _quant(limit_price or ref, m["quote"])
@@ -377,23 +531,42 @@ def place_order(side, symbol, qty=None, notional=None, otype="limit", limit_pric
             raise BrokerError(f"{symbol}: stop limit {body['price']} does not clear trigger {body['stop_price']}")
     else:
         raise BrokerError(f"unsupported order type: {otype}")
+    if ADV:
+        body = _adv_body(body)
     if DRY:
-        print(f"  DRY payload POST /orders {json.dumps(body)}")
-        return {"id": f"dry{int(time.time() * 1000)}", "client_order_id": body.get("client_oid"),
+        print(f"  DRY [{'advanced' if ADV else 'exchange'}] POST {_orders_path()} {json.dumps(body)}")
+        flat = {**body, **_adv_cfg(body)}
+        return {"id": f"dry{int(time.time() * 1000)}", "client_order_id": flat.get("client_order_id"),
                 "symbol": symbol, "side": side, "type": otype, "qty": qty, "status": "open",
-                "limit_price": float(body.get("price") or 0) or None,
-                "stop_price": float(body.get("stop_price") or 0) or None, "payload": body}
-    d = _req("POST", "/orders", body=body)
-    if not isinstance(d, dict) or not d.get("id"):
+                "limit_price": float(flat.get("price") or flat.get("limit_price") or 0) or None,
+                "stop_price": float(flat.get("stop_price") or 0) or None, "payload": body}
+    d = _req("POST", _orders_path(), body=body)
+    if ADV:
+        res = d.get("order_result") or d
+        if not (res.get("success") or res.get("order_id")):
+            raise BrokerError("rejected: " + str((d.get("error_response") or {}).get("message")
+                                                or res.get("preview_fail_msg") or d)[:200])
+        oid = res.get("order_id")
+    else:
+        oid = d.get("id") if isinstance(d, dict) else None
+    if not oid:
         raise BrokerError(f"rejected: {str(d)[:200]}")
-    o = _norm(d)
+    body["id"] = oid
+    o = _norm(body)
     o["payload"] = body
+    o["id"] = oid
     return o
 
 
 def cancel_order(order_id):
+    """One order, never the book. (A blanket cancel once deleted other symbols' resting entries.)"""
     if DRY:
         return {"cancelled": True, "id": order_id, "dry": True}
+    if ADV:
+        res = _req("POST", "/api/v3/brokerage/orders/batch_cancel", body={"order_ids": [str(order_id)]})
+        if str(order_id) not in json.dumps(res):
+            raise BrokerError(f"cancel not confirmed: {str(res)[:160]}")
+        return {"cancelled": True, "id": order_id}
     _req("DELETE", f"/orders/{order_id}")
     return {"cancelled": True, "id": order_id}
 
@@ -404,13 +577,15 @@ def cancel_all(symbol=None):
         return {"cancelled": 0}
     if DRY:
         return {"cancelled": len(ids), "dry": True}
-    _req("POST", "/orders/batch_cancel", body={"order_ids": ids})
+    _req("POST", "/api/v3/brokerage/orders/batch_cancel" if ADV else "/orders/batch_cancel",
+         body={"order_ids": ids})
     return {"cancelled": len(ids)}
 
 
 def verify():
     """Read-only proof of life. Places nothing."""
     a = account()
+    print(f"  venue {MODE} @ {TRADE.split('//')[-1]}")
     print(f"  auth ok · cash ${a['cash']:,.2f} · equity ${a['equity']:,.2f} · "
           f"{len(open_orders())} resting orders · {len(positions())} positions · "
           f"SOL {last_price('SOL/USD')}")

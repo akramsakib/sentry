@@ -121,6 +121,7 @@ finally:
 # stubbed, DRY mode builds the payload and never opens a socket.
 import re as _re
 
+os.environ["COINBASE_MODE"] = "exchange"      # section 17 flips cb.ADV for the retail shape
 import broker_coinbase as cb
 
 oid = cb.oid_for("sentryXRPUSD1794662610992n5")
@@ -182,6 +183,11 @@ finally:
 
 # ---------- 7: the live gate ----------
 import run_cycle as rc
+
+# Importing run_cycle installs config.json's fee schedule onto the ledger module (same object as
+# `bl`). The cash assertions below were written against a free book, so pin it free here and test
+# the fee model on purpose in section 16 — that is the only way both can mean something.
+bl.set_fees({"maker": 0.0, "taker": 0.0})
 
 _orig_live, _orig_cfg = rc.LIVE, rc.CFG
 rc.LIVE = True
@@ -384,6 +390,114 @@ try:
           len(_after) == 1 and _after[0]["result"] == "win" and _after[0]["R"] == 1.5, str(_after))
 finally:
     rc.TL_F = _TL
+
+# ---------- 16: what the venue takes. Fees are part of the strategy, not a detail ----------
+_fees_saved = dict(bl.FEES)
+check("config.json carries a real fee schedule for the venue it names",
+      (rc.CFG.get("fees") or {}).get("taker", 0) > 0 and rc.MAX_FEE_R > 0,
+      f"{rc.CFG.get('fees')} cap {rc.MAX_FEE_R}R")
+bl.set_fees({"maker": 0.004, "taker": 0.006})
+d1, r1 = bl.round_trip_fees(100.0, 99.0, 1.0, 1.0)
+check("a 1 % stop on a 0.40/0.60 % book pays 1.19R in fees to round-trip",
+      abs(r1 - 1.194) < 1e-3 and d1 > 1.0, f"${d1} = {r1}R")
+d2, r2 = bl.round_trip_fees(100.0, 99.0, 1.0, 250.0)
+check("  ...that drag is identical at any size — it is price geometry, not sizing",
+      abs(r2 - r1) < 1e-9 and abs(d2 - d1 * 250) < 0.01, f"${d2} = {r2}R")
+check("  ...so the only fix is a cheaper venue or a wider stop (and a wider stop is a different strategy)",
+      bl.round_trip_fees(100.0, 98.0, 2.0, 1.0)[1] < r1, str(bl.round_trip_fees(100.0, 98.0, 2.0, 1.0)))
+gross = (101.0 - 100.0) / 1.0
+net = round(gross - rc.fee_drag(100.0, 101.0, 1.0, 10.0)[1], 2)
+check("a textbook +1R win at a 1 % stop is GRADED A LOSS once the venue is paid",
+      gross == 1.0 and rc.grade(net) == "loss", f"net {net}R")
+check("grading and the book use the same helper (no second fee model to drift)",
+      rc.fee_drag(100.0, 99.0, 1.0, 1.0) == bl.round_trip_fees(100.0, 99.0, 1.0, 1.0))
+bl.set_fees({"maker": 0.0, "taker": 0.0})
+check("a zero-rate book charges nothing — the model is data, not dogma",
+      bl.round_trip_fees(100.0, 99.0, 1.0, 1.0) == (0.0, 0.0))
+check("  ...and an absent config key leaves the schedule alone rather than zeroing it",
+      bl.set_fees({}) == {"maker": 0.0, "taker": 0.0})
+
+# the dollars: entry fee out of cash, exit fee out of proceeds, realized net of both
+bl.set_fees({"maker": 0.004, "taker": 0.006})
+_L5 = {"cash": 10000.0, "realized": 0.0, "fees_paid": 0.0, "positions": [],
+       "orders": [{"id": "t5", "client_order_id": "sentryT5", "symbol": "TEST/USD", "side": "buy",
+                   "type": "limit", "qty": 10.0, "limit_price": 100.0, "stop_price": None,
+                   "status": "open", "placed_at": 0}]}
+_f5 = os.path.join(_ledger_dir, "l5.json")
+with open(_f5, "w") as _fh:
+    _json.dump(_L5, _fh)
+_keep5, _tp5 = bl.LEDGER_F, bl._ticker_price
+bl.LEDGER_F = _f5
+bl._ticker_price = lambda sym: 100.0   # noqa: E501
+bl._tick(_L5)                                  # entry fills at 100
+_cash_after_entry = _L5["cash"]
+_L5["orders"].append({"id": "t5x", "client_order_id": "sentryT5x", "symbol": "TEST/USD", "side": "sell",
+                      "type": "stop", "qty": 10.0, "limit_price": None, "stop_price": 101.0,
+                      "status": "open", "placed_at": 0})
+bl._tick(_L5)                                  # stop close fills at 101
+bl._ticker_price = _tp5
+check("a paper entry pays its venue fee out of cash", _cash_after_entry == 10000.0 - 1000.0 - 6.0,
+      f"{_cash_after_entry}")
+check("  ...the exit fee comes off the proceeds, so equity is not theatre",
+      _L5["cash"] == _cash_after_entry + 1010.0 - 6.06, f"{_L5['cash']}")
+check("  ...and realized P&L is net of both legs (gross was +$10)",
+      abs(_L5["realized"] - (10.0 - 6.0 - 6.06)) < 1e-6 and not _L5["positions"], f"realized {_L5['realized']}")
+check("  ...the book keeps a running total the journal can show",
+      abs(_L5["fees_paid"] - 12.06) < 1e-6 and abs(bl.fee_stats()["paid"] - 12.06) < 1e-6
+      and bl.fee_stats()["taker"] == 0.006, str(_L5.get("fees_paid")))
+bl.LEDGER_F = _keep5
+bl.set_fees(_fees_saved)
+
+# ---------- 17: the retail payload — a retail key cannot sign on the Exchange host at all ----------
+_meta_saved2, _dry_saved2 = cb._meta, cb.DRY
+cb._meta = lambda sym: {"quote": "0.01", "base": "0.00000001", "min_funds": 1.0, "ok": True}
+cb.DRY = True
+cb.ADV = True
+try:
+    r = cb.place_order("buy", "XRP/USD", qty=100.0, otype="stop", stop_price=0.99537, cid="sentryXRP9n1")
+    b = r["payload"]
+    cfg_ = b["order_configuration"]["stop_limit_stop_limit_gtc"]
+    check("retail terms go inside order_configuration (no flat type/size/price)",
+          "type" not in b and "time_in_force" not in b and "size" not in b, str(b))
+    check("  ...and the client id is client_order_id, still a UUIDv4",
+          "client_oid" not in b and _re.fullmatch(r"[0-9a-f-]{36}", b["client_order_id"] or ""), str(b))
+    check("  ...a buy stop triggers from below -> STOP_UP",
+          cfg_["stop_direction"] == "STOP_DIRECTION_STOP_UP", str(cfg_))
+    check("  ...the limit still clears its own trigger by a tick",
+          float(cfg_["limit_price"]) > float(cfg_["stop_price"]), f"{cfg_['limit_price']} vs {cfg_['stop_price']}")
+    check("  ...every number on this API is a string",
+          all(isinstance(cfg_[k], str) for k in ("base_size", "limit_price", "stop_price")), str(cfg_))
+    sb = cb.place_order("sell", "XRP/USD", qty=100.0, otype="stop", stop_price=0.955,
+                        cid="sentryXRP9n2")["payload"]["order_configuration"]["stop_limit_stop_limit_gtc"]
+    check("  ...a protective sell flips to STOP_DOWN with the limit below the trigger",
+          sb["stop_direction"] == "STOP_DIRECTION_STOP_DOWN" and float(sb["limit_price"]) < float(sb["stop_price"]),
+          str(sb))
+    lb = cb.place_order("buy", "XRP/USD", qty=100.0, otype="limit", limit_price=0.98,
+                        cid="sentryXRP9n4")["payload"]["order_configuration"]
+    check("  ...a pullback is limit_limit_gtc", list(lb) == ["limit_limit_gtc"], str(lb))
+    mb = cb.place_order("buy", "SOL/USD", notional=75.0, otype="market", limit_price=76.0,
+                        cid="sentrySOL9n5")["payload"]["order_configuration"]["market_market_ioc"]
+    check("  ...a market buy spends quote_size (dollars), not base_size",
+          "quote_size" in mb and "base_size" not in mb and float(mb["quote_size"]) == 75.0, str(mb))
+    ms = cb.place_order("sell", "SOL/USD", qty=1.5, otype="market", limit_price=76.0,
+                        cid="sentrySOL9n6")["payload"]["order_configuration"]["market_market_ioc"]
+    check("  ...a market close spends coins", "base_size" in ms and "quote_size" not in ms, str(ms))
+    n1 = cb._norm({"order_id": "o1", "client_order_id": cb.oid_for("c1"), "product_id": "SOL-USD",
+                   "side": "BUY", "status": "OPEN",
+                   "order_configuration": {"stop_limit_stop_limit_gtc": {"base_size": "1.5",
+                                                                           "limit_price": "76.07",
+                                                                           "stop_price": "76.00"}}})
+    check("a retail open order reads back through the same keys run_cycle reconciles on",
+          n1["qty"] == 1.5 and n1["stop_price"] == 76.0 and n1["limit_price"] == 76.07
+          and n1["status"] == "open" and n1["symbol"] == "SOL/USD" and n1["type"] == "stop_limit"
+          and n1["id"] == "o1", str(n1))
+    n2 = cb._norm({"order_id": "o2", "side": "SELL", "product_id": "SOL-USD", "status": "COMPLETED",
+                   "filled_size": "1.5", "average_fill_price": "77.25",
+                   "order_configuration": {"market_market_ioc": {"base_size": "1.5"}}})
+    check("a filled retail market close hands the orchestrator a fill price to grade from",
+          n2["status"] == "filled" and n2["filled_avg_price"] == 77.25 and n2["filled_qty"] == 1.5, str(n2))
+finally:
+    cb.ADV, cb.DRY, cb._meta = False, _dry_saved2, _meta_saved2
 
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

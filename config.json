@@ -21,7 +21,12 @@
   "max_open": 6,
   "pending_ttl_h": 6.0,
   "min_score_fire": 3,
-  "note": "execution: 'coinbase' = Coinbase Exchange (real orders via broker_coinbase.py when an API key is present, shadow ledger on the same public data when it is not) | 'ledger' = shadow only | 'alpaca' = Alpaca paper. Live orders also require live_ack: true, min_grade_before_live graded outcomes, and a cycle heartbeat younger than max_gap_h. Per-trade live risk = min(sizer, live_max_risk, equity*live_max_risk_frac); if the notional that needs exceeds max_notional_frac of equity the trade is SKIPPED, never quietly trimmed. See README 'Going live'.",
+  "fees": {
+    "maker": 0.004,
+    "taker": 0.006
+  },
+  "live_max_fee_r": 0.25,
+  "note": "execution: 'coinbase' = real orders through broker_coinbase.py when a key is present (retail Advanced Trade by default, Coinbase Exchange when COINBASE_API_PASSPHRASE is set), shadow ledger on the same public data when it is not | 'ledger' = shadow only | 'alpaca' = Alpaca paper. Live orders also require live_ack: true, min_grade_before_live graded outcomes, and a cycle heartbeat younger than max_gap_h. Per-trade live risk = min(sizer, live_max_risk, equity*live_max_risk_frac); if the notional that needs exceeds max_notional_frac of equity the trade is SKIPPED, never quietly trimmed. fees = what the venue charges per side, charged on every fill (paper and live) and netted into the R that grading uses; a live trade whose round-trip fee exceeds live_max_fee_r of its own risk is REFUSED, and live_max_fee_r: 0 turns that guard off. See README 'The wallet' and 'Going live'.",
   "live_ack": false,
   "min_grade_before_live": 8,
   "max_gap_h": 2.0,

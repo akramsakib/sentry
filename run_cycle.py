@@ -1,4 +1,4 @@
-"""Sentry v4.3.3 (GitHub-native) — one full scan/manage cycle per run.
+"""Sentry v4.4.0 (GitHub-native) — one full scan/manage cycle per run.
 
 Designed to be invoked by .github/workflows/scan.yml every 10 minutes.
 State of record = files in this repo (state.json, journal.md, trades_log.jsonl),
@@ -54,6 +54,22 @@ DRY = bool(FIXDIR) or os.environ.get("SENTRY_DRY") == "1"
 # sandbox stay False, so the live gates never starve a paper venue that still needs fills to grade.
 _host = (getattr(broker, "TRADE", "") or getattr(broker, "BASE", "")).lower()
 LIVE = LIVE and not DRY and "paper-api" not in _host and "sandbox" not in _host
+
+# --- venue cost ---------------------------------------------------------------------------
+# The fee model lives in the ledger and is applied whatever the venue is: a paper book that pays
+# nothing measures a place that does not exist, and the accuracy figure that sizes every trade was
+# built on it. config.json "fees" sets maker/taker as fractions (0.0060 = 0.60 %).
+import broker_ledger as ledger
+FEES = ledger.set_fees(CFG.get("fees"))
+MAX_FEE_R = float(CFG.get("live_max_fee_r") or 0)     # 0 disables the live refusal
+FEE_REFUSED = [0]                                      # mutated by the scan loop, read by the alert
+
+
+def fee_drag(entry_px, exit_px, r_dist, qty=1.0):
+    """(dollars, R) the venue takes on one round trip. Both legs are charged as taker: a stop entry
+    and a stop exit both cross into a moving market, and a guard that assumed maker would be a
+    guard that assumes the flattering case."""
+    return ledger.round_trip_fees(entry_px, exit_px, r_dist, qty)
 
 
 def now():
@@ -290,10 +306,14 @@ def run():
             # 2026-11-14 DOGE stop-out exited ABOVE its entry (a favourable scratch), and the
             # target test still called it a loss with "+0.36R" — which then fed a false miss into
             # the accuracy loop that sizes every future trade.
-            r_mult = round((last - ps["entry"]) / ps["r_dist"], 2) if ps.get("r_dist") else 0.0
+            if ps.get("r_dist"):
+                _, f_r = fee_drag(ps["entry"], last, ps["r_dist"], ps.get("qty") or 1.0)
+                r_mult = round((last - ps["entry"]) / ps["r_dist"] - f_r, 2)
+            else:
+                r_mult = 0.0
             res = grade(r_mult)
             tl_update(sym, res, last, r_mult)
-            journal(f"CLOSED {sym} — graded {res} ({r_mult:+.2f}R) from exit {last:.8g}")
+            journal(f"CLOSED {sym} — graded {res} ({r_mult:+.2f}R{' net of ' + format(f_r, '.2f') + 'R in venue fees' if ps.get('r_dist') and f_r else ''}) from exit {last:.8g}")
             if not DRY:
                 # Cancel ONLY this symbol's leftovers. A blanket cancel_all() here once deleted two
                 # unrelated resting entries (XRP/SOL, 2026-11-14) while the journal still claimed
@@ -461,6 +481,16 @@ def run():
             if entry * qty < CFG["min_notional"]:
                 journal(f"SKIP — {sym} {c['skill']}: qty below min notional (risk ${risk} too small for ${entry:.2f} price)")
                 continue
+            # Can this trade even pay for its own ticket? A 0.55 % stop on a 0.60/0.40 % schedule
+            # costs 1.8R: the exit at the target is a coin flip after the venue has taken its cut.
+            f_usd, f_r = fee_drag(entry, entry - r_dist, r_dist, qty)
+            if LIVE and MAX_FEE_R and f_r > MAX_FEE_R:
+                FEE_REFUSED[0] += 1
+                journal(f"SKIP — {sym} {c['skill']}: venue fees cost {f_r:.2f}R (cap {MAX_FEE_R:g}R) on a "
+                        f"{100 * r_dist / entry:.2f} % stop — ${f_usd:.2f} paid to trade for ${risk:.2f} of risk. "
+                        f"Refused, not resized: the stop distance belongs to the checklist.")
+                continue
+            fee_note = f" · fees ~${f_usd:.2f} ({f_r:.2f}R)" if f_usd else ""
             s["cid_seq"] = s.get("cid_seq", 0) + 1
             cid = f"sentry{sym.replace('/', '')}{int(time.time() * 1000)}n{s['cid_seq']}"[:60]
             # breakout entries must ride a real STOP order (a buy-limit above market would
@@ -469,7 +499,7 @@ def run():
             if DRY:
                 order_ok = True
                 pending_syms.add(sym)
-                journal(f"DRY-FIRE — {sym} {c['skill']} {c['otype']} qty {qty:.6f} @ {entry * (1 - 0.0015) if (note and not stop_entry) else entry} sl{c['sl']} tp{c['tp']} risk ${risk:.2f}")
+                journal(f"DRY-FIRE — {sym} {c['skill']} {c['otype']} qty {qty:.6f} @ {entry * (1 - 0.0015) if (note and not stop_entry) else entry} sl{c['sl']} tp{c['tp']} risk ${risk:.2f}{fee_note}")
             else:
                 try:
                     # A re-anchored marketable entry gets a collar, not a naked market order: a
@@ -480,7 +510,7 @@ def run():
                     else:
                         broker.place_order("buy", sym, qty=qty, otype="limit", limit_price=lim, tif="gtc", cid=cid)
                     order_ok = True
-                    journal(f"ORDER SENT — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {lim}{' (collar on ' + format(entry, '.10g') + ')' if lim != entry else ''} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}")
+                    journal(f"ORDER SENT — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {lim}{' (collar on ' + format(entry, '.10g') + ')' if lim != entry else ''} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}{fee_note}")
                 except broker.BrokerError as e:
                     order_ok = False
                     journal(f"ORDER FAILED — {sym} {c['skill']}: {e}")
@@ -497,8 +527,18 @@ def run():
         write_status(acct, live, s, tl_rows(), tf_map, fired)   # re-read: grading just landed
     except Exception as e:                                    # noqa: BLE001
         journal(f"NOTE — status page not written: {type(e).__name__}: {e}")
+    if LIVE and FEE_REFUSED[0] and not fired:
+        journal(f"ALERT — every live signal this cycle was refused because the venue's fee is bigger "
+                f"than the trade's risk ({FEE_REFUSED[0]} refused). This is arithmetic, not a bug: a "
+                f"{100 * (FEES['maker'] + FEES['taker']):.2f} % round trip against 0.4-1.2 % stops costs "
+                f"more than one R. Either trade a maker-only venue, set config.fees to what the account "
+                f"actually pays, or widen the stops — and widening them invalidates the score history, so "
+                f"it is a decision, not a tuning knob. (Paper still trades: the guard is live-only.)")
+    _fs = ledger.fee_stats() if hasattr(ledger, "fee_stats") else {}
+    _fee_str = (f" · venue fees ${_fs.get('paid', 0.0):,.2f} to date @ "
+                f"{100 * FEES['maker']:.2f}/{100 * FEES['taker']:.2f}%") if (FEES["maker"] or FEES["taker"]) else ""
     journal(f"scan ok · venue {VENUE} · {len(syms)} symbols · {fired} new · {len(s['open_cids'])} pendings · "
-            f"{len(s['pos_state'])} positions{eq} · {int(time.time() - t0)}s")
+            f"{len(s['pos_state'])} positions{eq} · {int(time.time() - t0)}s{_fee_str}")
     if EXEC_MODE == "coinbase" and not CB_KEYED:
         journal("NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are "
                 "being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the "
@@ -724,6 +764,15 @@ if __name__ == "__main__":
                                                          or os.environ.get("COINBASE_CDP_PEM")):
         fail("execution=coinbase, live_ack=true, COINBASE_API_KEY set — but no COINBASE_API_SECRET "
              "(legacy key) or COINBASE_CDP_PEM (CDP key). A half-configured live venue is worse than none.")
+    if CB_KEYED and CFG.get("live_ack") is True:
+        # the two Coinbase APIs are different accounts with different credentials; failing here is
+        # far cheaper than watching every order come back 401 for one reason repeated 80 times.
+        mode = (os.environ.get("COINBASE_MODE")
+                or ("exchange" if os.environ.get("COINBASE_API_PASSPHRASE") else "advanced"))
+        if mode == "exchange" and not os.environ.get("COINBASE_API_PASSPHRASE"):
+            fail("COINBASE_MODE=exchange needs COINBASE_API_PASSPHRASE — a retail Coinbase account key "
+                 "cannot sign at api.exchange.coinbase.com at all. Either mint the key at "
+                 "exchange.coinbase.com (View+Trade) or set COINBASE_MODE=advanced.")
     try:
         run()
     except SystemExit:
