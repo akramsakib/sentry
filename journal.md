@@ -22,3 +22,4 @@
 - **11-14 13:22 UTC** NOTE — XRP/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
 - **11-14 13:22 UTC** CANDIDATE(score 4/5) — LINK/USD S2-breakdown-short sell_stop 9.47506028 sl9.69093972 tp9.15124111 — paper-graded (spot can't short)
 - **11-14 13:22 UTC** scan ok · 10 symbols · 0 new · 6 pendings · 0 positions equity $100000.00 · 1s
+- **11-14 13:22 UTC** LEDGER RESET — voided 6 pending orders placed before v4.2: they were sized on mis-mapped Coinbase candles (row order is time,low,high,open,close,vol), which produced 0.04% stops and $261k notionals. Sizing guards + test_data.py now cover it.
