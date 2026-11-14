@@ -918,5 +918,58 @@ check("Bitget's fee ladder is READ from the venue (/market/contracts), not typed
       '"makerFeeRate"' in open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                             "broker_bitget.py")).read())
 
+# ---------- 24: an ARMED-but-EMPTY account must not be read as a $100k paper wallet ----------
+# Found while wiring the Bitget lane: `float((acct or {}).get("equity") or 100000.0)` treated a real
+# 0.0 as "missing", so on key day (trade-only key pasted, nothing funded yet) every cap computed
+# against money that does not exist and the book kept trying to send orders into an empty margin
+# account. run_cycle.venue_equity is the shipped function; these call it, they don't re-implement it.
+print("\n== 24: funded gate (armed venue with $0 equity)")
+_eq_fn = getattr(rc, "venue_equity", None)
+check("run_cycle exposes venue_equity (the sizing wallet is one function, not an inline `or`)",
+      _eq_fn is not None)
+if _eq_fn:
+    eq, ok, why = _eq_fn({"equity": 0.0}, True)
+    check("armed + venue says $0 -> NO new entries, and it says why",
+          ok is False and eq == 0.0 and "empty" in why.lower(), f"{eq}, {ok}, {why!r}")
+    eq, ok, why = _eq_fn({"equity": 0}, True)
+    check("integer 0 behaves like 0.0 (this was the whole bug: falsy != missing)",
+          ok is False and eq == 0.0)
+    eq, ok, why = _eq_fn({"equity": None}, True)
+    check("a live venue read that OMITS equity fails closed too, never defaults to six figures",
+          ok is False and eq == 0.0 and "no equity" in why.lower())
+    eq, ok, why = _eq_fn({"equity": 20000.0}, True)
+    check("funded account: equity is used as-is and entries are allowed",
+          ok is True and eq == 20000.0 and why == "")
+    eq, ok, why = _eq_fn(None, False)
+    check("shadow/DRY keeps the $100k paper wallet (nothing else about the books changes)",
+          ok is True and eq == 100000.0)
+    eq, ok, why = _eq_fn({"equity": 0.0}, False)
+    check("...even when a rehearsal venue happens to report 0",
+          ok is True and eq == 0.0)
+    check("negative equity (a liquidation-pending wallet) also refuses",
+          _eq_fn({"equity": -12.5}, True)[1] is False)
+check("the falsy-swallowing expression is gone from the CODE (a docstring may still name it)",
+      "equity = float((acct or {})" not in src and "venue_equity(acct, MONEY)" in src)
+check("and the refusal names both fixes (fund it, or disarm the key) without touching stops",
+      "Fund the account or disarm the key" in src
+      and "still managed" in src)
+
+# ...and the whole gate end-to-end: the shipped probe runs run_cycle.run() against a stubbed venue
+# that answers the wallet with $0 and records any attempt to place an order. 0.2 s, no network.
+_probe24 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/checks/check_empty_wallet.py")
+if os.path.exists(_probe24):
+    import subprocess as _sp24
+    _r24 = _sp24.run([sys.executable, _probe24], capture_output=True, text=True, timeout=180)
+    _out24 = (_r24.stdout or "") + (_r24.stderr or "")
+    check("THE PROBE: armed Bitget book + $0 wallet -> LIVE ACK, one ALERT, ZERO orders attempted",
+          "RESULT: PASS" in _out24 and "orders attempted against the venue: 0" in _out24
+          and "MONEY: True" in _out24, " ".join(_out24.split())[-160:])
+    check("...and the equity it reports is the venue's, not the paper wallet's",
+          "equity $0.00" in _out24, [l for l in _out24.splitlines() if "scan ok" in l][-1][:150]
+          if "scan ok" in _out24 else "no scan line")
+else:
+    check("empty-wallet probe is shipped", False, _probe24)
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

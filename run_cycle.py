@@ -302,6 +302,28 @@ def reanchor(entry, sl, tp, mkt, otype, tol=0.0005):
                  f"R recomputed ({why})"), True
 
 
+def venue_equity(acct, money):
+    """(equity, may_enter, why_not) — the wallet the book is allowed to size itself against.
+
+    This replaces `float((acct or {}).get("equity") or 100000.0)`, which was wrong in the one
+    situation that actually arrives on key day: an ARMED venue account with nothing in it. A real
+    `0.0` is falsy, so the `or` silently turned an empty wallet into a $100,000 paper one — the
+    notional cap, the equity-fraction risk cap and the "this trade wants a $20k account" advice all
+    then computed against money that does not exist, and the book kept trying to send orders into an
+    empty margin account. A missing read (shadow/DRY) still means the paper wallet; a read that says
+    zero means zero, and nothing is entered until it is funded. Exits and protective stops are
+    untouched — an open position is still managed while the account is thin.
+    """
+    eq = (acct or {}).get("equity")
+    if eq is None:
+        return (0.0 if money else 100000.0), (not money), \
+               ("venue returned no equity field" if money else "")
+    equity = float(eq)
+    if money and equity <= 0:
+        return equity, False, f"venue reports ${equity:,.2f} equity — the book is armed but the account is empty"
+    return equity, True, ""
+
+
 def live_gate(rows, s):
     """What must be true before real money moves. Returns (allow_new_entries, why_not).
 
@@ -500,7 +522,11 @@ def run():
     if LIVE and not allow_new:
         journal(f"GATE — venue {VENUE} armed but NO new entries: {why_not}")
     fired = 0
-    equity = float((acct or {}).get("equity") or 100000.0)
+    equity, funded, funded_why = venue_equity(acct, MONEY)
+    if not funded:
+        allow_new = False
+        journal(f"ALERT — {VENUE}: {funded_why}. No new entries this cycle (open positions and "
+                f"resting stops are still managed). Fund the account or disarm the key.")
     min_frac = float(CFG.get("min_stop_frac", 0.004))
     max_nf = float(CFG.get("max_notional_frac", 0.25))
     for sym in (syms if allow_new else []):
