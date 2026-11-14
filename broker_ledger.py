@@ -177,7 +177,7 @@ def positions():
 
 def open_orders():
     L = _load()
-    return [{"id": o["id"], "client_order_id": o["client_order_id"], "symbol": o["symbol"],
+    return [{"id": o["id"], "client_order_id": o.get("client_order_id"), "symbol": o["symbol"],
              "side": o["side"], "type": o["type"], "status": "open",
              "limit_price": o.get("limit_price"), "stop_price": o.get("stop_price"),
              "qty": o["qty"]} for o in L["orders"] if o["status"] == "open"]

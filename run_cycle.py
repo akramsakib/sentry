@@ -280,12 +280,18 @@ def run():
             res = "win" if win else "loss"
             r_mult = round((last - ps["entry"]) / ps["r_dist"], 2) if ps.get("r_dist") else 0
             tl_update(sym, res, last, r_mult)
-            journal(f"CLOSED {sym} — graded {res} ({r_mult:+.2f}R) | stop/target orders cleaned by exchange/reconcile")
+            journal(f"CLOSED {sym} — graded {res} ({r_mult:+.2f}R)")
             if not DRY:
+                # Cancel ONLY this symbol's leftovers. A blanket cancel_all() here once deleted two
+                # unrelated resting entries (XRP/SOL, 2026-11-14) while the journal still claimed
+                # those orders were live — the log and the book must never disagree.
                 try:
-                    broker.cancel_all()  # cancel any resting tp/stop remnants; pendings re-placed if fresh
-                except broker.BrokerError:
-                    pass
+                    for o in broker.open_orders():
+                        if o.get("symbol") == sym and (o.get("client_order_id") or "").startswith("sentry"):
+                            broker.cancel_order(o["id"])
+                            journal(f"CANCEL leftover {sym} order {o.get('client_order_id')} after close")
+                except broker.BrokerError as e:
+                    journal(f"NOTE — could not clean leftover {sym} orders: {e}")
             del s["pos_state"][sym]
     # b) current positions -> enforce SL/TP + breakeven + ATR trail
     for sym, p in live.items():
@@ -457,6 +463,10 @@ def run():
                 fired += 1
     eq = f" equity ${float(acct['equity']):.2f}" if acct else ""
     s["last_cycle"] = time.time()
+    try:
+        write_status(acct, live, s, rows, tf_map, fired)
+    except Exception as e:                                    # noqa: BLE001
+        journal(f"NOTE — status page not written: {type(e).__name__}: {e}")
     journal(f"scan ok · venue {VENUE} · {len(syms)} symbols · {fired} new · {len(s['open_cids'])} pendings · "
             f"{len(s['pos_state'])} positions{eq} · {int(time.time() - t0)}s")
     if EXEC_MODE == "coinbase" and not CB_KEYED:
@@ -481,6 +491,141 @@ def tl_update(sym, res, last, r_mult):
     with open(TL_F, "w") as f:
         for row in rows:
             f.write(json.dumps(row) + "\n")
+
+
+STATUS_F = os.path.join(HERE, "STATUS.md")
+
+LEGEND = """
+| line starts with | meaning |
+|---|---|
+| `CANDIDATE(score n/5)` | a skill matched and was scored, but no order was sent (short on spot, duplicate, below the fire floor) |
+| `ORDER SENT` | an order was placed on the venue named in the summary line |
+| `RE-ANCHORED` | the trigger was already through the tape, so entry moved to market and R was recomputed |
+| `FILL` | an entry filled — now a position, with its stop armed on the venue |
+| `EXIT` / `CLOSED` | stop or target hit; P&L booked and the signal graded win/loss |
+| `SKIP` / `CAPPED` / `LIVE RISK CLAMP` | a guard refused or resized the trade; reason is inline |
+| `GATE` | live venue armed but new entries blocked; reason is inline |
+| `EXPIRED` | a resting entry went older than `pending_ttl_h` and was cancelled — the setup is stale |
+| `ALERT` | the cycle died. The run is red — open its log, nothing was skipped on purpose |
+"""
+
+
+def write_status(acct, live, s, rows, tf_map, fired):
+    """One human-readable page, rewritten by the bot at the end of every cycle. The JSON files are
+    the machine memory; this is the thing you actually look at."""
+    def px(sym):
+        try:
+            return float(tf_map[sym]["15m"][-1]["c"])
+        except Exception:                                     # noqa: BLE001
+            return 0.0
+
+    out = ["# Sentry — live status",
+           "",
+           "_Written by the bot at the end of every cycle. Never edited by hand — if it disagrees "
+           "with `journal.md`, the journal is right._",
+           ""]
+    eq = float((acct or {}).get("equity") or 0)
+    cash = float((acct or {}).get("cash") or 0)
+    real = "REAL MONEY" if LIVE else "shadow book (paper)"
+    out.append(f"**{now().strftime('%Y-%m-%d %H:%M UTC')}** · venue `{VENUE}` → {real} · "
+               f"cash ${cash:,.2f} · equity ${eq:,.2f}")
+    out.append("")
+
+    # ---- resting orders
+    out.append(f"## Orders resting on the book now ({len(s['open_cids'])})")
+    out.append("")
+    if s["open_cids"]:
+        out.append("| symbol | order | trigger | size | notional | risk | tape | to trigger | age |")
+        out.append("|---|---|---|---|---|---|---|---|---|")
+        for cid, m in sorted(s["open_cids"].items(), key=lambda kv: kv[1]["sym"]):
+            t = px(m["sym"])
+            dist = (m["entry"] / t - 1) * 100 if t else 0.0
+            mm = _CID_TS.search(cid)
+            age = (time.time() - int(mm.group(1)) / 1000.0) / 60.0 if mm else -1
+            out.append(f"| {m['sym']} | {m['otype']} | {m['entry']:.8g} | {m['qty']:.6g} | "
+                       f"${m['qty'] * m['entry']:,.0f} | ${m['risk']:.2f} | {t:.8g} | "
+                       f"{dist:+.2f}% | {age:.0f} min |")
+        ttl = float(CFG.get("pending_ttl_h", 6.0))
+        out.append("")
+        out.append(f"_Entries expire after {ttl:g} h (`pending_ttl_h`): a breakout trigger from 6 hours "
+                   f"ago is not the same trade, it is just an old order._")
+    else:
+        out.append("_None. Every symbol is scanned each cycle; a resting entry above is a trigger "
+                   "waiting to be hit, not a position._")
+    out.append("")
+
+    # ---- positions
+    out.append(f"## Positions ({len(s['pos_state'])})")
+    out.append("")
+    if s["pos_state"]:
+        out.append("| symbol | qty | entry | mark | P&L | stop | target | R held |")
+        out.append("|---|---|---|---|---|---|---|---|")
+        for sym, ps in sorted(s["pos_state"].items()):
+            cur = float((live.get(sym) or {}).get("current_price") or ps.get("last_price") or 0) or px(sym)
+            q = float(ps.get("qty") or 0)
+            pl = (cur - ps["entry"]) * q if cur and q else 0.0
+            rmul = (cur - ps["entry"]) / ps["r_dist"] if cur and ps.get("r_dist") else 0.0
+            out.append(f"| {sym} | {q:.6g} | {ps['entry']:.8g} | {cur:.8g} | ${pl:,.2f} | "
+                       f"{ps['sl']:.8g} | {ps['tp']:.8g} | {rmul:+.2f}R |")
+    else:
+        out.append("_Flat._")
+    out.append("")
+
+    # ---- signals
+    out.append(f"## Last 12 signals ({len(rows)} ever logged)")
+    out.append("")
+    out.append("| time | symbol | skill | score | entry | stop | target | size | outcome |")
+    out.append("|---|---|---|---|---|---|---|---|---|")
+    for r in rows[-12:][::-1]:
+        if r.get("result"):
+            oc = f"**{r['result']}** " + (f"({r.get('R', 0):+.2f}R)" if r.get("R") is not None else "")
+        elif r.get("fired"):
+            oc = "order placed"
+        elif "short" in str(r.get("note", "")) or "short" in str(r.get("otype", "")):
+            oc = "paper-graded (spot cannot short)"
+        else:
+            oc = "not fired (guard/duplicate)"
+        out.append(f"| {str(r.get('ts', ''))[5:]} | {r.get('sym')} | {r.get('skill')} | "
+                   f"{r.get('score')}/5 | {r.get('entry'):.8g} | {r.get('sl'):.8g} | {r.get('tp'):.8g} | "
+                   f"${r.get('risk', 0):.2f} | {oc} |")
+    out.append("")
+
+    # ---- accuracy / sizing, the loop the whole design hangs on
+    graded = [r for r in rows if r.get("fired") and r.get("result")]
+    wins = [r for r in graded if r["result"] == "win"]
+    sizer = core.Sizer(CFG["base_risk"], CFG["min_risk"], CFG["max_risk"])
+    sizes = " · ".join(f"score {sc} -> ${sizer.size('S11-dc20-long', sc, rows):.2f}" for sc in (3, 4, 5))
+    avg_r = sum(float(r.get("R") or 0) for r in graded) / len(graded) if graded else 0.0
+    out.append("## Accuracy so far")
+    out.append("")
+    out.append(f"{len(graded)} graded outcomes · win rate "
+               f"{(100.0 * len(wins) / len(graded)) if graded else 0:.0f}% · avg {avg_r:+.2f}R · "
+               f"sizing today: {sizes}")
+    out.append("")
+    out.append("_Risk per trade is this bot's own decision: it scales with the accuracy it has "
+               "demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by "
+               "`live_max_risk` on a live venue._")
+    out.append("")
+    out.append(f"## This cycle: {fired} new order(s), {len(CFG['symbols'])} symbols scanned")
+    out.append("")
+    out.append(LEGEND.strip())
+    out.append("")
+    raw = "https://raw.githubusercontent.com/" + (os.environ.get("GITHUB_REPOSITORY") or "akramsakib/sentry") + "/main"
+    out.append("## Read it from a terminal")
+    out.append("")
+    out.append("```bash")
+    out.append(f"curl -s {raw}/STATUS.md | head -40            # this page")
+    out.append(f"curl -s {raw}/journal.md | tail -20           # every decision, newest last")
+    out.append(f"curl -s {raw}/ledger.json | python3 -m json.tool   # the book itself")
+    out.append(f"curl -s {raw}/trades_log.jsonl | tail -5      # one line per signal")
+    out.append("```")
+    out.append("")
+    out.append("_On a live venue the exchange is the authority: the orders above are what Sentry "
+               "believes it placed, the Coinbase app's Orders/History tab is what actually exists._")
+    txt = "\n".join([l for l in out if l is not None]) + "\n"
+    with open(STATUS_F, "w") as f:
+        f.write(txt)
+    return txt
 
 
 def push_memory():
@@ -530,7 +675,7 @@ def push_memory():
         push("journal.md", "\n".join(JOURNAL_LINES) + "\n", True)
     if TL_LINES:
         push("trades_log.jsonl", "\n".join(TL_LINES) + "\n", True)
-    for f_ in ("state.json", "ledger.json"):
+    for f_ in ("state.json", "ledger.json", "STATUS.md"):
         p = os.path.join(HERE, f_)
         if os.path.exists(p):
             push(f_, open(p).read(), False)

@@ -4,6 +4,10 @@ The same checklist engine from the Mac build (`sentry_mac.py` v3.1), ported to r
 **GitHub Actions**. One workflow run = one full scan cycle, every 10 minutes, 24/7 (crypto has no
 weekend gap — MT5 demo servers do).
 
+**Start here → [`STATUS.md`](STATUS.md)** — rewritten by the bot at the end of every cycle: what
+venue it is on, what is resting on the book, what it holds and at what P/L, and the last 12 signals
+with what happened to each one. `journal.md` is the full decision log; `STATUS.md` is the page.
+
 ```
 ┌─ Actions cron (*/10) ─┐   ┌─ this repo = the database ────────────┐
 │ run_cycle.py          │──▶│ state.json        (orders/positions)  │
@@ -73,6 +77,8 @@ No-money rehearsals: `COINBASE_DRY=1` builds and prints the exact payload it wou
 `python3 broker_coinbase.py` runs a read-only auth/account check and places nothing.
 
 ## Files you care about
+- **`STATUS.md`** — the page you look at: orders resting, positions, last signals, accuracy, sizing.
+  Machine-written every cycle, safe to bookmark, never edited by hand.
 - **`journal.md`** — every cycle and every decision, newest at the bottom. This is the bot's diary;
   read it instead of logs (Actions keeps 90 days, git keeps forever).
 - **`trades_log.jsonl`** — one row per closed trade (symbol, skill, P/L, bars held, grade). Its

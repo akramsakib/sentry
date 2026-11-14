@@ -330,5 +330,18 @@ check("market close realizes P/L and frees the cash",
       _L3["positions"] == [] and abs(_L3["realized"] + 40.0) < 1e-9 and _L3["cash"] == 1460.0,
       f"realized {_L3['realized']} cash {_L3['cash']} pos {_L3['positions']}")
 
+# ---------- 12: cleanup must be per-symbol, and open orders must carry their cid ----------
+_oo = __import__("inspect").getsource(bl.open_orders)
+check("shadow open_orders() reports client_order_id exactly once (the reconciler matches on it)",
+      _oo.count("client_order_id") == 2 and "o.get(" in _oo, str(_oo.count("client_order_id")))
+_q = chr(34)
+check("  ...and a legacy row without one cannot KeyError the cycle",
+      ("o[" + _q + "client_order_id" + _q + "]") not in _oo)
+_rc_src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_cycle.py")).read()
+check("close-out cancels only that symbol's leftovers (no cancel_all on a fill)",
+      "CANCEL leftover {sym}" in _rc_src and "broker.cancel_all()  # cancel any resting" not in _rc_src)
+check("STATUS.md is written by the cycle and pushed with the memory files",
+      "STATUS.md" in _rc_src and "write_status(acct, live, s, rows, tf_map, fired)" in _rc_src)
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
