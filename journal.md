@@ -31,3 +31,5 @@
 - **11-14 13:23 UTC** CANDIDATE(score 4/5) — LINK/USD S2-breakdown-short sell_stop 9.47506028 sl9.69093972 tp9.15124111 — paper-graded (spot can't short)
 - **11-14 13:23 UTC** scan ok · 10 symbols · 2 new · 2 pendings · 0 positions equity $100000.00 · 5s
 - **11-14 13:24 UTC** scan ok · 10 symbols · 0 new · 2 pendings · 0 positions equity $100000.00 · 5s
+- **11-14 13:33 UTC** CANDIDATE(score 5/5) — LTC/USD C-M15-three-crows sell_stop 47.57763136 sl47.99592161 tp46.95019597 — paper-graded (spot can't short)
+- **11-14 13:33 UTC** scan ok · 10 symbols · 0 new · 2 pendings · 0 positions equity $100000.00 · 2s
