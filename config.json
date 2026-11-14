@@ -1,0 +1,23 @@
+{
+  "execution": "ledger",
+  "mode": "alpaca-paper",
+  "symbols": [
+    "BTC/USD",
+    "ETH/USD",
+    "XRP/USD",
+    "SOL/USD",
+    "DOGE/USD",
+    "ADA/USD",
+    "LINK/USD",
+    "LTC/USD",
+    "BCH/USD",
+    "AVAX/USD"
+  ],
+  "base_risk": 100.0,
+  "min_risk": 50.0,
+  "max_risk": 200.0,
+  "min_notional": 10.0,
+  "max_open": 6,
+  "min_score_fire": 3,
+  "note": "execution: 'ledger' = shadow fills on Coinbase public data (no accounts needed) | 'alpaca' = Alpaca paper trading (needs Secrets). Crypto on spot venues is long-only; short signals are paper-graded into the accuracy loop."
+}

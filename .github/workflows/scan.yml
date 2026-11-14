@@ -1,0 +1,33 @@
+name: sentry-cycle
+on:
+  schedule:
+    - cron: "*/10 * * * *"     # same cadence as the Mac build (CYCLE=300s ≈ 5-10 min)
+  workflow_dispatch: {}          # "Run workflow" button = manual scan-now
+  push:
+    paths: ["sentry_core.py", "run_cycle.py", "broker.py", "config.json"]  # re-scan after code changes
+permissions:
+  contents: write                # commit state/journal back to this repo
+concurrency:
+  group: sentry-cycle            # never overlap runs — cron queue keeps ordering
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: run cycle
+        env:
+          ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
+          ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
+        run: python run_cycle.py
+      - name: commit memory
+        run: |
+          git config user.name "sentry-bot"
+          git config user.email "sentry@users.noreply.github.com"
+          git add state.json journal.md trades_log.jsonl || true
+          git diff --cached --quiet || git commit -m "cycle $(date -u +%m-%d_%H%M)"
+          git pull --rebase || true
+          git push
