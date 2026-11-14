@@ -105,18 +105,32 @@ def run_once():
         pass
 
 
+def boot_banner():
+    """One line in the journal: which key file THIS venue reads, and whether it is armed.
+
+    It names the venue's own file and asks the venue's own keyed flag. An earlier version tested
+    OKX_API_KEY/COINBASE_API_KEY only and hard-coded "(both empty)", which printed a calm
+    "nothing is sent" on an ARMED Bitget book — the one moment a wrong banner is expensive, because
+    it is read as 'not live yet' while orders are going out.
+    """
+    exe = getattr(rc, "EXEC_MODE", "?")
+    keyf = {"okx": "./okx.env", "coinbase": "./coinbase.env + ./coinbase.pem",
+            "bitget": "./bitget.env"}.get(exe, "./env files (any *.env here)")
+    armed = any(getattr(rc, f, False) for f in ("OKX_KEYED", "BG_KEYED", "CB_KEYED"))
+    keyf += " (key PRESENT → orders are real from this cycle)" if armed else " (empty → shadow ledger, nothing is sent)"
+    line = (f"crypto_loop: resident on this Mac — cycle every {CYCLE}s · venue per config ({exe}) · "
+            f"keys from {keyf} · this is the ONLY armed book for its account "
+            f"(the repo mirror ships auto_ack off)")
+    rc.journal(line)
+    return line
+
+
 if __name__ == "__main__":
     if "--once" in sys.argv:
         run_once()
         print("crypto_loop: single cycle done (verify mode)", flush=True)
         sys.exit(0)
-    _exe = getattr(rc, "EXEC_MODE", "?")
-    _keyf = "./okx.env" if _exe == "okx" else ("./coinbase.env + ./coinbase.pem" if _exe == "coinbase" else "./env files")
-    if not os.environ.get("OKX_API_KEY") and not os.environ.get("COINBASE_API_KEY"):
-        _keyf += " (both empty → shadow ledger, nothing is sent)"
-    rc.journal(f"crypto_loop: resident on this Mac — cycle every {CYCLE}s · venue per config ({_exe}) · "
-               f"keys from {_keyf} · this is the ONLY armed book for its account "
-               f"(the repo mirror ships auto_ack off)")
+    boot_banner()
     while True:
         run_once()
         time.sleep(CYCLE)

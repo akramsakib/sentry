@@ -707,9 +707,19 @@ check("the floor is wired at the one place a stop is judged (right after re-anch
 check("the traded stop, not the asked stop, is what gets stored and managed",
       src.count('"sl": c["sl"]') >= 2 and '"sl_ask": sl0' in src)
 _loop22 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/mac/crypto_loop.py")).read()
-check("the boot banner tells you WHICH env file the current venue reads",
-      '_exe = getattr(rc, "EXEC_MODE"' in _loop22 and "both empty" in _loop22
-      and "keys from ./okx.env only" not in _loop22)
+check("the boot banner tells you WHICH env file the current venue reads (venue-derived, not hard-coded)",
+      "def boot_banner" in _loop22 and "_exe = getattr" not in _loop22
+      and '"./okx.env"' in _loop22 and '"./bitget.env"' in _loop22
+      and '"./coinbase.env + ./coinbase.pem"' in _loop22)
+# The docstring is ALLOWED to name the bug it prevents; the executable part is not. Strip docstrings
+# before asserting the venue-blind claim is gone, or the test would fail on its own explanation.
+_loop22_code = _re22.sub(r'""".*?"""', "", _loop22, flags=_re22.S)
+_loop22_code = "\n".join(l for l in _loop22_code.splitlines() if not l.strip().startswith("#"))
+check("...and no venue-blind '(both empty)' claim survives in the CODE: an armed book must not read as unarmed",
+      "both empty" not in _loop22_code and "key PRESENT" in _loop22_code
+      and 'for f in ("OKX_KEYED", "BG_KEYED", "CB_KEYED")' in _loop22_code
+      and "both empty" in _loop22,                         # the docstring still names the old bug
+      "the explanation stays, the claim is gone")
 check("the no-key note names the local key file, not GitHub Secrets (money moved home in 4.7.2)",
       'Actions secret to trade the real book' not in src and "./coinbase.env" in src)
 check("Coinbase Exchange is spot for us: no CAN_SHORT -> shorts stay paper-graded",
