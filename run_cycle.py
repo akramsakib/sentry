@@ -1,4 +1,12 @@
-"""Sentry v4.7.3 (GitHub-native) — one full scan/manage cycle per run.
+"""Sentry v4.7.4 (GitHub-native) — one full scan/manage cycle per run.
+
+v4.7.4: a third venue lane, `execution: bitget` — the exchange the user ALREADY has verified. It is
+the only one of his three (Bitget / Binance / Bybit) whose API answers from both this runner and his
+Mac, so it is the one that could be built and measured rather than typed from a doc page: public
+history-candles (bar spacings proven 300/900/3600/14400/86400 s), fee schedule read live off
+/market/contracts (0.02 % maker / 0.06 % taker -> 0.24R on a 0.5 % stop, inside the 0.25R guard),
+sizes in coins, triggers as a field on place-order, TP/SL attached, shorts real. The data plane now
+follows the execution venue so a Bitget book scans Bitget's tape, not OKX's.
 
 v4.7.3: the Coinbase lane, measured not guessed — `execution: coinbase` now rehearses end to end
 (public candles in, real payload shapes out, shorts auto-papered because Coinbase Exchange is
@@ -38,16 +46,26 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import sentry_core as core
-import broker_okx as data_broker          # PUBLIC candles only — no keys, the live venue's own feed
 
 CFG = json.load(open(os.path.join(HERE, "config.json")))
 _CID_TS = re.compile(r"(\d{13})n\d+$")   # sentry{SYM}{ms}n{seq} -> the ms doubles as the placement clock
 EXEC_MODE = CFG.get("execution", "ledger")
+
+# The data plane follows the EXECUTION venue. Scanning one exchange's tape and trading another's is
+# how a paper book drifts from the real one at exactly the moment it matters — a trigger judged on
+# the other venue's last price. OKX public candles stay the default (every grade in this repo was
+# built on that feed); execution=bitget swaps to Bitget's own closed history-candles, which are
+# UTC-aligned 1H/4H/1D like OKX's, and OKX_DATA=1 forces the old feed back for a comparison run.
+if EXEC_MODE == "bitget" and os.environ.get("OKX_DATA") != "1":
+    import broker_bitget as data_broker      # public history-candles only — no keys needed
+else:
+    import broker_okx as data_broker          # PUBLIC candles only — no keys, the live venue's own feed
 # Venue selection is one config line ("execution"). coinbase = real orders via
 # broker_coinbase.py; it falls back to the shadow ledger ONLY when no key exists in this runner,
 # and says so in the journal + summary so "did it place a real order?" is never a guess.
 CB_KEYED = EXEC_MODE == "coinbase" and bool(os.environ.get("COINBASE_API_KEY"))
 OKX_KEYED = EXEC_MODE == "okx" and bool(os.environ.get("OKX_API_KEY"))
+BG_KEYED = EXEC_MODE == "bitget" and bool(os.environ.get("BITGET_API_KEY"))
 LIVE = False
 VENUE = "shadow-ledger"
 if EXEC_MODE == "alpaca":
@@ -69,6 +87,16 @@ elif EXEC_MODE == "coinbase":
 elif EXEC_MODE == "okx":
     import broker_ledger as broker                           # venue chosen, key not in place yet
     VENUE = "shadow-ledger(okx-no-key)"
+elif EXEC_MODE == "bitget" and BG_KEYED:
+    import broker_bitget as broker                           # real Bitget USDT-M orders, TP/SL attached
+    LIVE = True
+    VENUE = ("bitget-live(DRY)" if os.environ.get("BITGET_DRY") == "1" else
+             "bitget-live(SIM, fake money)" if os.environ.get("BITGET_SIM") == "1" else
+             f"bitget-live({'hedge' if os.environ.get('BITGET_HEDGE') == '1' else 'one-way'},"
+             f" {os.environ.get('BITGET_MARGIN') or 'isolated'})")
+elif EXEC_MODE == "bitget":
+    import broker_ledger as broker                           # venue chosen, key not in place yet
+    VENUE = "shadow-ledger(bitget-no-key)"
 else:
     import broker_ledger as broker
 STATE_F = os.path.join(HERE, "state.json")
@@ -294,9 +322,10 @@ def live_gate(rows, s):
         # acknowledgement — minting the key is the one step that can never be done from here anyway.
         # The blast radius of a leaked+planted key stays bounded: trade-only permission, no
         # withdrawal whitelist bypass, and every dollar-clamp below still applies.
-        if not (CFG.get("auto_ack_on_key") and OKX_KEYED):
-            return False, ("config.live_ack is not true — or just paste a real OKX trade key into "
-                           "Settings → Secrets and it arms itself (auto_ack_on_key)")
+        if not (CFG.get("auto_ack_on_key") and (OKX_KEYED or BG_KEYED)):
+            return False, ("config.live_ack is not true — or just paste a real trade-only key "
+                           "(OKX or Bitget) into where this runner reads keys and it arms itself "
+                           "(auto_ack_on_key)")
         journal("LIVE ACK — granted by key presence (auto_ack_on_key, user directive 2026-11-14)")
     graded = [r for r in rows if r.get("fired") and r.get("result")]
     need = int(CFG.get("min_grade_before_live", 8))
@@ -879,6 +908,17 @@ if __name__ == "__main__":
         if miss:
             fail("execution=okx with live_ack=true but these are missing: " + ", ".join(miss)
                  + " — OKX signs with all three, and a half-configured live venue is worse than none.")
+    if EXEC_MODE == "bitget" and BG_KEYED and CFG.get("live_ack") is True:
+        miss = [k for k in ("BITGET_API_KEY", "BITGET_API_SECRET", "BITGET_API_PASSPHRASE")
+                if not os.environ.get(k)]
+        if miss:
+            fail("execution=bitget with live_ack=true but these are missing: " + ", ".join(miss)
+                 + " — Bitget signs with all three (ACCESS-KEY/SIGN/TIMESTAMP/PASSPHRASE), and a "
+                   "half-configured live venue is worse than none.")
+    if EXEC_MODE == "bitget" and FEES["taker"] > 0.0015:
+        journal(f"NOTE — config.fees says {100 * FEES['taker']:.2f} % taker, which is not a Bitget "
+                f"perp number (0.06 % base tier, read from /api/v2/mix/market/contracts). Every R below "
+                f"is priced off it, so fix config.json rather than trusting the book.")
     if EXEC_MODE == "okx" and FEES["taker"] > 0.0015:
         journal(f"NOTE — config.fees says {100 * FEES['taker']:.2f} % taker, which is not an OKX number "
                 f"(0.05 % base tier). Either the schedule is stale or the venue changed; every R below "

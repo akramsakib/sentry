@@ -785,5 +785,123 @@ if _m22:
             check(f"{_tag}: journal says WIDENED (the change is loud, not silent)",
                   any("WIDENED" in l for l in _ns["LOG"]), str(_ns["LOG"])[:80])
 
+# ---------- 23: the Bitget lane (the venue the user ALREADY has) ----------
+import time as _t23
+import broker_bitget as _bg23                                   # noqa: E402
+check("execution=bitget is a real venue branch, not a config string",
+      'EXEC_MODE == "bitget" and BG_KEYED' in _RC_SRC20 and 'import broker_bitget as broker' in _RC_SRC20)
+check("  ...and the no-key fallback names itself in the journal",
+      'shadow-ledger(bitget-no-key)' in _RC_SRC20)
+check("  ...and a pasted Bitget key arms it (same rule as OKX, no other change)",
+      "(OKX_KEYED or BG_KEYED)" in _RC_SRC20)
+check("  ...and the boot refuses a half-armed Bitget live venue",
+      '"BITGET_API_KEY", "BITGET_API_SECRET", "BITGET_API_PASSPHRASE"' in _RC_SRC20)
+# the data plane follows the venue (the drift bug class the whole design is built around)
+check("data plane switches with the venue (bitget candles when trading bitget)",
+      'if EXEC_MODE == "bitget" and os.environ.get("OKX_DATA") != "1":' in _RC_SRC20
+      and "import broker_bitget as data_broker" in _RC_SRC20)
+# candles: OLDEST FIRST rows, no confirm flag, forming bar must be dropped by clock maths
+_now = int(_t23.time())
+_per = 300
+_rows23 = [[(_now - 2 * _per) * 1000, "100.0", "101.0", "99.0", "100.5", "10.0", "1000.0"],
+           [(_now - 1 * _per) * 1000, "100.5", "102.0", "100.0", "101.5", "11.0", "1100.0"],
+           [_now * 1000,                "101.5", "103.0", "101.0", "102.5", "1.0", "100.0"]]   # forming
+_b23 = _bg23._bars(_rows23, now_ts=_now + 30)
+check("bitget bars: closed bars kept, the still-forming one dropped by its open time",
+      len(_b23) == 2, f"{len(_b23)} bars from 3 rows")
+check("bitget o/h/l/c map from ITS row order (open index 1, close index 4) — not OKX's or Coinbase's",
+      _b23[0]["o"] == 100.0 and _b23[0]["c"] == 100.5 and _b23[1]["o"] == 100.5 and _b23[1]["c"] == 101.5,
+      str(_b23[:2]))
+check("bars returned oldest→newest (the scan reads [-1] as 'latest closed')",
+      _b23[0]["t"] < _b23[1]["t"], f"{_b23[0]['t']} vs {_b23[1]['t']}")
+try:
+    _bg23._bars([[_now * 1000, "100.0", "99.0", "98.0", "101.0", "1", "1"]])
+    check("impossible bar still raises", False, "no exception")
+except _bg23.BrokerError:
+    check("impossible bar still raises", True)
+# granularity whitelist: the exact bug this adapter shipped with (history-candles rejects *utc names)
+try:
+    _bg23.crypto_bars("BTC/USD", "5Minute", 6)          # public call: allowed, must not raise a name error
+    check("5m resolves to the endpoint's own name (300s bars, proven live 2026-11-14)",
+          _bg23.BAR["5Minute"] == "5m")
+except Exception as e:                                  # noqa: BLE001 — offline: no network in CI
+    check("5m resolves to a valid granularity name", _bg23.BAR["5Minute"] == "5m", str(e)[:60])
+try:
+    _bg23.crypto_bars("BTC/USD", "5m2", 6)
+    check("an unknown timeframe FAILS instead of silently returning 1H (the OKX BAR.get trap)",
+          False, "no exception")
+except _bg23.BrokerError as e:
+    check("an unknown timeframe FAILS instead of silently returning 1H (the OKX BAR.get trap)",
+          "not a Bitget history-candles granularity" in str(e))
+_kit23 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/mac/crypto_loop.py")).read()
+check("the Mac runner loads EVERY *.env in the folder, so a third lane needs no code change",
+      'f.endswith(".env")' in _kit23 and "os.listdir(HERE)" in _kit23)
+_bgp23 = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                      "tools/mac/com.hermes.sentry.crypto.bitget.plist")
+check("a bitget book ships its own launchd label and folder, so two books cannot collide",
+      os.path.exists(_bgp23) and "com.hermes.sentry.crypto.bitget" in open(_bgp23).read()
+      and "crypto-bitget" in open(_bgp23).read())
+check("bitget.env ships as a template that arms NOTHING (every key line commented)",
+      all(not l.strip().startswith("BITGET_API") for l in open(os.path.join(
+          os.path.dirname(os.path.abspath(__file__)), "tools/mac/bitget.env"))))
+check("no silent default: BAR.get has no fallback argument in crypto_bars",
+      'BAR.get(timeframe)' in open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                               "broker_bitget.py")).read())
+# sizing/price maths: Bitget sizes in COINS (no ctVal), on the venue's own increments
+_m23 = {"tick": "0.1", "lot": "0.0001", "min_sz": "0.0001", "ct_val": 1.0, "live": True,
+        "inst": "BTCUSDT", "maker": 0.0002, "taker": 0.0006, "min_usdt": 5.0}
+_bg23._META["BTCUSDT"] = dict(_m23)
+check("size floors to volumePlace and is sent as a string (venue rejects float noise)",
+      _bg23._q(0.1234567, "0.0001") == "0.1234", _bg23._q(0.1234567, "0.0001"))
+check("price floors to pricePlace on the far side of the tape, ceil on the near side",
+      _bg23._q(64528.37, "0.1") == "64528.3", _bg23._q(64528.37, "0.1"))
+_path, _body = _bg23._body("buy", "BTCUSDT", "0.1234", "64000.0", "limit", None,
+                           "66000.0", "63000.0", "sentryBTCUSD1794662107892n5", "BTC/USD")
+check("limit entry: single endpoint, GTC, TP+SL attached, productType capitalised",
+      _path == "/api/v2/mix/order/place-order" and _body["force"] == "gtc"
+      and _body["presetStopSurplusPrice"] == "66000.0" and _body["presetStopLossPrice"] == "63000.0"
+      and _body["productType"] == "USDT-FUTURES", str(_body)[:120])
+check("one-way mode: NO tradeSide in the payload (hedge-mode would need it, and BITGET_HEDGE=1 adds it)",
+      "tradeSide" not in _body)
+_p23, _b23o = _bg23._body("sell", "BTCUSDT", "0.1234", None, "stop", "63000.0",
+                          "61000.0", "64000.0", "sentryBTCUSD1794662107892n6", "BTC/USD")
+check("stop entry is a FIELD here (triggerType+triggerPrice+collar), not a second endpoint like OKX",
+      _b23o["orderType"] == "limit" and _b23o["triggerType"] == "fill_price"
+      and _b23o["triggerPrice"] == "63000.0" and float(_b23o["executePrice"]) < 63000.0
+      and _p23 == "/api/v2/mix/order/place-order", str(_b23o)[:140])
+check("clientOid is the deterministic fold of Sentry's cid (60 chars is over Bitget's limit)",
+      _body["clientOid"] == _bg23.oid_for("sentryBTCUSD1794662107892n5")
+      and len(_body["clientOid"]) <= 32 and _body["clientOid"].isalnum()
+      and _bg23.oid_for("x") != _bg23.oid_for("y")
+      and _body["clientOid"].startswith("sen"))
+check("cancel is per-symbol only — this adapter does not expose cancel_all (the 2026-11-14 mistake)",
+      not hasattr(_bg23, "cancel_all") and hasattr(_bg23, "cancel_for"))
+check("a short below the venue's own notional floor is refused before it is sent",
+      "minTradeUSDT" in open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                          "broker_bitget.py")).read())
+# the fee arithmetic that makes this venue worth wiring at all (0.02/0.06 is the published base tier)
+_bg23.set_fees = None if False else None
+_usd23, _r23 = (lambda: (_bl22.set_fees({"maker": 0.0002, "taker": 0.0006}),
+                          _bl22.round_trip_fees(100.0, 99.5, 0.5, 200.0))[1])()
+_bl22.set_fees({"maker": 0.0002, "taker": 0.0005})
+_usd_okx, _r_okx = _bl22.round_trip_fees(100.0, 99.5, 0.5, 200.0)
+_bl22.set_fees({"maker": 0.0040, "taker": 0.0060})
+_usd_cb, _r_cb = _bl22.round_trip_fees(100.0, 99.5, 0.5, 200.0)
+_bl22.set_fees(cfg22["fees"])
+print(f"  [fee drag on the venue model, 0.50 % stop]  okx 0.02/0.05 -> {_r_okx:.2f}R   "
+      f"bitget 0.02/0.06 -> {_r23:.2f}R   coinbase base 0.40/0.60 -> {_r_cb:.2f}R   "
+      f"(live guard cap {float(cfg22['live_max_fee_r']):g}R)")
+check("Bitget perps at the book's 0.5 % stop fit under live_max_fee_r, so live signals are NOT refused",
+      _r23 <= float(cfg22["live_max_fee_r"]), f"{_r23:.2f}R vs cap {cfg22['live_max_fee_r']}R")
+check("  ...but the margin is 0.01R WIDE, so a Bitget book must re-read /market/contracts if its "
+      "tier is worse (0.02/0.10 taker would breach)", _r23 > _r_okx and _r23 / _r_okx < 2.0,
+      f"bitget {_r23:.2f}R vs okx {_r_okx:.2f}R")
+check("  ...and Bitget is 10x cheaper than the Coinbase lane, which is why it goes first",
+      _r_cb > 8 * _r23, f"coinbase {_r_cb:.2f}R vs bitget {_r23:.2f}R")
+_bl22.set_fees(cfg22["fees"])
+check("Bitget's fee ladder is READ from the venue (/market/contracts), not typed from a help page",
+      '"makerFeeRate"' in open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                            "broker_bitget.py")).read())
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

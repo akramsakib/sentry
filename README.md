@@ -50,6 +50,18 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
   real matching, **no money** — the rehearsal Coinbase cannot offer. Same no-key fallback to the
   shadow book (on the same OKX public candles the scanner reads, so prices are unchanged; only the
   fee schedule moved).
+- **`"execution": "bitget"` (v4.7.4 — the lane for an account that already exists):** Bitget USDT-M
+  perps via `broker_bitget.py` — 0.02 %/0.06 % **read from the venue's own `/market/contracts`**, which
+  prices this book's 0.5 % stop at 0.24 R and therefore **inside** `live_max_fee_r` (OKX 0.20 R, Coinbase
+  base tier 2.39 R). Shorts are real (`CAN_SHORT`), both protective legs attach to the entry order, and
+  the size is in COINS — Bitget has no contract multiplier, so the OKX maths must not be reused. Sizes
+  floor to `volumePlace`, prices to `pricePlace`, and a sub-`minTradeUSDT` order is refused locally.
+  The data plane follows the venue: a Bitget book scans Bitget's own closed history-candles (spacings
+  proven 300/900/3600/14400/86400 s, forming bar dropped by its open time — that endpoint has no
+  `confirm` flag), because judging a trigger on another exchange's last price is how a live order
+  fills at a price the paper book never saw. `BITGET_MARGIN=isolated|crossed`, `BITGET_HEDGE=1` for a
+  hedge-mode account (unproven without a key, so the assumption is journalled), `BITGET_DRY=1` for a
+  payload rehearsal, `OKX_DATA=1` to scan OKX candles while trading Bitget.
 - **`"execution": "coinbase"`:** Coinbase via `broker_coinbase.py` — **real orders on
   a real book**, on either Coinbase API (retail Advanced Trade or institutional Exchange; the
   presence of a passphrase picks which, see "Going live"). The key lives only in Actions Secrets.
@@ -79,6 +91,31 @@ the same folder — simulated-trading header, real payload shapes, re-find by `c
 `OKX_DRY=1 OKX_DRY_EQUITY=20000 python3 run_cycle.py` prints venue-shaped `ORDER SENT` bodies against
 the real book without sending. STATUS.md in this repo reflects the mirror; the Mac's own
 `crypto/journal.md` + hermes desk alerts are the live record.
+
+## Bitget, Binance, Bybit: which of YOUR accounts becomes the executor (v4.7.4)
+
+The three venues you already hold were probed from both ends, not from a blog:
+
+| venue | from the GitHub runner (US egress) | from your Mac (MY residential) | what that decides |
+|---|---|---|---|
+| Bitget | **200** on market data, `40006 Invalid ACCESS_KEY` on private (path live, key absent) | **200** | built and measured here: the only lane whose payload can be checked before money moves |
+| Binance | `451` — *"Service unavailable from a restricted location"* | **200** | an adapter written here could never be executed once; it needs the Mac as its test rig first |
+| Bybit | CloudFront `403` for this country | **200** | same |
+| OKX | 200 | 200 | what has been running since 4.7.x |
+
+So Bitget is the lane that went in: `execution: "bitget"` on the same engine, the same guards, its own
+book folder, keys in `bitget.env`. On your Mac the fee schedule was re-read from the venue and every one
+of the ten symbols publishes 0.02 %/0.06 % with `symbolStatus=normal`, min 5 USDT notional, size steps
+from `volumePlace` — `python3 broker_bitget.py fees` prints that table again, live, and tells you whether
+the current `live_max_fee_r` still passes. The margin is genuinely thin (0.24 R against a 0.25 R cap),
+which is stated in `config.venue_notes` rather than hidden: if your account's tier turns out worse, the
+honest fix is `stop_floor_frac: 0.006`, not a bigger cap.
+
+Bybit and Binance are deliberately NOT shipped as adapters. Writing two more money paths from a
+sandbox that both venues refuse to talk to would produce code that has never executed a single
+line — exactly the "toy" failure this project has already been called out for. The probe above is the
+seed: run it on your Mac, and the moment you want one, the same 400 lines of `broker_bitget.py` get
+translated against a host that answers.
 
 ## Going live on Coinbase (the lane he asked about — built, rehearsed, not the default)
 

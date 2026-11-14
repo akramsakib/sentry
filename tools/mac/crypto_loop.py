@@ -22,12 +22,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 sys.path.insert(0, HERE)
 
-# Two lanes, two key files, loaded in this order. okx.env holds OKX_API_KEY/SECRET/PASSPHRASE;
-# coinbase.env holds COINBASE_API_KEY + either COINBASE_API_SECRET+COINBASE_API_PASSPHRASE
-# (Exchange, institutional host) or nothing if the retail CDP private key sits in ./coinbase.pem.
-# Whichever file is EMPTY is the lane that stays on the shadow ledger — so an OKX-armed folder with
-# no coinbase.env simply ignores the Coinbase branch, and vice versa. chmod 600 on all three.
-for ENVF in (os.path.join(HERE, "okx.env"), os.path.join(HERE, "coinbase.env")):
+# One key file per lane, all loaded, alphabetically: okx.env (OKX_API_KEY/SECRET/PASSPHRASE),
+# coinbase.env (COINBASE_API_KEY + either COINBASE_API_SECRET+COINBASE_API_PASSPHRASE for the
+# Exchange host, or nothing if the retail CDP private key sits in ./coinbase.pem), and
+# bitget.env (BITGET_API_KEY/SECRET/PASSPHRASE).
+# Whichever file is EMPTY is the lane that stays on the shadow ledger: a folder armed for Bitget
+# simply ignores the OKX branch. One armed book per account, always. chmod 600 on every env file.
+for _n in sorted(f for f in os.listdir(HERE) if f.endswith(".env")):      # okx/coinbase/bitget…
+    ENVF = os.path.join(HERE, _n)
     if not os.path.exists(ENVF):
         continue
     for _line in open(ENVF):
