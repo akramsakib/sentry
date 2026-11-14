@@ -191,3 +191,6 @@
 - **11-14 23:18 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99807.06 · 6s · venue fees $62.57 to date @ 0.02/0.05%
 - **11-14 23:22 UTC** CANDIDATE(score 3/5) — DOGE/USD S18-rsi2-short sell_limit 0.05652 sl0.05790025 tp0.05479469 — paper-graded (spot can't short)
 - **11-14 23:22 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99819.98 · 10s · venue fees $62.57 to date @ 0.02/0.05%
+- **11-14 23:33 UTC** NOTE — DOGE/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-14 23:33 UTC** NOTE — ADA/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-14 23:33 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99800.03 · 10s · venue fees $62.57 to date @ 0.02/0.05%
