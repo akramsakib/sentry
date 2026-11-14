@@ -197,3 +197,6 @@
 - **11-14 23:38 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99785.97 · 10s · venue fees $62.57 to date @ 0.02/0.05%
 - **11-14 23:44 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99797.08 · 6s · venue fees $62.57 to date @ 0.02/0.05%
 - **11-14 23:49 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99827.22 · 6s · venue fees $62.57 to date @ 0.02/0.05%
+- **11-14 23:54 UTC** CANDIDATE(score 3/5) — LTC/USD S18-rsi2-short sell_limit 44.17 sl45.10018427 tp43.00726966 — paper-graded (spot can't short)
+- **11-14 23:54 UTC** CANDIDATE(score 3/5) — AVAX/USD S18-rsi2-short sell_limit 7.078 sl7.25586928 tp6.85566339 — paper-graded (spot can't short)
+- **11-14 23:54 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99839.54 · 9s · venue fees $62.57 to date @ 0.02/0.05%
