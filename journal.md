@@ -172,3 +172,17 @@
 - **11-14 22:30 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99832.24 · 6s · venue fees $62.57 to date @ 0.02/0.05%
 - **11-14 22:40 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99809.54 · 9s · venue fees $62.57 to date @ 0.02/0.05%
 - **11-14 22:43 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99815.42 · 10s · venue fees $62.57 to date @ 0.02/0.05%
+- **11-14 23:01 UTC** SKIP — BTC/USD S16-inside-long: already have pending/position in play
+- **11-14 23:01 UTC** SKIP — BTC/USD S16-inside-short: already have pending/position in play
+- **11-14 23:01 UTC** NOTE — DOGE/USD S16-inside-long: soft cap on open items (6) — advisory, skipping
+- **11-14 23:01 UTC** CANDIDATE(score 4/5) — DOGE/USD S16-inside-short sell_stop 0.05553498 sl0.05707755 tp0.05392469 — paper-graded (spot can't short)
+- **11-14 23:01 UTC** NOTE — ADA/USD S16-inside-long: soft cap on open items (6) — advisory, skipping
+- **11-14 23:01 UTC** CANDIDATE(score 4/5) — ADA/USD S16-inside-short sell_stop 0.14349847 sl0.14765383 tp0.13927704 — paper-graded (spot can't short)
+- **11-14 23:01 UTC** NOTE — ADA/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-14 23:01 UTC** NOTE — BCH/USD S16-inside-long: soft cap on open items (6) — advisory, skipping
+- **11-14 23:01 UTC** CANDIDATE(score 4/5) — BCH/USD S16-inside-short sell_stop 197.34210459 sl202.20973854 tp191.91156878 — paper-graded (spot can't short)
+- **11-14 23:01 UTC** NOTE — BCH/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-14 23:01 UTC** NOTE — AVAX/USD S16-inside-long: soft cap on open items (6) — advisory, skipping
+- **11-14 23:01 UTC** CANDIDATE(score 4/5) — AVAX/USD S16-inside-short sell_stop 6.95317756 sl7.1510561 tp6.74566339 — paper-graded (spot can't short)
+- **11-14 23:01 UTC** NOTE — AVAX/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-14 23:01 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99807.08 · 10s · venue fees $62.57 to date @ 0.02/0.05%
