@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-14 22:22 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $95,406.85 · equity $99,835.59
+**2026-11-14 22:24 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $95,406.85 · equity $99,846.02
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$62.57 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,11 +10,11 @@ _Venue cost: 0.02 % maker / 0.05 % taker per side · **$62.57 paid on this book 
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1759.57 | +4.67% | 133 min |
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1759.57 | +4.67% | 133 min |
-| LINK/USD | buy_stop | 8.8743714 | 274.274 | $2,434 | $50.00 | 8.718 | +1.79% | 0 min |
-| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 69.63 | +4.25% | 133 min |
-| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9056 | +5.65% | 133 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1759.57 | +4.67% | 135 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1759.57 | +4.67% | 135 min |
+| LINK/USD | buy_stop | 8.8743714 | 274.274 | $2,434 | $50.00 | 8.718 | +1.79% | 2 min |
+| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 69.63 | +4.25% | 135 min |
+| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9056 | +5.65% | 135 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -22,7 +22,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BTC/USD | 0.069084 | 63278.87 | 64106.44 | $57.17 | 63069.244 | 66371.462 | +1.14R |
+| BTC/USD | 0.069084 | 63278.87 | 64257.46 | $67.60 | 63069.244 | 66371.462 | +1.35R |
 
 ## Last 12 signals (77 ever logged)
 
@@ -47,7 +47,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 1 new order(s), 10 symbols scanned
+## This cycle: 0 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
