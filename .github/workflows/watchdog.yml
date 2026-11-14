@@ -21,7 +21,7 @@ jobs:
           python-version: "3.12"
       - name: journal freshness check
         env:
-          GITHUB_REPOSITORY: ${ github.repository }
+          GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SENTRY_STALE_HOURS: "3"
         run: python watchdog.py
