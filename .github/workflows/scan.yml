@@ -34,8 +34,7 @@ jobs:
       OKX_API_SECRET: ${{ secrets.OKX_API_SECRET }}
       OKX_API_PASSPHRASE: ${{ secrets.OKX_API_PASSPHRASE }}
       OKX_SIM: ${{ vars.OKX_SIM }}               # '1' = OKX simulated trading: real engine, fake money
-      OKX_INSTTYPE: ${{ vars.OKX_INSTTYPE }}      # 'swap' (default) | 'spot'
-      OKX_SLACK: ${{ vars.OKX_SLACK }}
+      OKX_INSTTYPE: ${{ vars.OKX_INSTTYPE }}      # 'swap' (default) | 'spot' 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

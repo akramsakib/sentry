@@ -57,7 +57,7 @@ ATTACH_TP_SL = True
 UA = "sentry-bot/4.5"
 BAR = {"1Minute": "1m", "5Minute": "5m", "15Minute": "15m", "1Hour": "1H", "4Hour": "4H",
        "6Hour": "6H", "1Day": "1D"}
-SLACK = float(os.environ.get("OKX_SLACK", "0.0015"))    # limit clearance past a trigger
+SLACK = float(os.environ.get("OKX_SLACK") or "0.0015")   # limit clearance past a trigger
 
 
 class BrokerError(Exception):

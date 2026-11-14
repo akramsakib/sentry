@@ -15,9 +15,9 @@ import sys
 import urllib.request
 from datetime import datetime, timezone
 
-REPO = os.environ.get("GITHUB_REPOSITORY", "akramsakib/sentry")
+REPO = os.environ.get("GITHUB_REPOSITORY") or "akramsakib/sentry"
 PATH = "journal.md"
-STALE_HOURS = float(os.environ.get("SENTRY_STALE_HOURS", "3"))
+STALE_HOURS = float(os.environ.get("SENTRY_STALE_HOURS") or "3")
 LAST_RE = re.compile(r"\*\*(\d{2})-(\d{2}) (\d{2}):(\d{2}) UTC\*\*")
 
 

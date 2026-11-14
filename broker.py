@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 DATA = "https://data.alpaca.markets"
-TRADE = os.environ.get("ALPACA_BASE", "https://paper-api.alpaca.markets")
+TRADE = os.environ.get("ALPACA_BASE") or "https://paper-api.alpaca.markets"
 
 
 class BrokerError(Exception):

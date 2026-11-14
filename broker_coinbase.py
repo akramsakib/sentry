@@ -66,7 +66,7 @@ DRY = os.environ.get("COINBASE_DRY") == "1"      # builds payloads, reads nothin
 UA = "sentry-bot/4.3"
 GRAN = {"1Minute": 60, "5Minute": 300, "15Minute": 900, "1Hour": 3600, "6Hour": 21600, "1Day": 86400}
 # how far outside the trigger the limit sits once a stop fires (0.15% covers normal tick-through)
-SLACK = float(os.environ.get("COINBASE_SLACK", "0.0015"))
+SLACK = float(os.environ.get("COINBASE_SLACK") or "0.0015")
 _OID_NS = uuid.UUID("6f1a2c34-0000-4000-8000-7c9d0e1f2a3b")   # fixed namespace: never change it
 
 

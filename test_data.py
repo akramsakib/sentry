@@ -502,6 +502,17 @@ try:
 finally:
     cb.ADV, cb.DRY, cb._meta = False, _dry_saved2, _meta_saved2
 
+# A CI variable that is not set arrives as the EMPTY STRING, not as missing, so `getenv(X, default)`
+# hands float()/urllib a "" and the run dies in import. Pinned because this exact thing broke run #34.
+_cfg_files = ("broker_okx.py", "broker_coinbase.py", "watchdog.py", "broker.py")
+_here = os.path.dirname(os.path.abspath(__file__))
+# an EMPTY default is fine (nothing chokes on ""); a non-empty one hides the case where "" arrives.
+_bad = [f for f in _cfg_files if _re.search(r'os\.environ\.get\("[A-Z_]+", "[^"]',
+              open(os.path.join(_here, f)).read())]
+check("env reads treat '' as unset (a CI variable with no value is empty, not absent)", not _bad, str(_bad))
+check("  ...and the workflow passes no bare tuning knobs as Actions variables",
+      "OKX_SLACK" not in open(os.path.join(_here, ".github", "workflows", "scan.yml")).read())
+
 # ---------- 18: the OKX venue (perps = the only schedule this playbook can pay) ----------
 import broker_okx as ok
 
