@@ -75,3 +75,19 @@
 - **11-14 15:47 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
 - **11-14 15:49 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 2 pendings · 1 positions equity $99972.82 · 7s
 - **11-14 15:49 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
+- **11-14 16:09 UTC** CLOSED AVAX/USD — graded loss (-0.61R net of 1.22R in venue fees) from exit 7.687
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — BTC/USD S11-dc20-short sell_stop 66308.56491226 sl66732.45052644 tp65036.90806973 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — BTC/USD S11-dc55-short sell_stop 66308.56491226 sl66732.45052644 tp65036.90806973 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** ORDER SENT — BTC/USD C-M15-bull-engulfing (score 3/5) stop buy_stop qty 0.089044 @ 65759.92302794 sl64917.64243016 tp67023.34392461 · risk $75.00 · fees ~$69.82 (0.93R)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — ETH/USD S11-dc20-short sell_stop 1872.79899228 sl1888.20604634 tp1826.57783008 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — ETH/USD S11-dc55-short sell_stop 1872.79899228 sl1888.20604634 tp1826.57783008 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — DOGE/USD S11-dc20-short sell_stop 0.06193122 sl0.06248271 tp0.06027674 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — DOGE/USD S11-dc55-short sell_stop 0.06193122 sl0.06248271 tp0.06027674 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — ADA/USD C-H1-three-crows sell_stop 0.15671015 sl0.16126464 tp0.14987841 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** ORDER SENT — ADA/USD C-M15-hammer/takuri (score 3/5) stop buy_stop qty 32025.962380 @ 0.15745624 sl0.15511439 tp0.16096902 · risk $75.00 · fees ~$60.06 (0.80R)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — LINK/USD S11-dc20-short sell_stop 9.47836121 sl9.56683272 tp9.2129467 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — LINK/USD S11-dc55-short sell_stop 9.47836121 sl9.56683272 tp9.2129467 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-three-crows sell_stop 46.09907636 sl47.60230911 tp43.84422723 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** CANDIDATE(score 4/5) — AVAX/USD C-H1-three-crows sell_stop 7.59889137 sl7.95077157 tp7.07107107 — paper-graded (spot can't short)
+- **11-14 16:09 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 2 new · 4 pendings · 0 positions equity $99780.60 · 2s · venue fees $60.38 to date @ 0.40/0.60%
+- **11-14 16:09 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
