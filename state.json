@@ -99,7 +99,8 @@
   "FIRE|AVAX/USD|S16-inside-long|2026-11-14",
   "FIRE|AVAX/USD|S16-inside-short|2026-11-14",
   "FIRE|AVAX/USD|S23-spring-long|2026-11-14",
-  "FIRE|ADA/USD|S18-rsi2-short|2026-11-14"
+  "FIRE|ADA/USD|S18-rsi2-short|2026-11-14",
+  "FIRE|DOGE/USD|S18-rsi2-short|2026-11-14"
  ],
  "open_cids": {
   "sentryETHUSD1794687006124n7": {
@@ -174,11 +175,11 @@
    "skill": "S18-ma-revert-long",
    "be": 63278.87,
    "sent_sl": 63278.87,
-   "last_price": 63693.47
+   "last_price": 63880.6
   }
  },
  "cid_seq": 12,
- "last_cycle": 1794698326.7903242,
+ "last_cycle": 1794698573.6826801,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
