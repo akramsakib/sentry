@@ -13,6 +13,8 @@ import json
 import os
 import sys
 import time
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -37,10 +39,15 @@ def now():
     return datetime.now(timezone.utc)
 
 
+JOURNAL_LINES = []
+TL_LINES = []
+
+
 def journal(line):
     stamp = now().strftime("%m-%d %H:%M UTC")
     with open(JOURNAL_F, "a") as f:
         f.write(f"- **{stamp}** {line}\n")
+    JOURNAL_LINES.append(f"- **{stamp}** {line}")
     print(f"[{stamp}] {line}", flush=True)
 
 
@@ -74,6 +81,7 @@ def tl_log(rec):
     rec["ts"] = now().strftime("%Y-%m-%d %H:%M")
     with open(TL_F, "a") as f:
         f.write(json.dumps(rec) + "\n")
+    TL_LINES.append(json.dumps(rec))
 
 
 def tl_rows():
@@ -286,6 +294,59 @@ def tl_update(sym, res, last, r_mult):
             f.write(json.dumps(row) + "\n")
 
 
+def push_memory():
+    """Write memory files back via the Contents API — no git rebases, no add/add
+    conflicts. Append-only files get THIS run's lines; state files are last-writer-wins.
+    409 (race) simply re-reads and retries."""
+    import base64
+    tok = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not (tok and repo):
+        return
+    api = f"https://api.github.com/repos/{repo}/contents/"
+    hdr = {"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"}
+
+    def _http(url, req=None):
+        try:
+            with urllib.request.urlopen(req or urllib.request.Request(url, headers=hdr), timeout=20) as r:
+                return json.loads(r.read()), r.status
+        except urllib.error.HTTPError as e:
+            return json.loads(e.read() or b"{}"), e.code
+
+    def push(path, content, append):
+        for _ in range(3):
+            d, code = _http(api + path)
+            if code == 404:
+                sha, base = None, ""
+            elif code == 200:
+                sha, base = d.get("sha"), base64.b64decode(d.get("content", "")).decode()
+            else:
+                print(f"memory push {path}: read got {code}, retrying")
+                continue
+            body = json.dumps({
+                "message": f"cycle {now().strftime('%m-%d %H:%M')} UTC",
+                "content": base64.b64encode((base + content if append else content).encode()).decode(),
+                **({"sha": sha} if sha else {})}).encode()
+            req = urllib.request.Request(api + path, data=body, method="PUT",
+                                         headers={**hdr, "Content-Type": "application/json"})
+            _, code = _http(api + path, req)
+            if code in (200, 201):
+                print(f"memory push {path}: ok")
+                return True
+            print(f"memory push {path}: {code}, retrying")
+        print(f"memory push {path}: FAILED after retries")
+        return False
+
+    if JOURNAL_LINES:
+        push("journal.md", "\n".join(JOURNAL_LINES) + "\n", True)
+    if TL_LINES:
+        push("trades_log.jsonl", "\n".join(TL_LINES) + "\n", True)
+    for f_ in ("state.json", "ledger.json"):
+        p = os.path.join(HERE, f_)
+        if os.path.exists(p):
+            push(f_, open(p).read(), False)
+
+
 if __name__ == "__main__":
     if EXEC_MODE == "alpaca" and not (os.environ.get("ALPACA_KEY_ID") and os.environ.get("ALPACA_SECRET")):
         fail("execution=alpaca but ALPACA_KEY_ID / ALPACA_SECRET missing — refusing to spin silently")
@@ -295,3 +356,4 @@ if __name__ == "__main__":
         raise
     except Exception as e:
         fail(f"cycle crash: {e!r}")
+    push_memory()
