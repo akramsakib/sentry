@@ -764,7 +764,8 @@ def write_status(acct, live, s, rows, tf_map, fired):
     out.append("```")
     out.append("")
     out.append("_On a live venue the exchange is the authority: the orders above are what Sentry "
-               "believes it placed, the Coinbase app's Orders/History tab is what actually exists._")
+               "believes it placed, the venue's own Orders/Positions tab (OKX app or web) is what "
+               "actually exists._")
     txt = "\n".join([l for l in out if l is not None]) + "\n"
     with open(STATUS_F, "w") as f:
         f.write(txt)
