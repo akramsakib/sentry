@@ -24,3 +24,4 @@ jobs:
           ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python run_cycle.py
+# scheduler-resync 2026-11-14T09:55Z
