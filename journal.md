@@ -186,3 +186,4 @@
 - **11-14 23:01 UTC** CANDIDATE(score 4/5) — AVAX/USD S16-inside-short sell_stop 6.95317756 sl7.1510561 tp6.74566339 — paper-graded (spot can't short)
 - **11-14 23:01 UTC** NOTE — AVAX/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
 - **11-14 23:01 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99807.08 · 10s · venue fees $62.57 to date @ 0.02/0.05%
+- **11-14 23:07 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99789.37 · 10s · venue fees $62.57 to date @ 0.02/0.05%
