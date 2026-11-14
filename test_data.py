@@ -981,5 +981,158 @@ else:
     check("empty-wallet probe is shipped", False, _probe24)
 
 
+# ---------- 25: the desk's entries switch + the monitor's read-only contract ----------
+# The ask was "its do trade ... i got dashboard to monitor". Two things had to be true before that was
+# safe to leave running unattended: a switch that pauses ENTRIES without stopping the book (so the
+# graded record the sizer feeds on keeps growing while it is paused, and open positions keep their
+# stops), and a dashboard that cannot touch money even by accident. Both are checked here by calling
+# the shipped functions, not by re-implementing them.
+print("\n== 25: entries switch + monitor")
+_h25 = os.path.dirname(os.path.abspath(__file__))
+_sw = getattr(rc, "entries_switch", None)
+check("run_cycle exposes entries_switch (the pause lives in the code that places orders)",
+      _sw is not None)
+if _sw:
+    import shutil as _sh
+    import tempfile as _tf
+    _dir = _tf.mkdtemp(prefix="switch-")
+    _save, _savef = rc.HERE, (rc.HOLD, rc.HOLD_WHY)
+    _hf = os.path.join(_dir, rc.HOLD_F)
+    try:
+        rc.HERE = _dir
+        check("no switch file anywhere = this release behaves exactly as the last one did",
+              _sw() == (False, "") and os.path.exists(_hf) is False)
+        open(_hf, "w").write(json.dumps({"entries_enabled": False, "why": "sizing up"}))
+        held, why = _sw()
+        check("entries_enabled=false -> held, and the reason travels into the journal line",
+              held is True and "sizing up" in why, f"{held}, {why!r}")
+        open(_hf, "w").write(json.dumps({"entries_enabled": True}))
+        check("true is the same as absent: a switch, not a second gate the book has to satisfy",
+              _sw() == (False, ""))
+        open(_hf, "w").write('{"entries_enabled": tru')       # half an edit, the realistic accident
+        held, why = _sw()
+        check("an UNREADABLE switch file holds entries (fail-safe, never fail-open)",
+              held is True and "unreadable" in why.lower(), f"{held}, {why!r}")
+        # two books under one desk root: the shared file pauses both; a book's own file wins for it
+        _root25 = _tf.mkdtemp(prefix="desk-")
+        _book25 = os.path.join(_root25, "crypto-bitget")
+        os.makedirs(_book25)
+        rc.HERE = _book25
+        open(os.path.join(_root25, rc.HOLD_F), "w").write(
+            json.dumps({"entries_enabled": False, "why": "desk pause"}))
+        held, why = _sw()
+        check("the desk-root switch pauses a book that has no switch of its own",
+              held is True and "desk pause" in why, f"{held}, {why!r}")
+        open(os.path.join(_book25, rc.HOLD_F), "w").write(json.dumps({"entries_enabled": True}))
+        check("...and a book's own switch overrides it (resume ONE book without touching the others)",
+              _sw() == (False, ""))
+        os.remove(os.path.join(_book25, rc.HOLD_F))
+        open(os.path.join(_book25, rc.HOLD_F), "w").write(
+            json.dumps({"entries_enabled": False, "why": "this book only"}))
+        held, why = _sw()
+        check("a local pause names itself, so the journal never blames the desk for it",
+              held is True and why.startswith("this book only") and "desk pause" not in why, why)
+        _sh.rmtree(_root25, ignore_errors=True)
+    finally:
+        rc.HERE, (rc.HOLD, rc.HOLD_WHY) = _save, _savef
+        _sh.rmtree(_dir, ignore_errors=True)
+_rc25 = open(os.path.join(_h25, "run_cycle.py")).read()
+_body25 = _rc25.split("def run():", 1)[-1]
+_i_fee, _i_held = _body25.find("fee_note = "), _body25.find("if held:")
+_i_cid = _body25.find('s["cid_seq"] = s.get("cid_seq", 0) + 1')
+_i_loop = _body25.find("for sym in (syms if allow_new else [])")
+# NOT the first broker.place_order in run(): exits are orders too, and a hold must not
+# touch them. The ENTRY send is the call that carries this cycle's freshly minted cid.
+_i_send = _body25.find('tif="gtc", cid=cid')
+check("run() re-reads the switch every cycle, so pausing needs no restart",
+      "held, held_why = entries_switch()" in _body25[:400])
+check("the hold applies AFTER sizing and the fee guard (a paused cycle measures the same trade)",
+      0 <= _i_fee < _i_held, f"fee_note@{_i_fee} held@{_i_held}")
+check("...and BEFORE a cid is minted and before the ENTRY order is sent",
+      0 <= _i_held < _i_cid and 0 <= _i_held < _i_send,
+      f"held@{_i_held} cid@{_i_cid} entry-send@{_i_send}")
+check("...and INSIDE the candidate loop, so every signal is still journalled while paused",
+      0 <= _i_loop < _i_held, f"loop@{_i_loop} held@{_i_held}")
+_i_exit = _body25.find("otype=\"market\")")
+check("the pause cannot reach the exit path: position management runs BEFORE the scan loop",
+      0 <= _i_exit < _i_loop < _i_held, f"exit@{_i_exit} loop@{_i_loop} held@{_i_held}")
+check("a held candidate is journalled as HELD and says nothing was sent",
+      'journal(f"HELD —' in _body25 and "nothing sent" in _body25)
+check("a held candidate is logged fired=False (recorded, never counted as a live fill)",
+      '"note": "held: entries off"' in _body25)
+_lg25 = _rc25.split("def live_gate", 1)[1].split("\n\ndef ", 1)[0]
+check("the switch is NOT inside live_gate, so a pause never reads as a gate refusal on the dashboard",
+      "if held:" not in _lg25 and "entries_switch" not in _lg25, _lg25[:80])
+_m25p, _b25p = os.path.join(_h25, "tools/mac/monitor.py"), os.path.join(_h25, "tools/mac/book_status.py")
+_pl25 = os.path.join(_h25, "tools/mac/com.hermes.sentry.monitor.plist")
+_skip25 = [q for q in (_m25p, _b25p, _pl25, os.path.join(_h25, "tools/mac/crypto_loop.py"),
+             os.path.join(_h25, "tools/checks/check_held_entries.py")) if not os.path.exists(q)]
+if _skip25:
+    print(f"  [skipped here: {len(_skip25)} tools/ files] — this folder is a deployed book, "
+          f"so only the run_cycle half of \u00a725 can be checked: {[os.path.basename(q) for q in _skip25]}")
+    _have25 = False
+else:
+    _have25 = True
+    for _nm, _pp in (("monitor", _m25p), ("book_status", _b25p), ("monitor launchd job", _pl25)):
+        check(f"{_nm} is shipped in the release", os.path.exists(_pp), _pp if not os.path.exists(_pp) else "")
+    _m25 = open(_m25p).read() if os.path.exists(_m25p) else ""
+    check("the monitor opens NO network, NO subprocess, NO terminal: nothing it runs can reach money",
+          bool(_m25) and not any(k in _m25 for k in ("urllib", "requests", "socket", "subprocess",
+                                                     "http.client", "22346", "Bearer", "place_order")),
+          "clean" if _m25 else "monitor.py not in this folder")
+    _w25 = [l.strip() for l in _m25.splitlines() if "open(" in l and '"w"' in l]
+    check("...and its ONLY writes are the two pages (nothing else is opened for writing at all)",
+          bool(_m25) and all(w in _m25 for w in ("TRADING.html", "TRADING.md"))
+          and len(_w25) == 2 and all(l.startswith("with open(tmp") for l in _w25)
+          and 'tmp = MD_F + ".tmp"' in _m25 and 'tmp = HTML_F + ".tmp"' in _m25
+          and "os.replace(" in _m25, " | ".join(_w25))
+    check("...and no book folder path appears in a write, only in a read",
+          "books" not in "".join(_w25), "".join(_w25))
+    check("the page refreshes itself, so it is a dashboard and not a screenshot",
+          "http-equiv='refresh'" in _m25 and "REFRESH_S = 60" in _m25)
+    check("the monitor shows what a book is WAITING on, not just what it did",
+          "blocked_on" in _m25 and "waiting on" in _m25)
+    _b25 = open(_b25p).read() if os.path.exists(_b25p) else ""
+    check("book_status publishes with tmp + os.replace (a reader never sees a half-written file)",
+          'dst + ".tmp"' in _b25 and "os.replace(tmp, dst)" in _b25)
+    _pub25 = _b25.split("def publish", 1)[-1]
+    check("...and a failed publish is swallowed, journalled softly, and returns None",
+          "except Exception" in _pub25[:800] and "return None" in _pub25
+          and "publish skipped" in _pub25, _pub25[:70].replace("\n", " "))
+    check("every figure it publishes is NaN-safe (a NaN on a dashboard reads as a broken bot)",
+          "f == f else dflt" in _b25)
+    check("positions carry R-in-flight, R-to-stop and notional, not just a price",
+          all(k in _b25 for k in ("r_to_stop", "r_live", "notional")))
+    check("the venue's real equity is what gets published, and the fee cap verdict is computed",
+          "drag" in _b25 and "cap_r" in _b25 and "OVER CAP" in _b25)
+    _loop25p = os.path.join(_h25, "tools/mac/crypto_loop.py")
+    _loop25 = open(_loop25p).read() if os.path.exists(_loop25p) else ""
+    check("crypto_loop publishes status at the end of every cycle",
+          chr(10) + "    publish()" in _loop25 and "def publish():" in _loop25)
+    check("crypto books mirror urgent lines into the DESK outbox the forex build already writes",
+          "DESK_OUTBOX" in _loop25 and "alerts.outbox" in _loop25)
+    check("...so the shared file stays the desk's format: stamp | [CRYPTO/book] message",
+          "[CRYPTO/" in _loop25)
+
+_probe25 = os.path.join(_h25, "tools/checks/check_held_entries.py")
+if _have25 and os.path.exists(_probe25):
+    import subprocess as _sp25
+    _r25 = _sp25.run([sys.executable, _probe25], capture_output=True, text=True, timeout=900,
+                     cwd=_h25, env=dict(os.environ, CHECK_BOOK_DIR=_h25))
+    _o25 = (_r25.stdout or "") + (_r25.stderr or "")
+    check("THE PROBE: switch off -> zero orders reach the venue, HELD lines instead",
+          _o25.count("RESULT: PASS") >= 2 and "place_order calls: 0" in _o25,
+          " ".join(_o25.split())[-170:])
+    _cnt25 = [int(x) for x in _re.findall(r"place_order calls: (\d+)", _o25)]
+    check("...and the CONTROL passes (switch absent, then explicitly on) DO reach the venue",
+          len(_cnt25) >= 3 and _cnt25[0] >= 1 and _cnt25[2] >= 1 and _cnt25[1] == 0,
+          f"absent={_cnt25[:1]} held={_cnt25[1:2]} on={_cnt25[2:3]} — a control that placed nothing "
+          f"would make the zero meaningless")
+elif not _have25:
+    pass
+else:
+    check("held-entries probe is shipped", False, _probe25)
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

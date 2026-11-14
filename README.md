@@ -428,3 +428,11 @@ runs would keep a runner occupied 24/7, which is exactly what GitHub's abuse det
 | broker renames a symbol | hardcoded dict breaks | live `/asset-trading-platform/PAPER/reference/crypto` lookup |
 | two writers collide | (hit us: `git push` conflict killed a run) | memory via Contents API, re-read + retry on 409 |
 | state lost | Mac-local file | state lives in git history, diffable forever |
+
+## The desk page (`tools/mac/`)
+
+On the Mac, each book publishes `~/hermes_sentry/books/<book>.json` after every cycle and
+`tools/mac/monitor.py` renders all of them — plus the MT5 forex build — into one read-only page,
+`~/hermes_sentry/TRADING.html`. Entries for all three crypto books can be paused with
+`~/hermes_sentry/crypto_desk_mode.json` (`{"entries_enabled": false}`), which stops new entries while
+stops, exits and the graded record keep running. See `tools/mac/README.md`.

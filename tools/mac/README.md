@@ -96,3 +96,44 @@ Differences that matter, because Bitget is not OKX with different letters:
   must mean the same candle. Unknown timeframes raise; there is no silent fallback.
 * **0.24 R** per trade at a 0.5 % stop (0.02/0.06, read live) against a `live_max_fee_r` cap of 0.25 R:
   it passes, by 0.01 R. Check `fees` on your own account before trusting that.
+
+## Watching it, and pausing it
+
+Every cycle the book writes one small file about itself — `~/hermes_sentry/books/<folder>.json` — and
+`monitor.py` (running from `~/hermes_sentry`, kept fresh by `com.hermes.sentry.monitor` every 60 s)
+turns those files plus the forex build's own state into **`~/hermes_sentry/TRADING.html`** (and a
+`.md` twin for a terminal): per book, the venue it is on, whether it is armed or on the shadow ledger,
+what it is waiting on, equity / realized / fees, every open position with **how much R it is carrying
+and how far to its stop**, every resting pending with its stop and target, the fee-versus-cap verdict,
+and the last lines it cares about.
+
+It is a reader, on purpose. It opens no network, no subprocess, no MT5, and writes only its two files,
+so it can neither move money nor break a cycle; if `monitor.py` died, the books keep trading and you
+just read `books/*.json` yourself.
+
+```sh
+/usr/bin/python3 ~/hermes_sentry/monitor.py --print      # the same page, as text, right now
+open ~/hermes_sentry/TRADING.html                        # auto-refreshes every 60 s
+```
+
+Pause **new entries** without stopping a book:
+
+```sh
+echo '{"entries_enabled": false, "why": "sizing up"}' > ~/hermes_sentry/crypto_desk_mode.json
+```
+
+That is the shared switch for all three crypto books (a file of the same name inside one book folder
+pauses just that book, and wins over the shared one). It is re-read every cycle, so no restart is
+needed either way, and it takes the same shape as the forex build's `desk_mode.json` — one habit per
+desk, both plain text.
+
+What a pause does *not* do, and this matters more than what it does: exits, resting stops and TTL
+management keep running (a pause that stranded an open position without its protective legs would be
+a worse trade than the one it prevented), and the book keeps scanning and journalling every candidate
+as `HELD` instead of sending it. So the graded record the sizer scales off keeps growing while paused,
+and the run after you flip it back on is better informed, not colder. A switch file that cannot be
+parsed also holds entries — fail-safe, never fail-open.
+
+Arm or disarm money with the key file, nothing else: `bitget.env` (or `okx.env` / `coinbase.env` +
+`coinbase.pem`), chmod 600, key lines uncommented = armed (`auto_ack_on_key`), re-commented = straight
+back to the shadow ledger on the next cycle.

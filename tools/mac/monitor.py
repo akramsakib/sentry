@@ -1,0 +1,275 @@
+"""One page for the whole desk: every book, live, on your Mac.
+
+Reads the status file each resident book publishes (~/hermes_sentry/books/<book>.json), plus the forex
+build's own state, and renders:
+
+    ~/hermes_sentry/TRADING.html   (self-contained, dark, refreshes every 60 s)
+    ~/hermes_sentry/TRADING.md     (same content, for a terminal / the chat channel)
+
+Read-only by design: it never opens a venue connection, never calls MT5, never writes into a book
+folder. If it died, the books must keep trading — so it is a *reader*, run by its own launchd job, and
+a book's cycle also refreshes it after publishing, which is why the page can be 0–300 s behind a
+cycle but is never the reason a cycle fails.
+
+    python3 monitor.py            # rebuild both files
+    python3 monitor.py --print    # rebuild and dump the markdown to stdout
+"""
+import glob
+import html
+import json
+import os
+import time
+
+ROOT = os.path.expanduser("~/hermes_sentry")
+BOOKS = os.path.join(ROOT, "books")
+HTML_F = os.path.join(ROOT, "TRADING.html")
+MD_F = os.path.join(ROOT, "TRADING.md")
+REFRESH_S = 60
+
+
+def _json(path, default=None):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return default
+
+
+def _tail(path, n=6):
+    try:
+        with open(path, errors="replace") as f:
+            return [l.strip() for l in f.read().splitlines() if l.strip()][-n:]
+    except Exception:
+        return []
+
+
+def load_books():
+    out = []
+    for p in sorted(glob.glob(os.path.join(BOOKS, "*.json"))):
+        d = _json(p)
+        if isinstance(d, dict) and d.get("book"):
+            d["_path"] = p
+            out.append(d)
+    out.sort(key=lambda b: (b.get("book") != "crypto", b.get("book") or ""))
+    return out
+
+
+def fx_section():
+    """The MT5 forex build, read the way it is actually readable: its state + journal, no terminal call."""
+    st = _json(os.path.join(ROOT, "state.json"), {}) or {}
+    orders = st.get("orders") or []
+    desk = _json(os.path.join(ROOT, "desk_mode.json"), {}) or {}
+    pos = st.get("known_positions") or []
+    return {"updated": time.strftime("%Y-%m-%d %H:%M KL", time.gmtime(time.time() + 8 * 3600)),
+            "book": "forex (MT5)", "execution": "MT5 via the terminal bridge",
+            "state": "resident" if orders or pos else "idle",
+            "money": bool(desk.get("entries_enabled")), "n_pendings": len(orders),
+            "n_positions": len(pos), "equity": None, "positions": [], "pendings": [],
+            "grades": {}, "events": [l[-160:] for l in _tail(os.path.join(ROOT, "sentry_journal.md"), 5)],
+            "last_scan": "", "cycle_s": None, "blocked_on": [],
+            "sizing": {"base_risk": 125, "live_max_risk": None}, "cost": {},
+            "fx_only": True}
+
+
+def _money_pill(b):
+    if b.get("fx_only"):
+        return ("LIVE — MT5", "live" if b.get("money") else "hold")
+    if b.get("money"):
+        return ("LIVE — real orders", "live")
+    if b.get("state") == "shadow":
+        return ("SHADOW — booked, not sent", "shadow")
+    return (str(b.get("state") or "?"), "shadow")
+
+
+def _fmt(v, dp=2, money=False):
+    if v is None or v == "":
+        return "—"
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return str(v)
+    s = f"{f:,.{dp}f}"
+    return ("$" + s) if money else s
+
+
+def to_markdown(books, fx, built):
+    L = [f"# Sentry desk — {built}", "",
+         f"Refreshed every {REFRESH_S}s by `com.hermes.sentry.monitor`. Read-only over the books' own files.", ""]
+    for b in list(books) + [fx]:
+        if not b:
+            continue
+        pill, _ = _money_pill(b)
+        L.append(f"## {b['book']} — {pill}")
+        L.append("")
+        g = b.get("grades") or {}
+        cost = b.get("cost") or {}
+        sz = b.get("sizing") or {}
+        L.append(f"- venue `{b.get('execution')}` · state {b.get('state')} · updated {b.get('updated')}"
+                 + (f" · cycle {b['cycle_s']}s" if b.get("cycle_s") else ""))
+        if b.get("equity") is not None:
+            L.append(f"- equity **${_fmt(b.get('equity'))}** · cash ${_fmt(b.get('cash'))} · "
+                     f"realized ${_fmt(b.get('realized'))} · fees ${_fmt(b.get('fees_paid'))} · "
+                     f"exposure ${_fmt(b.get('exposure'))}")
+        L.append(f"- open **{b.get('n_positions', len(b.get('positions') or []))}** · "
+                 f"pendings **{b.get('n_pendings', len(b.get('pendings') or []))}** · risk on pendings "
+                 f"${_fmt(b.get('at_risk'))} · per-trade ${_fmt(sz.get('base_risk'), 0)}")
+        if g:
+            L.append(f"- own record: {g.get('graded', 0)} graded "
+                     f"({g.get('wins', 0)}W/{g.get('losses', 0)}L/{g.get('scratch', 0)}S) · "
+                     f"net {g.get('net_r')}R · sizing reads {'this book' if g.get('graded') else 'the neutral prior (0 graded so far)'}")
+        if cost.get("drag_r") is not None:
+            L.append(f"- venue cost {cost.get('drag_r')}R/trade vs cap {cost.get('cap_r')}R → "
+                     f"{cost.get('verdict')}")
+        if b.get("blocked_on"):
+            L.append("- **waiting on:** " + "; ".join(str(x) for x in b["blocked_on"]))
+        poss = b.get("positions") or []
+        if poss:
+            L += ["", "| position | side | qty | entry | last | R in flight | to stop | $ to stop | PnL |",
+                  "|---|---|---|---|---|---|---|---|---|"]
+            for p in poss:
+                L.append(f"| {p['sym']} {p.get('skill','')} | {p['side']} | {_fmt(p['qty'], 6)} | "
+                         f"{_fmt(p['entry'], 6)} | {_fmt(p['last'], 6)} | **{p['r_live']}R** | "
+                         f"{p['r_to_stop']}R | ${_fmt(abs(p['pnl']) / max(abs(p['r_live']), 0.001))} | "
+                         f"{_fmt(p['pnl'], 2, True)} |")
+        pens = b.get("pendings") or []
+        if pens:
+            L += ["", "| pending | type | entry | stop | target | score | risk | notional |",
+                  "|---|---|---|---|---|---|---|---|"]
+            for p in pens:
+                L.append(f"| {p['sym']} {p.get('skill','')} | {p['type']} | {_fmt(p['entry'], 6)} | "
+                         f"{_fmt(p['sl'], 6)} | {_fmt(p['tp'], 6)} | {p.get('score')} | "
+                         f"${_fmt(p.get('risk'), 0)} | ${_fmt(p.get('notional'), 0)} |")
+        ev = b.get("events") or []
+        if ev:
+            L += ["", "```"] + [e[:150] for e in ev] + ["```"]
+        L.append("")
+    return "\n".join(L).rstrip() + "\n"
+
+
+CSS = """
+:root{--bg:#0b0e13;--card:#121722;--ink:#dfe6f2;--dim:#8b98ae;--live:#ff5c5c;--shadow:#f2b134;--ok:#3ecf8e;--line:#1e2634}
+*{box-sizing:border-box}body{margin:0;padding:22px;background:var(--bg);color:var(--ink);
+font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}h1{font-size:17px;margin:0 0 2px;letter-spacing:.04em}
+h2{font-size:14px;margin:0 0 10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--dim);font-size:12px;margin-bottom:18px}
+.wrap{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto}
+.pill{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid;font-weight:700;letter-spacing:.05em}
+.pill.live{color:var(--live);border-color:var(--live)}.pill.shadow{color:var(--shadow);border-color:var(--shadow)}
+.kv{color:var(--dim);font-size:12px;margin:0 0 8px}.kv b{color:var(--ink);font-weight:600}
+.big{font-size:19px;font-weight:700;margin:2px 0 8px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+th{color:var(--dim);text-align:left;font-weight:500;border-bottom:1px solid var(--line);padding:3px 6px}
+td{padding:3px 6px;border-bottom:1px solid #171d29;white-space:nowrap}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--ok)}.neg{color:var(--live)}.warn{color:var(--shadow)}
+ul{margin:6px 0;padding-left:16px}li{font-size:12px;color:var(--dim);margin:2px 0}
+.foot{color:var(--dim);font-size:11px;margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+code{background:#0e131c;padding:1px 4px;border-radius:4px}
+"""
+
+
+def to_html(books, fx, built, md_path):
+    esc = lambda s: html.escape(str(s if s is not None else ""))
+
+    def card(b):
+        pill, cls = _money_pill(b)
+        g, cost, sz = b.get("grades") or {}, b.get("cost") or {}, b.get("sizing") or {}
+        h = [f'<div class="card"><h2>{esc(b["book"])} '
+             f'<span class="pill {cls}">{esc(pill)}</span>'
+             f'<span style="color:var(--dim);font-weight:400;font-size:11px">via <code>{esc(b.get("execution"))}</code></span></h2>']
+        h.append(f'<p class="kv">updated <b>{esc(b.get("updated"))}</b>'
+                 + (f' · cycle <b>{esc(b.get("cycle_s"))}s</b>' if b.get("cycle_s") else "")
+                 + f' · open <b>{esc(b.get("n_positions", len(b.get("positions") or [])))}</b>'
+                   f' · pendings <b>{esc(b.get("n_pendings", len(b.get("pendings") or [])))}</b></p>')
+        if b.get("equity") is not None:
+            h.append(f'<p class="big">${esc(_fmt(b.get("equity")))} <span style="font-size:11px;'
+                     f'color:var(--dim);font-weight:400">equity · cash ${esc(_fmt(b.get("cash")))} · '
+                     f'realized ${esc(_fmt(b.get("realized")))} · fees ${esc(_fmt(b.get("fees_paid")))}</span></p>')
+        if g:
+            h.append(f'<p class="kv">own record <b>{esc(g.get("graded", 0))} graded</b> '
+                     f'({esc(g.get("wins", 0))}W / {esc(g.get("losses", 0))}L / {esc(g.get("scratch", 0))}S) · '
+                     f'net <b>{esc(g.get("net_r"))}R</b> · sizing from '
+                     f'<b>{"this book" if g.get("graded") else "neutral prior"}</b></p>')
+        if cost.get("drag_r") is not None:
+            v = cost.get("verdict") or ""
+            cls2 = "pos" if v.startswith("inside") else "warn"
+            h.append(f'<p class="kv">cost <b>{esc(cost.get("drag_r"))}R</b>/trade vs cap '
+                     f'<b>{esc(cost.get("cap_r"))}R</b> · <span class="{cls2}">{esc(v)}</span> '
+                     f'(maker {esc(_pct(cost.get("maker")))}/taker {esc(_pct(cost.get("taker")))}) · '
+                     f'stop {esc(_pct(cost.get("stop_frac")))}</p>')
+        if b.get("blocked_on"):
+            h.append('<p class="kv warn">waiting on: ' + esc("; ".join(map(str, b["blocked_on"]))) + "</p>")
+        poss = b.get("positions") or []
+        if poss:
+            h.append("<table><tr><th>pos</th><th>side</th><th class=n>qty</th><th class=n>entry</th>"
+                     "<th class=n>last</th><th class=n>R</th><th class=n>→stop</th><th class=n>PnL</th></tr>")
+            for p in poss:
+                rcls = "pos" if p["r_live"] > 0 else ("neg" if p["r_live"] < 0 else "")
+                h.append(f'<tr><td>{esc(p["sym"])}<br><span style="color:var(--dim)">{esc(p.get("skill"))}</span></td>'
+                         f'<td>{esc(p["side"])}</td><td class=n>{esc(_fmt(p["qty"], 5))}</td>'
+                         f'<td class=n>{esc(_fmt(p["entry"], 5))}</td><td class=n>{esc(_fmt(p["last"], 5))}</td>'
+                         f'<td class=n {rcls}>{esc(p["r_live"])}R</td><td class=n>{esc(p["r_to_stop"])}R</td>'
+                         f'<td class=n>{esc(_fmt(p["pnl"], 0, True))}</td></tr>')
+            h.append("</table>")
+        pens = b.get("pendings") or []
+        if pens:
+            h.append("<table><tr><th>pending</th><th>type</th><th class=n>entry</th><th class=n>stop</th>"
+                     "<th class=n>target</th><th class=n>score</th><th class=n>risk</th></tr>")
+            for p in pens:
+                h.append(f'<tr><td>{esc(p["sym"])}<br><span style="color:var(--dim)">{esc(p.get("skill"))}</span></td>'
+                         f'<td>{esc(p["type"])}</td><td class=n>{esc(_fmt(p["entry"], 5))}</td>'
+                         f'<td class=n>{esc(_fmt(p["sl"], 5))}</td><td class=n>{esc(_fmt(p["tp"], 5))}</td>'
+                         f'<td class=n>{esc(p.get("score"))}/5</td><td class=n>${esc(_fmt(p.get("risk"), 0))}</td></tr>')
+            h.append("</table>")
+        if b.get("last_scan"):
+            h.append(f'<p class="kv">{esc(b["last_scan"])}</p>')
+        ev = b.get("events") or []
+        if ev:
+            h.append("<ul>" + "".join(f"<li>{esc(e[:170])}</li>" for e in ev) + "</ul>")
+        h.append("</div>")
+        return "".join(h)
+
+    return ("<!doctype html><html><head><meta charset='utf-8'>"
+            f"<meta http-equiv='refresh' content='{REFRESH_S}'>"
+            "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+            "<title>Sentry desk</title><style>" + CSS + "</style></head><body>"
+            f"<h1>SENTRY DESK</h1><p class='sub'>built {esc(built)} · auto-refresh {REFRESH_S}s · "
+            f"read-only over the books' own files · markdown twin at <code>{esc(md_path)}</code></p>"
+            "<div class='wrap'>" + "".join(card(x) for x in list(books) + ([fx] if fx else [])) + "</div>"
+            "<p class='foot'>SHADOW = the book scans, sizes and books fills against the venue's real "
+            "prices but sends nothing; it arms itself the moment its key file has a key in it "
+            "(auto_ack_on_key). Nothing here can move money: monitor.py never opens a venue "
+            "connection, never calls the terminal, and never writes into a book folder.</p>"
+            "</body></html>")
+
+
+def _pct(v):
+    try:
+        return f"{100 * float(v):.2f}%"
+    except (TypeError, ValueError):
+        return "—"
+
+
+def build(pr=False):
+    built = time.strftime("%Y-%m-%d %H:%M KL", time.gmtime(time.time() + 8 * 3600))
+    books = load_books()
+    fx = fx_section()
+    md = to_markdown(books, fx, built)
+    tmp = MD_F + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(md)
+    os.replace(tmp, MD_F)
+    tmp = HTML_F + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(to_html(books, fx, built, MD_F))
+    os.replace(tmp, HTML_F)
+    if pr:
+        print(md)
+    else:
+        print(f"monitor: {len(books)} crypto book(s) + forex → {HTML_F} ({os.path.getsize(HTML_F)} B), {MD_F}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(build("--print" in __import__("sys").argv))

@@ -324,6 +324,38 @@ def venue_equity(acct, money):
     return equity, True, ""
 
 
+# --- the desk's own switch (same file shape the MT5 forex build reads) --------------------------------
+# ~/hermes_sentry/crypto_desk_mode.json  ->  {"entries_enabled": false, "why": "..."}
+# Shared by every crypto book, so one edit pauses all three; a file of the same name inside a book
+# folder pauses just that book. Re-read at the top of every cycle, so flipping it takes effect on the
+# next scan without a restart and survives one. Fail-safe direction: a file that cannot be parsed
+# HOLDS entries — "unreadable config, ship money anyway" is not a default worth having.
+HOLD_F = "crypto_desk_mode.json"
+HOLD = False
+HOLD_WHY = ""
+
+
+def entries_switch():
+    """Read the manual entries switch. Sets HOLD/HOLD_WHY; returns them for the caller's journal."""
+    global HOLD, HOLD_WHY
+    for p in (os.path.join(HERE, HOLD_F), os.path.join(os.path.dirname(HERE), HOLD_F)):
+        if not os.path.exists(p):
+            continue
+        try:
+            cfg = json.load(open(p))
+        except Exception as e:                                # noqa: BLE001
+            HOLD, HOLD_WHY = True, f"{os.path.basename(p)} unreadable ({type(e).__name__}) — holding entries"
+            return HOLD, HOLD_WHY
+        if isinstance(cfg, dict) and cfg.get("entries_enabled", True) is False:
+            HOLD = True
+            HOLD_WHY = str(cfg.get("why") or "entries_enabled=false").strip()[:160]
+        else:
+            HOLD, HOLD_WHY = False, ""
+        return HOLD, HOLD_WHY
+    HOLD, HOLD_WHY = False, ""
+    return HOLD, HOLD_WHY
+
+
 def live_gate(rows, s):
     """What must be true before real money moves. Returns (allow_new_entries, why_not).
 
@@ -374,6 +406,7 @@ def live_positions():
 
 def run():
     t0 = time.time()
+    held, held_why = entries_switch()      # manual pause, per cycle, no restart needed
     sizer = core.Sizer(CFG["base_risk"], CFG["min_risk"], CFG["max_risk"])
     s = load_state()
     rows = tl_rows()
@@ -634,6 +667,17 @@ def run():
                         f"Refused, not resized: the stop distance belongs to the checklist.")
                 continue
             fee_note = f" · fees ~${f_usd:.2f} ({f_r:.2f}R)" if f_usd else ""
+            if held:
+                # Everything about the trade has been measured and journalled; only the send is
+                # withheld. That is the point — a pause that stops the scan instead would starve the
+                # graded record the sizer needs, and the book would come back dumber than it left.
+                tl_log({"rid": f"{sym}|{c['skill']}|{c['entry']}", "sym": sym, "skill": c["skill"],
+                        "otype": c["otype"], "entry": entry, "sl": c["sl"], "tp": c["tp"],
+                        "score": c["score"], "risk": risk, "fired": False, "note": "held: entries off"})
+                journal(f"HELD — {sym} {c['skill']} {c['otype']} qty {qty:.6f} @ {entry} sl{c['sl']} "
+                        f"tp{c['tp']} · risk ${risk:.2f}{fee_note} — entries are switched off "
+                        f"({held_why or HOLD_WHY}). Candidate recorded, nothing sent.")
+                continue
             s["cid_seq"] = s.get("cid_seq", 0) + 1
             cid = f"sentry{sym.replace('/', '')}{int(time.time() * 1000)}n{s['cid_seq']}"[:60]
             # breakout entries must ride a real STOP order (a buy-limit above market would

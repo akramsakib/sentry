@@ -13,7 +13,12 @@ lane), chmod 600, and nowhere else: not in this folder's journal, not on GitHub.
 Kill switches: blank the env values (next cycle falls back to shadow, never to half-sent),
 or `launchctl bootout gui/$(id -u)/com.hermes.sentry.crypto` — venue-side TP/SL still protect
 whatever is open.
+
+Every cycle also publishes this book's state to ~/hermes_sentry/books/<folder>.json and mirrors its
+urgent lines into ~/hermes_sentry/alerts.outbox — the SAME file the forex build writes — so one
+monitor (monitor.py → TRADING.html) shows all four books without any of them knowing about each other.
 """
+import json
 import os
 import sys
 import time
@@ -46,6 +51,9 @@ import run_cycle as rc                                        # noqa: E402
 
 JOURNAL = os.path.join(HERE, "journal.md")
 OUTBOX = os.path.join(HERE, "alerts.outbox")
+ROOT = os.path.dirname(HERE)                       # ~/hermes_sentry — where the forex build lives
+DESK_OUTBOX = os.path.join(ROOT, "alerts.outbox")   # the file the desk/monitor already tails
+DESK_MODE = os.path.join(ROOT, "crypto_desk_mode.json")   # the crypto books' shared switch
 CYCLE = int(os.environ.get("CRYPTO_CYCLE", "300"))
 URGENT = ("ORDER SENT", "FILL", "CLOSED", "LIVE ACK", "ALERT", "REAL MONEY", "SCRATCH")
 _last_wake = [0.0]
@@ -57,9 +65,15 @@ def kl_stamp():
 
 def alert(msg, urgent=False):
     """Outbox first (same file shape the forex build writes), then the desk wake-wire."""
+    tag = f"{kl_stamp()} | [CRYPTO/{os.path.basename(HERE)}] {msg}"
     try:
         with open(OUTBOX, "a") as f:
-            f.write(f"{kl_stamp()} | [CRYPTO] {msg}\n")
+            f.write(tag + "\n")
+        # and into the desk's file, which is what the forex build and any monitor already tail.
+        # A book that only wrote its own folder is invisible to everything that existed before it.
+        if os.path.isdir(ROOT):
+            with open(DESK_OUTBOX, "a") as f:
+                f.write(tag + "\n")
     except Exception:
         pass
     if not urgent:
@@ -101,6 +115,44 @@ def run_once():
     try:                                    # rotate instead of growing forever
         if os.path.exists(JOURNAL) and os.path.getsize(JOURNAL) > 512 * 1024:
             os.replace(JOURNAL, JOURNAL + ".1")
+    except Exception:
+        pass
+    publish()
+
+
+def _blocked_on():
+    """What this book is waiting on, in the words the desk needs. Empty list = it is trading."""
+    out = []
+    money = bool(getattr(rc, "MONEY", False))
+    if not money:
+        kmap = {"okx": ("OKX_API_KEY", "okx.env"), "bitget": ("BITGET_API_KEY", "bitget.env"),
+                "coinbase": ("COINBASE_API_KEY", "coinbase.env")}
+        k = kmap.get(getattr(rc, "EXEC_MODE", ""), ("?", "?"))
+        out.append(f"no venue key in ./{k[1]} (shadow ledger until {k[0]} is set)")
+    try:
+        acct = rc.broker.account()
+        eq = float((acct or {}).get("equity") or 0)
+        if eq <= 0:
+            out.append("venue account holds $0 — fund it (the cycle refuses to size against a paper wallet)")
+    except Exception:
+        pass
+    held, why = getattr(rc, "HOLD", False), getattr(rc, "HOLD_WHY", "")
+    if held:
+        out.append(f"entries switched off ({why or 'crypto_desk_mode.json'}) — candidates still journalled")
+    return out
+
+
+def publish():
+    """Book status JSON for the monitor. Never fatal to the cycle: a monitor is not a trading dependency."""
+    try:
+        import book_status
+        keyf = {"okx": "./okx.env", "bitget": "./bitget.env",
+                "coinbase": "./coinbase.env + ./coinbase.pem"}.get(getattr(rc, "EXEC_MODE", ""), "")
+        book_status.publish(HERE, ROOT, {
+            "venue": getattr(rc, "VENUE", getattr(rc, "EXEC_MODE", "?")),
+            "state": "live" if getattr(rc, "MONEY", False) else "shadow",
+            "money": bool(getattr(rc, "MONEY", False)),
+            "key_file": keyf, "cycle_s": CYCLE, "blocked_on": _blocked_on()})
     except Exception:
         pass
 
