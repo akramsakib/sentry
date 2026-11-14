@@ -666,8 +666,8 @@ check("candle one-shot dedupe state survives in the repo state", 'seen_candles' 
 
 # ---------- 21: v4.7.1 — setup is complete; the ONLY remaining human step is the key ----------
 cfg21 = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")))
-check("live ack arms on key presence (no config-commit step left)",
-      cfg21.get("auto_ack_on_key") is True and "auto_ack_on_key" in _RC_SRC20)
+check("auto-ack switch exists and is a real boolean (mirror ships false; the Mac book ships true)",
+      isinstance(cfg21.get("auto_ack_on_key"), bool) and "auto_ack_on_key" in _RC_SRC20)
 check("  ...via the OKX trade key specifically, not any env noise",
       "OKX_KEYED" in _RC_SRC20 and 'os.environ.get("OKX_API_KEY")' in _RC_SRC20)
 check("no graded-outcome wait before the first real order",

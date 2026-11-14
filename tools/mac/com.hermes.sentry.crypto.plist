@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.hermes.sentry.crypto</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/sakib/hermes_sentry/crypto/crypto_loop.py</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/sakib/hermes_sentry/crypto</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>60</integer>
+  <key>EnvironmentVariables</key>
+  <dict><key>CRYPTO_CYCLE</key><string>300</string></dict>
+  <key>StandardOutPath</key><string>/Users/sakib/hermes_sentry/crypto/crypto.out.log</string>
+  <key>StandardErrorPath</key><string>/Users/sakib/hermes_sentry/crypto/crypto.err.log</string>
+</dict>
+</plist>

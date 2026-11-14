@@ -1,4 +1,8 @@
-"""Sentry v4.7.1 (GitHub-native) — one full scan/manage cycle per run.
+"""Sentry v4.7.2 (GitHub-native) — one full scan/manage cycle per run.
+
+v4.7.2: real-money trading moved HOME to the Mac runner (~/hermes_sentry/crypto/) — this repo
+cycle keeps scanning, grading and rehearsing as the mirror, but its shipped config no longer arms
+on key presence (auto_ack_on_key: false) so only ONE book can ever fire on the venue.
 
 v4.7.0 is the parity release: the scan is no longer a subset. sentry_core.py now carries the
 Mac/MT5 build's FULL engine — 22-pattern §12 candle library, all 16 skill families, five

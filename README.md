@@ -60,27 +60,28 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
 - **`"execution": "alpaca"`:** Alpaca paper venue (resting orders on their engine). Needs
   `ALPACA_KEY_ID` + `ALPACA_SECRET`. Same brain, different venue.
 
-## Going live on OKX (the default venue)
+## Going live on OKX (the Mac book trades; this repo is the mirror)
 
-One venue, three secrets, one flag. OKX signs with `key + secret + passphrase`, all three required, and
-`run_cycle.py` refuses to boot if `live_ack` is armed with any of them missing — a half-configured live
-venue is worse than none.
+v4.7.2 moved the armed book to the Mac (`~/hermes_sentry/crypto/`, source in `tools/mac/`). The keys
+live in that folder's `okx.env` and nowhere else. This repo keeps scanning, grading and rehearsing on
+the shadow ledger — its config ships `auto_ack_on_key: false` precisely so two runners can never
+fire the same order. Arming the Mac book is two actions, no GitHub involvement:
 
 1. Mint the API key with **Trade only**. No withdrawal, no transfer. Turn on the withdrawal whitelist
    on the account side.
-2. Settings → Secrets and variables → Actions → `New repository secret`, three entries:
-   `OKX_API_KEY`, `OKX_API_SECRET`, `OKX_API_PASSPHRASE`.
-   **That is the last step.** Since v4.7.1 the workflow already reads all three; the venue check
-   (`python3 broker_okx.py`, read-only account check) runs automatically on the next cycle; and
-   `auto_ack_on_key` means the key's presence is itself the acknowledgement — no config commit, no
-   rehearsal to run, no graded-outcome wait (`min_grade_before_live: 0`). The first live trade lands
-   within one cycle (≤10 min nominal, more on this account's throttled cron — STATUS.md is current
-   after every run either way). If you prefer to rehearse first, `OKX_SIM=1 python3 broker_okx.py
-   rehearse` from any checkout remains available, purely optional.
-3. ~~`config.json`: `"live_ack": true"`~~ — obsolete. Either that commit lands or `auto_ack_on_key`
-   arms on key presence; both paths converge, and `live_ack: true` in the file still works as an
-   explicit override. The `execution=okx, live_ack=true, keys missing` boot-refusal still applies —
-   arming without money-pipes fails red instead of pretending.
+2. Paste the three values into `~/hermes_sentry/crypto/okx.env` on the Mac (uncomment the three lines),
+   then `launchctl kickstart -k gui/$(id -u)/com.hermes.sentry.crypto`. The journal prints
+   `LIVE ACK — granted by key presence`; from the next cycle the orders are real.
+
+To rehearse on fake money first (purely optional): `OKX_SIM=1 python3 broker_okx.py rehearse` from
+the same folder — simulated-trading header, real payload shapes, re-find by `clOrdId`, amend, cancel.
+`OKX_DRY=1 OKX_DRY_EQUITY=20000 python3 run_cycle.py` prints venue-shaped `ORDER SENT` bodies against
+the real book without sending. STATUS.md in this repo reflects the mirror; the Mac's own
+`crypto/journal.md` + hermes desk alerts are the live record.
+
+**What moved in 4.7.2:** execution home is the Mac; repo config arms on nothing (`auto_ack_on_key`
+false — the gate itself stays tested, and the Mac copy ships it true). The runner sources
+(`tools/mac/`) now live in this repo too, so both books are one source of truth.
 
 `OKX_INSTTYPE` picks `swap` (default — perps, TP/SL on-venue, shorts) or `spot` (no leverage; an opening
 short is refused outright, and the shadow ledger stays spot-only either way, so paper and live grade the
@@ -143,7 +144,7 @@ Until a key is present the bot scans, sizes, journals `GATE — …` and sends n
 
 | gate | why it exists |
 |---|---|
-| `live_ack: true` **or** a trade-only OKX key in Secrets (`auto_ack_on_key: true`, the v4.7.1 default) | a leaked secret must not be enough to trade — and the key-minting is human-only anyway, so key presence is accepted as the acknowledgement; clamps below bound what a planted key could do |
+| `live_ack: true` **or** a trade-only key present where `auto_ack_on_key: true` (the Mac book ships it true; this repo ships it **false** — v4.7.2, mirror never fires) | a leaked secret must not be enough to trade — and key-minting is human-only anyway, so key presence is accepted as the acknowledgement on the armed book; clamps below bound what a planted key could do |
 | `min_grade_before_live` = 0 (was 8) | you ruled out the paper-first wait; the sizer cold-starts at its floor ($50) and the live clamps cap it at $25 / 1 % equity, so the first live trade is small by construction, not by borrowed confidence |
 | heartbeat younger than `max_gap_h` = 2 h | nothing watches the book between runs (see the cadence section) — a 10 h gap is not a 10-minute bot |
 | live risk = min(sizer, `live_max_risk` $25, `live_max_risk_frac` 1 % of equity) | sizing live by feel is how a bot loses money fast; the sizer earns its size, these two bound it |
