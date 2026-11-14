@@ -31,6 +31,23 @@ def fetch_journal():
         return json.loads(r.read())
 
 
+def dispatch(which, msg):
+    """Fire workflow_dispatch for this repo's own workflow. No-op without a token."""
+    tok = os.environ.get("GITHUB_TOKEN")
+    if not tok:
+        return False
+    url = f"https://api.github.com/repos/{REPO}/actions/workflows/{which}/dispatches"
+    body = json.dumps({"ref": "main", "reason": msg}).encode()
+    req = urllib.request.Request(url, data=body, method="POST", headers={
+        "Authorization": "Bearer " + tok, "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json", "User-Agent": "sentry-watchdog/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return r.status in (200, 204)
+    except Exception:                                           # noqa: BLE001
+        return False
+
+
 def main():
     try:
         meta = fetch_journal()
@@ -58,6 +75,10 @@ def main():
         print(f"WATCHDOG ALERT: sentry-cycle silent for {age_h:.1f} h "
               f"(threshold {STALE_HOURS:g} h). Last entry: {tail}")
         print("Check: Actions tab (disabled workflow? queued runs?), then run it manually.")
+        # self-heal: a tick needs no secrets (workflow_dispatch is one of the two events a
+        # GITHUB_TOKEN may legitimately fire), so a red run also restarts the brain.
+        if dispatch("scan.yml", "self-heal after stale journal"):
+            print("  -> dispatched a fresh sentry-cycle run")
         return 1
     print(f"watchdog ok · last cycle {age_h:.1f} h ago · {tail}")
     return 0
