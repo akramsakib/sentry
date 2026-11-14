@@ -8,3 +8,14 @@
 - **11-14 09:09 UTC** scan ok · 10 symbols · 0 new · 0 pendings · 0 positions equity $100000.00 · 1s
 - **11-14 09:24 UTC** CANDIDATE(score 3/5) — BCH/USD S18-rsi2-short sell_limit 214.95 sl217.79686086 tp211.39142393 — paper-graded (spot can't short)
 - **11-14 09:24 UTC** scan ok · 10 symbols · 0 new · 0 pendings · 0 positions equity $100000.00 · 1s
+- **11-14 13:15 UTC** ORDER SENT — BTC/USD C-H1-three-soldiers (score 4/5) stop buy_stop qty 0.601477 @ 67273.58922668 sl67107.33193329 tp67522.97516678 · risk $100
+- **11-14 13:15 UTC** ORDER SENT — BTC/USD C-M15-three-soldiers (score 3/5) stop buy_stop qty 0.349476 @ 67174.37922668 sl66959.77193329 tp67496.29016678 · risk $75
+- **11-14 13:15 UTC** ORDER SENT — ETH/USD C-H1-three-soldiers (score 4/5) stop buy_stop qty 27.605610 @ 1908.70498631 sl1905.08253422 tp1914.13866444 · risk $100
+- **11-14 13:15 UTC** ORDER SENT — ETH/USD C-M15-three-soldiers (score 4/5) stop buy_stop qty 11.321884 @ 1907.79498631 sl1898.96253422 tp1921.04366444 · risk $100
+- **11-14 13:15 UTC** ORDER SENT — SOL/USD C-H1-three-soldiers (score 4/5) stop buy_stop qty 3454.486791 @ 75.71969939 sl75.69075153 tp75.76312118 · risk $100
+- **11-14 13:15 UTC** ORDER SENT — SOL/USD C-M15-three-soldiers (score 4/5) stop buy_stop qty 200.421743 @ 75.89969939 sl75.40075153 tp76.64812118 · risk $100
+- **11-14 13:15 UTC** NOTE — LINK/USD C-H1-three-soldiers: soft cap on open items (6) — advisory, skipping
+- **11-14 13:15 UTC** NOTE — LINK/USD C-M15-three-soldiers: soft cap on open items (6) — advisory, skipping
+- **11-14 13:15 UTC** NOTE — BCH/USD C-H1-three-soldiers: soft cap on open items (6) — advisory, skipping
+- **11-14 13:15 UTC** NOTE — BCH/USD C-M15-three-soldiers: soft cap on open items (6) — advisory, skipping
+- **11-14 13:15 UTC** scan ok · 10 symbols · 6 new · 6 pendings · 0 positions equity $100000.00 · 6s
