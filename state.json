@@ -55,8 +55,8 @@
    "qty": 280544.25585636037,
    "skill": "S4-band-fade-long",
    "be": null,
-   "sent_sl": null,
-   "last_price": null
+   "sent_sl": 0.06080355,
+   "last_price": 0.06086
   },
   "AVAX/USD": {
    "side": "long",
@@ -67,10 +67,10 @@
    "qty": 1326.3617988702194,
    "skill": "S4-band-fade-long",
    "be": null,
-   "sent_sl": null,
-   "last_price": null
+   "sent_sl": 7.58760579,
+   "last_price": 7.654
   }
  },
  "cid_seq": 4,
- "last_cycle": 1794670333.284349
+ "last_cycle": 1794670541.1064062
 }
