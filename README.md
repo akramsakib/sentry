@@ -55,6 +55,38 @@ https://<TOKEN>@github.com/<you>/<repo>.git && git push`. Free-tier private repo
 Actions minutes/month; this bot burns ~1–2 min per cycle (~5,000/yr at 10-min cadence), so a
 private repo at 10-min cadence needs either a paid plan or a slower `cron` (e.g. `*/30`).
 
+## Cadence: GitHub's cron is throttled on this account (read this)
+Measured on 2026-11-14: `sentry-cycle` declares `*/10 * * * *` and every *other* trigger
+(`push`, `workflow_dispatch`, `repository_dispatch`) fires in seconds, but **zero** scheduled
+runs appeared for ~4 h. It is not this repo: a sibling repo of the same account
+(`Trading-Bot`, cron `3,18,33,48 * * * *` = 96 runs/day) delivered **4** runs in the last 24 h
+with 4–8 h gaps, and its 1 358 historical schedule runs prove the mechanism works there.
+GitHub is queue-throttling (or silently muting) high-frequency crons for this account — a
+community-reported behaviour (GitHub community discussions #208110, #209473, #209838, Sep–Nov 2026).
+
+Three ways to get a real clock, best first:
+
+1. **External pinger → `repository_dispatch` (recommended, free).** Any 10-min cron that POSTs:
+   ```bash
+   curl -sS -X POST \
+     -H "Authorization: Bearer $GH_PAT" -H "Accept: application/vnd.github+json" \
+     https://api.github.com/repos/OWNER/REPO/dispatches \
+     -d '{"event_type":"sentry-tick"}'
+   ```
+   `GH_PAT` = a fine-grained token scoped to this repo with **Actions: Read and write** only.
+   A Cloudflare Worker + Cron Trigger is 15 lines and free; a plain `crontab` on any always-on
+   box (including the Mac) works too. Verified from a cold shell on 2026-11-14: `204` → run
+   created in ~3 s, full cycle, memory committed (that is how run #8 happened).
+2. **Let the watchdog push it along.** `sentry-watchdog` (hourly) exits red when the journal is
+   stale **and dispatches a fresh cycle itself** — `workflow_dispatch` is one of the two events a
+   `GITHUB_TOKEN` may fire, so no PAT is needed for that path. You get at least a few cycles/day
+   even if GitHub never honours the 10-min cron.
+3. **Accept it.** Crypto has no session gap, so a cycle every 4–8 h is still a usable swing bot;
+   the state machine reconciles whatever happened while it slept. Do not call it an M15 bot then.
+
+Do **not** "fix" this by ending each run with a delayed self-dispatch: the sleep needed to space
+runs would keep a runner occupied 24/7, which is exactly what GitHub's abuse detection disables.
+
 ## Honest limitations (read before calling it "the same thing")
 - **Long-only execution.** Spot crypto can't be shorted here, so short signals are *paper-graded*
   into the accuracy loop (they earn sizing trust, never fire). A futures/perp venue would be needed
@@ -63,8 +95,8 @@ private repo at 10-min cadence needs either a paid plan or a slower `cron` (e.g.
   optimistic. Alpaca mode puts the orders on a real venue, which is the honest next step.
 - **Stop/TP enforcement is per-cycle** (up to ~10 min reaction latency, cron jitter included).
   Fine for an M15 playbook; not scalping.
-- **Cron is best-effort** — Actions schedules can lag or skip under load; a missed run just delays
-  the next reconcile, but know it. Brand-new schedules can also take hours to start.
+- **Cron is best-effort** — on this account it is actively throttled; see *Cadence* above before
+  trusting the 10-min interval. A missed run only delays the next reconcile (stateless per cycle).
 - **Outcome grading uses the last tracked price vs tp/sl** (a heuristic), not an exchange fill
   report — win/loss flags can be ±1 grade off on violent bars.
 - FX & US equities stay on the Mac/MT5 build. OANDA's practice API is the natural adapter if forex
