@@ -1,6 +1,5 @@
 {
   "execution": "coinbase",
-  "mode": "alpaca-paper",
   "symbols": [
     "BTC/USD",
     "ETH/USD",
