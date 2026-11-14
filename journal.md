@@ -6,3 +6,5 @@
 - **11-14 09:03 UTC** scan ok · 10 symbols · 0 new · 0 pendings · 0 positions equity $100000.00 · 4s
 - **11-14 09:06 UTC** scan ok · 10 symbols · 0 new · 0 pendings · 0 positions equity $100000.00 · 4s
 - **11-14 09:09 UTC** scan ok · 10 symbols · 0 new · 0 pendings · 0 positions equity $100000.00 · 1s
+- **11-14 09:24 UTC** CANDIDATE(score 3/5) — BCH/USD S18-rsi2-short sell_limit 214.95 sl217.79686086 tp211.39142393 — paper-graded (spot can't short)
+- **11-14 09:24 UTC** scan ok · 10 symbols · 0 new · 0 pendings · 0 positions equity $100000.00 · 1s
