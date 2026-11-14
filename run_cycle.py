@@ -600,6 +600,15 @@ def write_status(acct, live, s, rows, tf_map, fired):
     out.append(f"**{now().strftime('%Y-%m-%d %H:%M UTC')}** · venue `{VENUE}` → {real} · "
                f"cash ${cash:,.2f} · equity ${eq:,.2f}")
     out.append("")
+    # the cost of doing business, on the page you actually look at: a tight-stop book on a wide-fee
+    # venue is a fee farm, and that belongs next to the P&L, not buried in a config file.
+    if FEES["maker"] or FEES["taker"]:
+        _paid = (ledger.fee_stats().get("paid", 0.0) if hasattr(ledger, "fee_stats") else 0.0)
+        out.append(f"_Venue cost: {100 * FEES['maker']:.2f} % maker / {100 * FEES['taker']:.2f} % taker per side · "
+                   f"**${_paid:,.2f} paid on this book to date** · every graded R is net of it"
+                   + (f" · live orders refused when the fee costs more than {MAX_FEE_R:g}R of the trade's own risk"
+                      if MAX_FEE_R else " · no live fee guard (live_max_fee_r = 0)") + "_")
+        out.append("")
 
     # ---- resting orders
     out.append(f"## Orders resting on the book now ({len(s['open_cids'])})")

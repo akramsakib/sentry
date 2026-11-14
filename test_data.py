@@ -448,6 +448,9 @@ check("  ...the book keeps a running total the journal can show",
 bl.LEDGER_F = _keep5
 bl.set_fees(_fees_saved)
 
+check("the cost of doing business is on the status page, not only in the journal",
+      "Venue cost:" in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_cycle.py")).read())
+
 # ---------- 17: the retail payload — a retail key cannot sign on the Exchange host at all ----------
 _meta_saved2, _dry_saved2 = cb._meta, cb.DRY
 cb._meta = lambda sym: {"quote": "0.01", "base": "0.00000001", "min_funds": 1.0, "ok": True}
