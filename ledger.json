@@ -1,5 +1,5 @@
 {
- "cash": 82867.65044185726,
+ "cash": 72718.98584281188,
  "realized": 0.0,
  "orders": [
   {
@@ -50,8 +50,11 @@
    "qty": 1326.3617988702194,
    "limit_price": 7.651505500000001,
    "stop_price": null,
-   "status": "open",
-   "placed_at": 1794670198
+   "status": "filled",
+   "placed_at": 1794670198,
+   "filled_avg_price": 7.64,
+   "filled_qty": 1326.3617988702194,
+   "filled_at": 1794670311
   }
  ],
  "positions": [
@@ -61,7 +64,15 @@
    "entry": 0.06106826,
    "cid": "sentryDOGEUSD1794670198764n3",
    "opened": 1794670198,
-   "current_price": 0.06068
+   "current_price": 0.06058
+  },
+  {
+   "symbol": "AVAX/USD",
+   "qty": 1326.3617988702194,
+   "entry": 7.651505500000001,
+   "cid": "sentryAVAXUSD1794670198886n4",
+   "opened": 1794670311,
+   "current_price": 7.64
   }
  ]
 }
