@@ -73,3 +73,5 @@
 - **11-14 15:47 UTC** SKIP — AVAX/USD C-M15-bear-engulfing: already have pending/position in play
 - **11-14 15:47 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 2 pendings · 1 positions equity $99972.82 · 3s
 - **11-14 15:47 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
+- **11-14 15:49 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 2 pendings · 1 positions equity $99972.82 · 7s
+- **11-14 15:49 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
