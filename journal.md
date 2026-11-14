@@ -26,3 +26,7 @@
 - **11-14 13:23 UTC** NOTE — XRP/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
 - **11-14 13:23 UTC** CANDIDATE(score 4/5) — LINK/USD S2-breakdown-short sell_stop 9.47506028 sl9.69093972 tp9.15124111 — paper-graded (spot can't short)
 - **11-14 13:23 UTC** scan ok · 10 symbols · 0 new · 6 pendings · 0 positions equity $100000.00 · 1s
+- **11-14 13:23 UTC** ORDER SENT — XRP/USD C-H1-bull-engulfing (score 3/5) stop buy_stop qty 6634.320668 @ 0.99525853 sl0.98395368 tp1.0122158 · risk $75
+- **11-14 13:23 UTC** ORDER SENT — SOL/USD C-H1-bull-engulfing (score 3/5) stop buy_stop qty 96.928698 @ 76.0667899 sl75.29302525 tp77.22743689 · risk $75
+- **11-14 13:23 UTC** CANDIDATE(score 4/5) — LINK/USD S2-breakdown-short sell_stop 9.47506028 sl9.69093972 tp9.15124111 — paper-graded (spot can't short)
+- **11-14 13:23 UTC** scan ok · 10 symbols · 2 new · 2 pendings · 0 positions equity $100000.00 · 5s
