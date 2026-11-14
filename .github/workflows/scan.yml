@@ -30,6 +30,12 @@ jobs:
       COINBASE_API_PASSPHRASE: ${{ secrets.COINBASE_API_PASSPHRASE }}
       COINBASE_CDP_PEM: ${{ secrets.COINBASE_CDP_PEM }}
       COINBASE_MODE: ${{ vars.COINBASE_MODE }}   # 'advanced' | 'exchange'; empty = auto-detect
+      OKX_API_KEY: ${{ secrets.OKX_API_KEY }}
+      OKX_API_SECRET: ${{ secrets.OKX_API_SECRET }}
+      OKX_API_PASSPHRASE: ${{ secrets.OKX_API_PASSPHRASE }}
+      OKX_SIM: ${{ vars.OKX_SIM }}               # '1' = OKX simulated trading: real engine, fake money
+      OKX_INSTTYPE: ${{ vars.OKX_INSTTYPE }}      # 'swap' (default) | 'spot'
+      OKX_SLACK: ${{ vars.OKX_SLACK }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,6 +45,9 @@ jobs:
       - name: coinbase venue check (reads the account, places nothing)
         if: env.COINBASE_API_KEY != ''
         run: python broker_coinbase.py
+      - name: okx venue check (reads the account, places nothing)
+        if: env.OKX_API_KEY != ''
+        run: python broker_okx.py
       - name: run cycle
         env:
           ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}

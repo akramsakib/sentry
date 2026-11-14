@@ -1,4 +1,4 @@
-# Sentry v4.4.0 — GitHub-native trading brain (no MT5, no Mac, no Wine)
+# Sentry v4.5.0 — GitHub-native trading brain (no MT5, no Mac, no Wine)
 
 The same checklist engine from the Mac build (`sentry_mac.py` v3.1), ported to run entirely on
 **GitHub Actions**. One workflow run = one full scan cycle, every 10 minutes, 24/7 (crypto has no
@@ -35,6 +35,10 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
   With no key in the runner it runs the shadow ledger on the same public data and stamps
   `venue shadow-ledger(coinbase-no-key)` into the journal line, so "did that touch real money?" is
   always answerable from the log.
+- **`"execution": "okx"`:** OKX via `broker_okx.py` — real orders on perps, **0.02 %/0.05 % fees**, TP/SL
+  attached to the entry order by the venue, and the short side of the checklist actually tradable.
+  `vars.OKX_SIM=1` switches it to OKX's simulated-trading engine: same host, same signatures, real
+  matching, **no money** — the rehearsal Coinbase cannot offer. Same no-key fallback to the shadow book.
 - **`"execution": "ledger"`:** shadow book only — real prices, simulated fills in `ledger.json`.
   Paper fills are honest about price (never worse than the tape) but have no depth model.
 - **`"execution": "alpaca"`:** Alpaca paper venue (resting orders on their engine). Needs
@@ -101,6 +105,36 @@ No-money rehearsals: `COINBASE_DRY=1` builds and prints the exact payload it wou
 points at Coinbase's Exchange sandbox host (which also disarms the live gates);
 `python3 broker_coinbase.py` runs a read-only auth/wallet check and places nothing.
 
+## Which venue? Measured from the runner, not from a comparison site
+
+The bot runs on GitHub Actions runners, which are **US-based**, so a venue's geo-blocks decide whether
+it is usable at all — fee tables on a review site do not. Probed directly from the same egress on
+2026-11-14 (public endpoint + one unauthenticated private call, so "auth error" means *reachable,
+needs a key*):
+
+| venue | from a US IP | base-tier round trip at a 0.55 % stop | shorts | venue built here? |
+|---|---|---|---|---|
+| **OKX** | ✓ market 200 / private 401 (needs key) | **0.07R** | yes (perps) | yes — `execution: "okx"` |
+| Coinbase (retail or Exchange) | ✓ | 1.82R — the fee guard refuses it | no (spot) | yes — `execution: "coinbase"` |
+| Kraken | ✓ | ~0.76R | no | no |
+| Bitget, MEXC, Gate, KuCoin | ✓ | 0.09R–0.5R | yes (perps) | no |
+| **Binance** | ✗ refused: *"Service unavailable from a restricted location according to 'b. Eligibility'"* | (would be 0.36R) | — | no |
+| **Bybit** | ✗ CloudFront geo-block, public data included | (would be 0.13R) | — | no |
+
+So the two venues I would otherwise have recommended on fee grounds alone (Binance, Bybit) are
+**untradeable from this runner** — worth knowing before anyone spends a week on them. OKX is the lane
+where the arithmetic works *and* the plumbing is reachable: `0.07R` against a `0.25R` cap, shorts
+live, and `OKX_SIM=1` proves the whole order lifecycle before a dollar exists. Three secrets to get
+that: `OKX_API_KEY`, `OKX_API_SECRET`, `OKX_API_PASSPHRASE` (OKX signs with all three; a missing one
+fails at boot instead of silently degrading to paper).
+
+Rehearse without money, in this order:
+```bash
+python3 broker_okx.py                # read-only: wallet, instrument ticks, candle mapping, id rules
+python3 broker_okx.py rehearse       # OKX_SIM=1: place a conditional 20 % away from the tape, find it
+                                     # by clOrdId, cancel it. Proves the round trip with fake money.
+```
+
 ## The wallet: how big, and what the venue takes
 
 The account has to satisfy two independent floors. Both are measured through the shipped code, not
@@ -114,6 +148,13 @@ estimated — this was rehearsed by running a live cycle against `COINBASE_DRY_E
 | $10,000 | 2 | 5 |
 | $20,000 | 6 | 0 |
 | $50,000 | 6 | 0 |
+
+Malaysia-specific, because it changes the funding path: Coinbase's own identity-verification page
+does list Malaysia as a signup country (MyKad/passport/licence, no proof-of-address), but Coinbase's
+**cash balance is US/EMEA only**, so there is no MYR bank rail in or out. In practice money arrives
+as crypto — USDC on a network Coinbase supports, sent from a locally licensed DAX (Luno/HATA take
+MYR by FPX or Touch 'n Go). Pick the network deliberately and match it exactly on both sides:
+Coinbase states plainly that funds sent over the wrong network cannot be recovered.
 
 **Under ~$10k this playbook will not trade at all; ~$20k is the floor for it to fire at full rate.**
 That is arithmetic, not conservatism: risking $75–$200 through a 0.4–1.2 % stop *requires* $10k–$40k

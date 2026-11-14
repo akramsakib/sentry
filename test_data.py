@@ -502,5 +502,108 @@ try:
 finally:
     cb.ADV, cb.DRY, cb._meta = False, _dry_saved2, _meta_saved2
 
+# ---------- 18: the OKX venue (perps = the only schedule this playbook can pay) ----------
+import broker_okx as ok
+
+cid_real = "sentrySOLUSD1794672000000n1"
+o1 = ok.oid_for(cid_real)
+check("OKX clOrdId is letters/digits only, <=32 chars", bool(_re.fullmatch(r"[A-Za-z0-9]{1,32}", o1)), o1)
+check("  ...deterministic per cid (no mapping table to lose between runners)", o1 == ok.oid_for(cid_real))
+check("  ...and unique per cid", o1 != ok.oid_for(cid_real.replace("n1", "n2")))
+
+# OKX candle rows are [ts, OPEN, high, low, close, vol, volCcy, volCcyQuote, confirm], newest FIRST —
+# a different order from Coinbase's [time, low, high, open, close, volume]. Both are pinned because
+# the first port of this bot mapped one into the other and every candlestick pattern fired on itself.
+okx_rows = [["1794672000000", "73.84", "73.91", "72.22", "72.66", "1272606", "1272606", "92684302", "0"],
+            ["1794668400000", "74.04", "74.27", "73.11", "73.84", "1308003", "1308003", "96410124", "1"],
+            ["1794664800000", "75.47", "75.52", "73.66", "74.04", "2042319", "2042319", "151905648", "1"]]
+bb = ok._bars(okx_rows, now_ts=1_794_672_000)
+check("the forming candle (confirm == 0) never enters the history", len(bb) == 2, str(len(bb)))
+_mid = next(b for b in bb if b["c"] == 73.84)      # the 1794668400000 row, found by content not by clock
+check("open is column 1 on OKX (NOT low, as on Coinbase)",
+      _mid["o"] == 74.04 and _mid["h"] == 74.27 and _mid["l"] == 73.11 and _mid["c"] == 73.84, str(_mid))
+check("rows are re-sorted oldest-first for the checklist", bb[0]["t"] < bb[1]["t"])
+try:
+    ok._bars([["1794664800000", "10", "1", "9", "2", "1", "1", "1", "1"]], now_ts=1_794_672_000)
+    check("  ...high < open is rejected", False, "it accepted a bar with high < open")
+except ok.BrokerError as e:
+    check("  ...high < open is rejected", "impossible bar" in str(e), str(e))
+
+_meta_ok, _dry_ok = ok._meta, ok.DRY
+ok._meta = lambda sym: {"tick": "0.01", "lot": "0.01", "min_sz": "0.01", "ct_val": 1.0,
+                        "live": True, "inst": sym.split("/")[0].upper() + "-USDT-SWAP"}
+ok.DRY = True
+try:
+    r = ok.place_order("buy", "SOL/USD", qty=68.5, otype="stop", stop_price=73.55,
+                       tp=74.9, sl=73.0, cid="sentrySOL1n1")
+    b = r["payload"]
+    check("a triggered entry goes to order-algo, not /trade/order", r["path"] == "/api/v5/trade/order-algo", r["path"])
+    check("  ...as ordType=conditional with a last-price trigger",
+          b["ordType"] == "conditional" and b["trigger"]["triggerPx"] == "73.55"
+          and b["trigger"]["triggerPxType"] == "last", str(b.get("trigger")))
+    check("  ...and it fires as a COLLAR limit one tick past the trigger, not a naked market",
+          float(b["px"]) > float(b["trigger"]["triggerPx"]), f"{b['px']} vs {b['trigger']['triggerPx']}")
+    att = b["attachAlgoOrds"][0]
+    check("  ...TP and SL ride on the entry order (protected while the runner sleeps)",
+          att["tpTriggerPx"] == "74.9" and att["slTriggerPx"] == "73.0"
+          and att["tpOrdPx"] == "-1" and att["slOrdPx"] == "-1", str(att))
+    check("  ...side is carried on the order, clOrdId on the order, and tdMode is set",
+          b["side"] == "buy" and b["tdMode"] in ("cross", "isolated") and b["clOrdId"].startswith("sen"), str(b))
+    s2 = ok.place_order("sell", "SOL/USD", qty=68.5, otype="stop", stop_price=70.0,
+                        tp=69.0, sl=71.0, cid="sentrySOL1n2")["payload"]
+    check("  ...a short entry is a SELL conditional whose collar sits BELOW the trigger",
+          s2["side"] == "sell" and float(s2["px"]) < float(s2["trigger"]["triggerPx"]), f"{s2['px']} vs {s2['trigger']['triggerPx']}")
+    m = ok.place_order("sell", "SOL/USD", qty=68.5, otype="market", cid="sentrySOL1n3")
+    check("a close is an ordinary /trade/order market order",
+          m["path"] == "/api/v5/trade/order" and m["payload"]["ordType"] == "market"
+          and m["payload"]["sz"] == "68.5", str(m["payload"]))
+    ok._meta = lambda sym: {"tick": "0.01", "lot": "1", "min_sz": "1", "ct_val": 1.0,
+                            "live": True, "inst": "DOGE-USDT-SWAP"}
+    dg = ok.place_order("buy", "DOGE/USD", qty=104515.05, otype="limit", limit_price=0.0597,
+                        cid="sentryDOGE1n9")["payload"]
+    check("a coins-denominated size becomes whole contracts (ctVal 1.0, lot 1)",
+          dg["sz"] == "104515", dg["sz"])
+    try:
+        ok.place_order("buy", "DOGE/USD", qty=0.2, otype="limit", limit_price=0.0597, cid="z")
+        check("size below minSz is refused (not rounded to zero silently)", False, "it placed a sub-minimum order")
+    except ok.BrokerError as e:
+        check("size below minSz is refused (not rounded to zero silently)", "minsz" in str(e).lower(), str(e))
+    ok.CAN_SHORT = False
+    try:
+        ok.place_order("sell", "BTC/USD", qty=0.01, otype="stop", stop_price=60000.0, cid="z")
+        check("a spot venue cannot open a short", False, "it accepted an opening short")
+    except ok.BrokerError as e:
+        check("a spot venue cannot open a short", "spot" in str(e).lower(), str(e))
+    ok.CAN_SHORT = True
+    n = ok._norm({"ordId": "1", "clOrdId": "senabc", "instId": "SOL-USDT-SWAP", "side": "buy",
+                  "ordType": "conditional", "state": "partially_filled", "sz": "68", "accFillSz": "12",
+                  "avgPx": "73.5", "px": "73.66"})
+    check("a venue order object normalizes to the keys run_cycle reconciles on",
+          n["status"] == "open" and n["filled_qty"] == 12.0 and n["filled_avg_price"] == 73.5
+          and n["symbol"] == "SOL/USD" and n["limit_price"] == 73.66, str(n))
+    n2 = ok._norm({"ordId": "2", "instId": "SOL-USDT-SWAP", "side": "sell", "state": "filled",
+                   "sz": "68", "accFillSz": "68", "avgPx": "77.25", "ordType": "market"})
+    check("  ...and a filled one reports as filled so the close gets graded",
+          n2["status"] == "filled" and n2["filled_avg_price"] == 77.25, str(n2))
+finally:
+    ok._meta, ok.DRY, ok.CAN_SHORT = _meta_ok, _dry_ok, True
+
+# the venue's cost is the reason it exists: 0.02/0.05 must clear the guard the Coinbase tier fails
+bl.set_fees({"maker": 0.0002, "taker": 0.0005})
+_, r_okx = bl.round_trip_fees(73.55, 73.0, 73.55 - 73.0, 68.5)
+bl.set_fees({"maker": 0.004, "taker": 0.006})
+_, r_cb = bl.round_trip_fees(73.55, 73.0, 73.55 - 73.0, 68.5)
+bl.set_fees(rc.CFG.get("fees"))
+check("the identical trade costs 0.07R on OKX and 1.5R on Coinbase retail — one stop, one signal",
+      r_okx <= rc.MAX_FEE_R and r_cb > rc.MAX_FEE_R, f"{r_okx}R vs {r_cb}R")
+check("so the fee guard fires on one venue and passes on the other (data, not opinion)",
+      r_okx < r_cb / 10, f"okx {r_okx}R, coinbase {r_cb}R")
+check("run_cycle reads capability from the venue, not from wishful config",
+      rc.CAN_SHORT is False and rc.ATTACH is False and hasattr(ok, "CAN_SHORT") and ok.ATTACH_TP_SL)
+check("and STATUS.md never claims real money while the venue is DRY or SIM",
+      "MONEY = LIVE and not getattr(broker, \"DRY\", False)" in _pm
+      or 'MONEY = LIVE and not getattr(broker, "DRY", False)' in
+      open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_cycle.py")).read())
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

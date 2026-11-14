@@ -1,4 +1,4 @@
-"""Sentry v4.4.0 (GitHub-native) — one full scan/manage cycle per run.
+"""Sentry v4.5.0 (GitHub-native) — one full scan/manage cycle per run.
 
 Designed to be invoked by .github/workflows/scan.yml every 10 minutes.
 State of record = files in this repo (state.json, journal.md, trades_log.jsonl),
@@ -30,6 +30,7 @@ EXEC_MODE = CFG.get("execution", "ledger")
 # broker_coinbase.py; it falls back to the shadow ledger ONLY when no key exists in this runner,
 # and says so in the journal + summary so "did it place a real order?" is never a guess.
 CB_KEYED = EXEC_MODE == "coinbase" and bool(os.environ.get("COINBASE_API_KEY"))
+OKX_KEYED = EXEC_MODE == "okx" and bool(os.environ.get("OKX_API_KEY"))
 LIVE = False
 VENUE = "shadow-ledger"
 if EXEC_MODE == "alpaca":
@@ -40,9 +41,17 @@ elif CB_KEYED:
     import broker_coinbase as broker                         # real Coinbase Exchange orders
     LIVE = True
     VENUE = "coinbase-live(DRY)" if os.environ.get("COINBASE_DRY") == "1" else "coinbase-live"
+elif EXEC_MODE == "okx" and OKX_KEYED:
+    import broker_okx as broker                              # real OKX orders (swap: TP/SL on-venue)
+    LIVE = True
+    VENUE = ("okx-live(DRY)" if os.environ.get("OKX_DRY") == "1" else
+             "okx-live(SIM, fake money)" if os.environ.get("OKX_SIM") == "1" else "okx-live")
 elif EXEC_MODE == "coinbase":
     import broker_ledger as broker                           # venue chosen, key not in place yet
     VENUE = "shadow-ledger(coinbase-no-key)"
+elif EXEC_MODE == "okx":
+    import broker_ledger as broker                           # venue chosen, key not in place yet
+    VENUE = "shadow-ledger(okx-no-key)"
 else:
     import broker_ledger as broker
 STATE_F = os.path.join(HERE, "state.json")
@@ -54,6 +63,10 @@ DRY = bool(FIXDIR) or os.environ.get("SENTRY_DRY") == "1"
 # sandbox stay False, so the live gates never starve a paper venue that still needs fills to grade.
 _host = (getattr(broker, "TRADE", "") or getattr(broker, "BASE", "")).lower()
 LIVE = LIVE and not DRY and "paper-api" not in _host and "sandbox" not in _host
+# LIVE stays true when the venue itself is DRY or simulated: the guards below must run on the same
+# code path money will take, or a rehearsal rehearses nothing. What changes is only the CLAIM made
+# in STATUS.md — see MONEY, which is the flag that says "a dollar actually moved".
+MONEY = LIVE and not getattr(broker, "DRY", False) and not getattr(broker, "SIM", False)
 
 # --- venue cost ---------------------------------------------------------------------------
 # The fee model lives in the ledger and is applied whatever the venue is: a paper book that pays
@@ -61,6 +74,11 @@ LIVE = LIVE and not DRY and "paper-api" not in _host and "sandbox" not in _host
 # built on it. config.json "fees" sets maker/taker as fractions (0.0060 = 0.60 %).
 import broker_ledger as ledger
 FEES = ledger.set_fees(CFG.get("fees"))
+# What the venue can do, not what we wish it could: shorts need hedge-mode perps, and on-venue
+# TP/SL means the stop is enforced while this runner is asleep. Both default False, so the shadow
+# ledger keeps behaving exactly like a spot book that wakes up twice a day.
+CAN_SHORT = bool(getattr(broker, "CAN_SHORT", False))
+ATTACH = bool(getattr(broker, "ATTACH_TP_SL", False))
 MAX_FEE_R = float(CFG.get("live_max_fee_r") or 0)     # 0 disables the live refusal
 FEE_REFUSED = [0]                                      # mutated by the scan loop, read by the alert
 
@@ -302,6 +320,13 @@ def run():
     for sym, ps in list(s["pos_state"].items()):
         if sym not in live:
             last = ps.get("last_price") or ps["entry"]
+            if hasattr(broker, "fills"):
+                try:                                        # the venue's tape beats our last poll
+                    fl = [f for f in (broker.fills(symbol=sym) or []) if float(f.get("size") or 0) > 0]
+                    if fl:
+                        last = float(fl[-1].get("price") or last)
+                except Exception as e:                      # noqa: BLE001 — a missing print must not stop grading
+                    journal(f"NOTE — could not read venue fills for {sym}: {type(e).__name__}: {e}")
             # Grade on what was actually made, not on whether the target was ever touched: a
             # 2026-11-14 DOGE stop-out exited ABOVE its entry (a favourable scratch), and the
             # target test still called it a loss with "+0.36R" — which then fed a false miss into
@@ -420,7 +445,7 @@ def run():
             is_sell = c["otype"].startswith("sell")
             risk = sizer.size(c["skill"], c["score"], rows)
             rid = f"{sym}|{c['skill']}|{c['entry']}"
-            if is_sell and sym not in s["pos_state"]:
+            if is_sell and sym not in s["pos_state"] and not CAN_SHORT:
                 tl_log({"rid": rid, "sym": sym, "skill": c["skill"], "otype": c["otype"], "entry": c["entry"],
                         "sl": c["sl"], "tp": c["tp"], "score": c["score"], "risk": risk, "fired": False,
                         "note": "paper: no crypto shorting on spot"})
@@ -505,12 +530,18 @@ def run():
                     # A re-anchored marketable entry gets a collar, not a naked market order: a
                     # limit a hair through the tape crosses but refuses to chase a gap.
                     lim = entry * (1 - 0.0015) if (note and not stop_entry) else entry
+                    # hedge mode flips the side on a perp: a short entry is a SELL that opens, not a
+                    # buy, and the venue still owns both protective legs either way
+                    leg_side = "sell" if (is_sell and CAN_SHORT) else "buy"
+                    extra = {"tp": c["tp"], "sl": c["sl"]} if ATTACH else {}
                     if stop_entry:
-                        broker.place_order("buy", sym, qty=qty, otype="stop", stop_price=lim, tif="gtc", cid=cid)
+                        broker.place_order(leg_side, sym, qty=qty, otype="stop", stop_price=lim,
+                                           tif="gtc", cid=cid, **extra)
                     else:
-                        broker.place_order("buy", sym, qty=qty, otype="limit", limit_price=lim, tif="gtc", cid=cid)
+                        broker.place_order(leg_side, sym, qty=qty, otype="limit", limit_price=lim,
+                                           tif="gtc", cid=cid, **extra)
                     order_ok = True
-                    journal(f"ORDER SENT — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {lim}{' (collar on ' + format(entry, '.10g') + ')' if lim != entry else ''} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}{fee_note}")
+                    journal(f"ORDER SENT — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {lim}{' (collar on ' + format(entry, '.10g') + ')' if lim != entry else ''} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}{fee_note}{' · TP/SL attached on-venue' if ATTACH else ''}{' SHORT' if (is_sell and CAN_SHORT) else ''}")
                 except broker.BrokerError as e:
                     order_ok = False
                     journal(f"ORDER FAILED — {sym} {c['skill']}: {e}")
@@ -596,7 +627,9 @@ def write_status(acct, live, s, rows, tf_map, fired):
            ""]
     eq = float((acct or {}).get("equity") or 0)
     cash = float((acct or {}).get("cash") or 0)
-    real = "REAL MONEY" if LIVE else "shadow book (paper)"
+    real = ("REAL MONEY" if MONEY else
+            "live venue, DRY — payloads built, nothing sent" if LIVE else
+            "live venue, SIMULATED — real engine, fake money" if LIVE else "shadow book (paper)")
     out.append(f"**{now().strftime('%Y-%m-%d %H:%M UTC')}** · venue `{VENUE}` → {real} · "
                f"cash ${cash:,.2f} · equity ${eq:,.2f}")
     out.append("")
@@ -769,6 +802,15 @@ def push_memory():
 if __name__ == "__main__":
     if EXEC_MODE == "alpaca" and not (os.environ.get("ALPACA_KEY_ID") and os.environ.get("ALPACA_SECRET")):
         fail("execution=alpaca but ALPACA_KEY_ID / ALPACA_SECRET missing — refusing to spin silently")
+    if EXEC_MODE == "okx" and OKX_KEYED and CFG.get("live_ack") is True:
+        miss = [k for k in ("OKX_API_KEY", "OKX_API_SECRET", "OKX_API_PASSPHRASE") if not os.environ.get(k)]
+        if miss:
+            fail("execution=okx with live_ack=true but these are missing: " + ", ".join(miss)
+                 + " — OKX signs with all three, and a half-configured live venue is worse than none.")
+    if EXEC_MODE == "okx" and FEES["taker"] > 0.0015:
+        journal(f"NOTE — config.fees says {100 * FEES['taker']:.2f} % taker, which is not an OKX number "
+                f"(0.05 % base tier). Either the schedule is stale or the venue changed; every R below "
+                f"is priced off it, so fix config.json rather than trusting the book.")
     if CB_KEYED and CFG.get("live_ack") is True and not (os.environ.get("COINBASE_API_SECRET")
                                                          or os.environ.get("COINBASE_CDP_PEM")):
         fail("execution=coinbase, live_ack=true, COINBASE_API_KEY set — but no COINBASE_API_SECRET "
