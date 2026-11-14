@@ -13,7 +13,9 @@
   "FIRE|LINK/USD|C-H1-three-soldiers|2026-11-14",
   "FIRE|LINK/USD|C-M15-three-soldiers|2026-11-14",
   "FIRE|BCH/USD|C-H1-three-soldiers|2026-11-14",
-  "FIRE|BCH/USD|C-M15-three-soldiers|2026-11-14"
+  "FIRE|BCH/USD|C-M15-three-soldiers|2026-11-14",
+  "FIRE|XRP/USD|C-H1-bull-engulfing|2026-11-14",
+  "FIRE|LINK/USD|S2-breakdown-short|2026-11-14"
  ],
  "open_cids": {
   "sentryBTCUSD1794662107596n1": {
