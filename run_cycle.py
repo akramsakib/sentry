@@ -113,6 +113,12 @@ LIVE = LIVE and not DRY and "paper-api" not in _host and "sandbox" not in _host
 # in STATUS.md — see MONEY, which is the flag that says "a dollar actually moved".
 MONEY = LIVE and not getattr(broker, "DRY", False) and not getattr(broker, "SIM", False)
 
+# The verb a new-entry line is allowed to use. MONEY is the only thing that makes "sent" true: with no
+# key the order goes to this machine's ledger, and a journal that reads `ORDER SENT — BTC/USD ... risk
+# $50.00` in a shadow book trains the reader to believe money moved. Same code path either way, words
+# that match what actually happened.
+ORDER_VERB = "ORDER SENT" if MONEY else "ORDER BOOKED"
+
 # --- venue cost ---------------------------------------------------------------------------
 # The fee model lives in the ledger and is applied whatever the venue is: a paper book that pays
 # nothing measures a place that does not exist, and the accuracy figure that sizes every trade was
@@ -724,7 +730,7 @@ def run():
                         broker.place_order(leg_side, sym, qty=qty, otype="limit", limit_price=lim,
                                            tif="gtc", cid=cid, **extra)
                     order_ok = True
-                    journal(f"ORDER SENT — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {lim}{' (collar on ' + format(entry, '.10g') + ')' if lim != entry else ''} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}{fee_note}{' · TP/SL attached on-venue' if ATTACH else ''}{' SHORT' if (is_sell and CAN_SHORT) else ''}")
+                    journal(f"{ORDER_VERB} — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {lim}{' (collar on ' + format(entry, '.10g') + ')' if lim != entry else ''} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}{fee_note}{' · TP/SL attached on-venue' if ATTACH else ''}{' SHORT' if (is_sell and CAN_SHORT) else ''}")
                 except broker.BrokerError as e:
                     order_ok = False
                     journal(f"ORDER FAILED — {sym} {c['skill']}: {e}")
@@ -791,7 +797,8 @@ LEGEND = """
 | line starts with | meaning |
 |---|---|
 | `CANDIDATE(score n/5)` | a skill matched and was scored, but no order was sent (short on spot, duplicate, below the fire floor) |
-| `ORDER SENT` | an order was placed on the venue named in the summary line |
+| `ORDER SENT` | an order was placed ON THE VENUE (only possible with a live key and money moving) |
+| `ORDER BOOKED` | the same order, in this machine's ledger — with no key nothing was sent anywhere |
 | `RE-ANCHORED` | the trigger was already through the tape, so entry moved to market and R was recomputed |
 | `FILL` | an entry filled — now a position, with its stop armed on the venue |
 | `EXIT` / `CLOSED` | stop or target hit; P&L booked and the signal graded win/loss |

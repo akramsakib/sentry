@@ -1257,6 +1257,15 @@ if _nc:
           f == 0.0 and "0x equity" in w, str(f) + " " + repr(w))
     check("...and 0 is refused only because it is read as a cap ('is not None'), never with `or`",
           "if lev is not None:" in _rc26 and "if lev:" not in _rc26)
+    check("the entry verb is conditioned on money, so a shadow book cannot say SENT",
+          'ORDER_VERB = "ORDER SENT" if MONEY else "ORDER BOOKED"' in _rc26)
+    check("...and the entry line actually uses it (no unconditional 'ORDER SENT' left in the code)",
+          'journal(f"{ORDER_VERB} —' in _rc26 and 'journal(f"ORDER SENT' not in _rc26)
+    check("the legend documents both verbs, so STATUS.md is readable without the source",
+          "`ORDER SENT`" in _rc26 and "`ORDER BOOKED`" in _rc26)
+    _rv = __import__("builtins").getattr(rc, "ORDER_VERB", None)
+    check("and here, in this fixture run (no key, money=False), the resolved verb IS 'ORDER BOOKED'",
+          _rv == "ORDER BOOKED", repr(_rv))
 _probe26 = os.path.join(_h25, "tools/checks/check_small_account.py")
 if os.path.exists(_probe26):
     import subprocess as _sp26
