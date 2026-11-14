@@ -55,6 +55,30 @@
    "filled_avg_price": 7.641,
    "filled_qty": 1326.3617988702194,
    "filled_at": 1794670333
+  },
+  {
+   "id": "1794670540952",
+   "client_order_id": "sentryprot1794670540",
+   "symbol": "DOGE/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 280544.25585636037,
+   "limit_price": null,
+   "stop_price": 0.06080355,
+   "status": "open",
+   "placed_at": 1794670540
+  },
+  {
+   "id": "1794670541026",
+   "client_order_id": "sentryprot1794670541",
+   "symbol": "AVAX/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 1326.3617988702194,
+   "limit_price": null,
+   "stop_price": 7.58760579,
+   "status": "open",
+   "placed_at": 1794670541
   }
  ],
  "positions": [
@@ -64,7 +88,7 @@
    "entry": 0.06106826,
    "cid": "sentryDOGEUSD1794670198764n3",
    "opened": 1794670198,
-   "current_price": 0.06066
+   "current_price": 0.06086
   },
   {
    "symbol": "AVAX/USD",
@@ -72,7 +96,7 @@
    "entry": 7.651505500000001,
    "cid": "sentryAVAXUSD1794670198886n4",
    "opened": 1794670333,
-   "current_price": 7.641
+   "current_price": 7.654
   }
  ]
 }
