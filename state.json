@@ -3,7 +3,8 @@
  "fired_today": [
   "FIRE|XRP/USD|C-H1-bull-engulfing|2026-11-14",
   "FIRE|SOL/USD|C-H1-bull-engulfing|2026-11-14",
-  "FIRE|LINK/USD|S2-breakdown-short|2026-11-14"
+  "FIRE|LINK/USD|S2-breakdown-short|2026-11-14",
+  "FIRE|LTC/USD|C-M15-three-crows|2026-11-14"
  ],
  "open_cids": {
   "sentryXRPUSD1794662610992n1": {
