@@ -2,6 +2,8 @@ name: sentry-cycle
 on:
   schedule:
     - cron: "*/10 * * * *"     # same cadence as the Mac build (CYCLE=300s ≈ 5-10 min)
+  repository_dispatch:
+    types: [sentry-tick]   # external pinger (or the watchdog) can drive a cycle on demand
   workflow_dispatch: {}          # "Run workflow" button = manual scan-now
   push:
     paths: ["sentry_core.py", "run_cycle.py", "broker.py", "config.json"]  # re-scan after code changes
