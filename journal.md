@@ -134,3 +134,8 @@
 - **11-14 21:07 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 6s · venue fees $60.38 to date @ 0.02/0.05%
 - **11-14 21:15 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 7s · venue fees $60.38 to date @ 0.02/0.05%
 - **11-14 21:24 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 10s · venue fees $60.38 to date @ 0.02/0.05%
+- **11-14 21:45 UTC** NOTE — DOGE/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
+- **11-14 21:45 UTC** NOTE — LINK/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
+- **11-14 21:45 UTC** NOTE — LTC/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
+- **11-14 21:45 UTC** NOTE — AVAX/USD C-M15-bull-harami: soft cap on open items (6) — advisory, skipping
+- **11-14 21:45 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 10s · venue fees $60.38 to date @ 0.02/0.05%
