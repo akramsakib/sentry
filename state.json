@@ -177,11 +177,11 @@
    "skill": "S18-ma-revert-long",
    "be": 63278.87,
    "sent_sl": 63278.87,
-   "last_price": 63549.0
+   "last_price": 63985.4
   }
  },
  "cid_seq": 12,
- "last_cycle": 1794699842.5252085,
+ "last_cycle": 1794700163.7160442,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
@@ -248,6 +248,7 @@
   "ADA/USD|M15|tweezer-bottom|2026-11-14T23:00:00Z",
   "BCH/USD|M15|tweezer-bottom|2026-11-14T23:00:00Z",
   "BCH/USD|M15|bull-harami|2026-11-14T23:00:00Z",
-  "AVAX/USD|M15|bull-harami|2026-11-14T23:00:00Z"
+  "AVAX/USD|M15|bull-harami|2026-11-14T23:00:00Z",
+  "ETH/USD|M15|tweezer-top|2026-11-14T23:15:00Z"
  ]
 }
