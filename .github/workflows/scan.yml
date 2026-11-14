@@ -6,8 +6,13 @@ on:
     types: [sentry-tick]   # external pinger (or the watchdog) can drive a cycle on demand
   workflow_dispatch: {}          # "Run workflow" button = manual scan-now
   push:
-    branches: [main]        # re-scan after code changes (bot memory commits use GITHUB_TOKEN, which
-                            # GitHub deliberately does not let start runs — so this cannot loop)
+    branches: [main]        # re-scan after code changes
+    paths-ignore:           # ...but not after memory/docs commits, which used to pile up and
+      - journal.md           #  cancel each other in the concurrency group (red herrings in the
+      - state.json            #  run list that the email alarm reads as noise)
+      - ledger.json
+      - trades_log.jsonl
+      - README.md
 permissions:
   contents: write                # commit state/journal back to this repo
 concurrency:
