@@ -20,6 +20,7 @@
   "min_stop_frac": 0.004,
   "max_notional_frac": 0.25,
   "max_open": 6,
+  "pending_ttl_h": 6.0,
   "min_score_fire": 3,
   "note": "execution: 'ledger' = shadow fills on Coinbase public data (no accounts needed) | 'alpaca' = Alpaca paper trading (needs Secrets). Crypto on spot venues is long-only; short signals are paper-graded into the accuracy loop."
 }
