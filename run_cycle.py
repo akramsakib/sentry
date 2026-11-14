@@ -210,6 +210,9 @@ def run():
 
     # ---------- 2) scan for new candidates ----------
     fired = 0
+    equity = float((acct or {}).get("equity") or 100000.0)
+    min_frac = float(CFG.get("min_stop_frac", 0.004))
+    max_nf = float(CFG.get("max_notional_frac", 0.25))
     for sym in syms:
         cands = core.evaluate_symbol(sym, tf_map[sym], CFG["min_score_fire"])
         # one candidate per symbol-skill-day, no pending/position crowding
@@ -240,7 +243,21 @@ def run():
                 journal(f"NOTE — {sym} {c['skill']}: soft cap on open items ({CFG['max_open']}) — advisory, skipping")
                 continue
             r_dist = abs(c["entry"] - c["sl"])
+            # A stop a few ticks from entry is not a risk level, it is spread noise: the
+            # "risk / distance" formula then prints an absurd size (2026-11-14 run #8 asked
+            # for 3 454 SOL — $261k notional to risk $100). Refuse those instead of trading them.
+            if r_dist < c["entry"] * min_frac:
+                journal(f"SKIP — {sym} {c['skill']}: stop only {100 * r_dist / c['entry']:.3f}% of price "
+                        f"(<{100 * min_frac:.2f}%) — spread noise, not a risk level")
+                continue
             qty = risk / r_dist
+            # and never let a "small risk" order grow past a sane slice of the account
+            notional = c["entry"] * qty
+            if notional > equity * max_nf:
+                qty = equity * max_nf / c["entry"]
+                risk = qty * r_dist
+                journal(f"CAPPED — {sym} {c['skill']}: notional ${notional:,.0f} over {100 * max_nf:.0f}% "
+                        f"of equity (${equity * max_nf:,.0f}) → size {qty:.6f}, risk now ${risk:.0f}")
             if c["entry"] * qty < CFG["min_notional"]:
                 journal(f"SKIP — {sym} {c['skill']}: qty below min notional (risk ${risk} too small for ${c['entry']:.2f} price)")
                 continue
