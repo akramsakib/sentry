@@ -31,33 +31,20 @@
   "FIRE|LINK/USD|S11-dc20-short|2026-11-14",
   "FIRE|LINK/USD|S11-dc55-short|2026-11-14",
   "FIRE|LTC/USD|C-H1-three-crows|2026-11-14",
-  "FIRE|AVAX/USD|C-H1-three-crows|2026-11-14"
+  "FIRE|AVAX/USD|C-H1-three-crows|2026-11-14",
+  "FIRE|ETH/USD|C-M15-piercing-line|2026-11-14",
+  "FIRE|ETH/USD|C-M15-morning-star|2026-11-14",
+  "FIRE|XRP/USD|C-M15-morning-star|2026-11-14",
+  "FIRE|SOL/USD|C-M15-bull-engulfing|2026-11-14",
+  "FIRE|DOGE/USD|C-M15-bull-engulfing|2026-11-14",
+  "FIRE|DOGE/USD|C-M15-morning-star|2026-11-14",
+  "FIRE|LINK/USD|C-M15-bull-engulfing|2026-11-14",
+  "FIRE|LINK/USD|C-M15-morning-star|2026-11-14",
+  "FIRE|LTC/USD|C-M15-piercing-line|2026-11-14",
+  "FIRE|LTC/USD|C-M15-morning-star|2026-11-14",
+  "FIRE|BCH/USD|C-H1-bear-engulfing|2026-11-14"
  ],
  "open_cids": {
-  "sentryXRPUSD1794662610992n1": {
-   "sym": "XRP/USD",
-   "skill": "C-H1-bull-engulfing",
-   "otype": "buy_stop",
-   "entry": 0.99525853,
-   "sl": 0.98395368,
-   "tp": 1.0122158,
-   "qty": 6634.32066768,
-   "r_dist": 0.011304849999999922,
-   "score": 3,
-   "risk": 75
-  },
-  "sentrySOLUSD1794662611110n2": {
-   "sym": "SOL/USD",
-   "skill": "C-H1-bull-engulfing",
-   "otype": "buy_stop",
-   "entry": 76.0667899,
-   "sl": 75.29302525,
-   "tp": 77.22743689,
-   "qty": 96.92869789,
-   "r_dist": 0.7737646500000039,
-   "score": 3,
-   "risk": 75
-  },
   "sentryBTCUSD1794672578368n5": {
    "sym": "BTC/USD",
    "skill": "C-M15-bull-engulfing",
@@ -81,9 +68,57 @@
    "r_dist": 0.0023418500000000064,
    "score": 3,
    "risk": 75
+  },
+  "sentryETHUSD1794687006124n7": {
+   "sym": "ETH/USD",
+   "skill": "C-M15-piercing-line",
+   "otype": "buy_stop",
+   "entry": 1841.70812546,
+   "sl": 1822.72468636,
+   "tp": 1870.1832841,
+   "qty": 2.6338747,
+   "r_dist": 18.98343909999994,
+   "score": 3,
+   "risk": 50.0
+  },
+  "sentryETHUSD1794687006211n8": {
+   "sym": "ETH/USD",
+   "skill": "C-M15-morning-star",
+   "otype": "buy_stop",
+   "entry": 1841.70812546,
+   "sl": 1822.72468636,
+   "tp": 1870.1832841,
+   "qty": 2.6338747,
+   "r_dist": 18.98343909999994,
+   "score": 3,
+   "risk": 50.0
+  },
+  "sentryXRPUSD1794687006293n9": {
+   "sym": "XRP/USD",
+   "skill": "C-M15-morning-star",
+   "otype": "buy_stop",
+   "entry": 0.9568033,
+   "sl": 0.94779175,
+   "tp": 0.97032062,
+   "qty": 5548.43506389,
+   "r_dist": 0.00901154999999998,
+   "score": 3,
+   "risk": 50.0
+  },
+  "sentrySOLUSD1794687006419n10": {
+   "sym": "SOL/USD",
+   "skill": "C-M15-bull-engulfing",
+   "otype": "buy_stop",
+   "entry": 72.59102278,
+   "sl": 71.74744305,
+   "tp": 73.85639237,
+   "qty": 59.27122028,
+   "r_dist": 0.8435797300000019,
+   "score": 4,
+   "risk": 50.0
   }
  },
  "pos_state": {},
- "cid_seq": 6,
- "last_cycle": 1794675237.9499774
+ "cid_seq": 10,
+ "last_cycle": 1794687006.5725274
 }
