@@ -178,6 +178,18 @@
    "stop_price": 8.87437135,
    "status": "open",
    "placed_at": 1794694962
+  },
+  {
+   "id": "1794695096887",
+   "client_order_id": "sentryprot1794695096",
+   "symbol": "BTC/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 0.06908402900547651,
+   "limit_price": null,
+   "stop_price": 63278.87,
+   "status": "open",
+   "placed_at": 1794695096
   }
  ],
  "positions": [
@@ -188,7 +200,7 @@
    "cid": "sentryBTCUSD1794694366699n11",
    "fees": 2.18577965,
    "opened": 1794694366,
-   "current_price": 64106.44
+   "current_price": 64257.46
   }
  ],
  "fees_paid": 62.56924244
