@@ -2,14 +2,14 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-14 15:43 UTC** · venue `shadow-ledger(coinbase-no-key)` → shadow book (paper) · cash $89,777.07 · equity $99,922.41
+**2026-11-14 15:44 UTC** · venue `shadow-ledger(coinbase-no-key)` → shadow book (paper) · cash $89,777.07 · equity $99,926.39
 
 ## Orders resting on the book now (2)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| SOL/USD | buy_stop | 76.06679 | 96.9287 | $7,373 | $75.00 | 73.57 | +3.39% | 139 min |
-| XRP/USD | buy_stop | 0.99525853 | 6634.32 | $6,603 | $75.00 | 0.9733 | +2.26% | 139 min |
+| SOL/USD | buy_stop | 76.06679 | 96.9287 | $7,373 | $75.00 | 73.57 | +3.39% | 141 min |
+| XRP/USD | buy_stop | 0.99525853 | 6634.32 | $6,603 | $75.00 | 0.9733 | +2.26% | 141 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -17,7 +17,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| AVAX/USD | 1326.36 | 7.641 | 7.649 | $10.61 | 7.5876058 | 8.10135 | +0.11R |
+| AVAX/USD | 1326.36 | 7.641 | 7.652 | $14.59 | 7.5876058 | 8.10135 | +0.15R |
 
 ## Last 12 signals (29 ever logged)
 
