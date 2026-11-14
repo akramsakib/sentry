@@ -142,6 +142,7 @@ def book_status(here, extra=None):
     err_f = os.path.join(here, "crypto.err.log")
     out = {
         "updated": kl(),
+        "updated_ts": time.time(),          # the monitor needs an AGE, not a pretty stamp
         "book": os.path.basename(here.rstrip("/")),
         "folder": here,
         "execution": cfg.get("execution"),

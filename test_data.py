@@ -1121,6 +1121,69 @@ else:
     check("...so the shared file stays the desk's format: stamp | [CRYPTO/book] message",
           "[CRYPTO/" in _loop25)
 
+if _have25:
+    # ---- the honesty rules on the pills, exercised by importing the SHIPPED monitor module ----
+    import importlib.util as _ilu
+    import shutil as _sh25
+    import tempfile as _tf25
+    import time as _t25
+    _spec = _ilu.spec_from_file_location("desk_monitor", _m25p)
+    _mon = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_mon)                       # the real module, not a copy of its logic
+    _d25 = _tf25.mkdtemp(prefix="desk-")
+    os.makedirs(os.path.join(_d25, "books"))
+    open(os.path.join(_d25, "sentry_mac.py"), "w").write(
+        '#!/usr/bin/env python3\n"""Trade Sentry \u2014 executor (demo account).\n"""\n')
+    open(os.path.join(_d25, "sentry.out.log"), "w").write("x\n")
+    _old = _t25.time() - 2400
+    os.utime(os.path.join(_d25, "sentry.out.log"), (_old, _old))
+    open(os.path.join(_d25, "sentry_journal.md"), "w").write(
+        "- **11-15 07:12 KL** scan ok \u00b7 book items 5\n"
+        "- **11-13 04:48 KL** CHECK/SEND FAILED XAUUSD sell stop: isError true\n")
+    open(os.path.join(_d25, "desk_mode.json"), "w").write('{"entries_enabled": true}')
+    json.dump({"updated": "now", "book": "crypto-x", "execution": "bitget", "state": "shadow",
+               "money": False, "cycle_s": 300, "updated_ts": _t25.time() - 1800, "positions": [],
+               "pendings": [], "open_cids": {}, "blocked_on": ["no venue key"]},
+              open(os.path.join(_d25, "books", "crypto-x.json"), "w"))
+    _mon.ROOT, _mon.BOOKS = _d25, os.path.join(_d25, "books")
+    _fx25 = _mon.fx_section()
+    _p25 = _mon._money_pill(dict(_fx25, feed_stale=False))
+    check("the forex pill reads ACCOUNT KIND out of the build's own file; a demo build never gets LIVE",
+          _fx25["account_kind"] == "demo" and _p25[1] != "live", str(_p25))
+    check("...and entries_enabled=true alone cannot read as live money (tonight's own bug: the switch "
+          "means allowed-to-send, not money-moved)", "DEMO account" in _p25[0] and "switch on" in _p25[0],
+          _p25[0])
+    check("a REAL-account build would still get the live pill (the rule keys off evidence, not pessimism)",
+          _mon._money_pill(dict(_fx25, account_kind="live", feed_stale=False))
+          == ("switch on \u00b7 REAL account", "live"),
+          str(_mon._money_pill(dict(_fx25, account_kind="live", feed_stale=False))))
+    check("the FX card reports the age of its own feed, so a job that went quiet cannot look healthy",
+          _fx25["feed_stale"] is True and abs(_fx25["feed_age_min"] - 40.0) < 1.5,
+          f"{_fx25['feed_age_min']} min, stale={_fx25['feed_stale']}")
+    check("...and it counts the build's own send failures, quoting the last one verbatim",
+          _fx25["send_fail_n"] == 1 and "CHECK/SEND FAILED" in _fx25["send_fail_last"],
+          _fx25["send_fail_last"][:70])
+    _bk25 = _mon.load_books()
+    check("a crypto book whose status file is 30 min old on a 5-min cycle reads STALE, not SHADOW",
+          _bk25[0]["stale"] is True and _mon._money_pill(_bk25[0])[0].startswith("STALE"),
+          f"age {_bk25[0].get('age_min')} min -> {_mon._money_pill(_bk25[0])}")
+    check("...and a fresh one keeps its SHADOW pill (the flag is about the job, not about mood)",
+          _mon._money_pill(dict(_bk25[0], updated_ts=_t25.time(), age_min=0.2, stale=False))[0]
+          .startswith("SHADOW"))
+    check("staleness is measured against the book's own cycle, not a hard-coded minute count",
+          'cyc = d.get("cycle_s") or 300' in _m25 and "2.5 * cyc / 60.0" in _m25,
+          [l.strip() for l in _m25.splitlines() if "cyc" in l][:2])
+    check("book_status publishes an epoch, because a pretty stamp cannot be aged",
+          '"updated_ts": time.time()' in _b25)
+    _md25 = _mon.to_markdown(_bk25, _fx25, "test")
+    check("a stale feed is spelled out in words, not only coloured",
+          "STALE: last cycle was" in _md25 and "last written 40" in _md25,
+          [l for l in _md25.splitlines() if "STALE" in l][:1])
+    check("and the page refuses to claim the terminal bridge is reachable",
+          "never calls the terminal" in _md25)
+    _sh25.rmtree(_d25, ignore_errors=True)
+
+
 _probe25 = os.path.join(_h25, "tools/checks/check_held_entries.py")
 if _have25 and os.path.exists(_probe25):
     import subprocess as _sp25

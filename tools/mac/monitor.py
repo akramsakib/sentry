@@ -49,6 +49,11 @@ def load_books():
         d = _json(p)
         if isinstance(d, dict) and d.get("book"):
             d["_path"] = p
+            ts = d.get("updated_ts")
+            if isinstance(ts, (int, float)):
+                d["age_min"] = round((time.time() - float(ts)) / 60.0, 1)
+                cyc = d.get("cycle_s") or 300
+                d["stale"] = d["age_min"] > (2.5 * cyc / 60.0)
             out.append(d)
     out.sort(key=lambda b: (b.get("book") != "crypto", b.get("book") or ""))
     return out
@@ -77,6 +82,26 @@ def fx_section():
             items = int(m.group(1))
             break
     scan = next((l for l in reversed(jl) if "scan ok" in l), "")
+    # What the terminal actually is, from the build's own file rather than from my assumption: its
+    # header says "(demo account)". A dashboard that printed LIVE off `entries_enabled` alone was
+    # claiming money moves when it only claims the code is ALLOWED to send — so read the header, and
+    # read the age of the build's own log, and let the card say all three.
+    kind = "unknown"
+    try:
+        head = open(os.path.join(ROOT, "sentry_mac.py")).read(1500).lower()
+        if "demo account" in head or "(demo)" in head:
+            kind = "demo"
+        elif "real account" in head or "live account" in head:
+            kind = "live"
+    except Exception:
+        pass
+    out_f = os.path.join(ROOT, "sentry.out.log")
+    try:
+        feed_age_min = round((time.time() - os.path.getmtime(out_f)) / 60.0, 1)
+    except Exception:
+        feed_age_min = None
+    fails = [l for l in reversed(_tail(os.path.join(ROOT, "sentry_journal.md"), 400))
+             if "SEND FAILED" in l or "CHECK/SEND FAILED" in l]
     return {"updated": time.strftime("%Y-%m-%d %H:%M KL", time.gmtime(time.time() + 8 * 3600)),
             "book": "forex (MT5)", "execution": "MT5 via the terminal bridge",
             "state": "resident" if (orders or items) else "idle",
@@ -88,16 +113,28 @@ def fx_section():
             "last_scan": scan.split("**")[-1].strip()[-190:] if scan else "",
             "cycle_s": None, "blocked_on": [],
             "sizing": {"base_risk": 125, "live_max_risk": None}, "cost": {},
-            "fx_only": True}
+            "fx_only": True, "account_kind": kind, "feed_age_min": feed_age_min,
+            "feed_stale": (feed_age_min is not None and feed_age_min > 15),
+            "send_fail_last": (fails[0][:150] if fails else ""),
+            "send_fail_n": len(fails)}
 
 
 def _money_pill(b):
+    """Only ever what the files prove. Three different things were being collapsed into 'LIVE':
+    the switch is on, the account is real, and money actually moved. They are not the same claim."""
     if b.get("fx_only"):
-        return ("LIVE — MT5", "live" if b.get("money") else "hold")
+        kind = b.get("account_kind") or "unknown"
+        acct = {"demo": "DEMO account", "live": "REAL account"}.get(kind, "account kind unknown")
+        sw = "switch on" if b.get("money") else "switch OFF"
+        if b.get("feed_stale"):
+            return (f"STALE — {acct} · {sw} · feed {b.get('feed_age_min')} min", "hold")
+        return (f"{sw} · {acct}", "live" if (b.get("money") and kind == "live") else "hold")
+    if b.get("stale"):
+        return (f"STALE — last cycle {b.get('age_min')} min ago", "hold")
     if b.get("money"):
-        return ("LIVE — real orders", "live")
+        return ("LIVE — orders are being SENT", "live")
     if b.get("state") == "shadow":
-        return ("SHADOW — booked, not sent", "shadow")
+        return ("SHADOW — booked, not sent (no key)", "shadow")
     return (str(b.get("state") or "?"), "shadow")
 
 
@@ -143,6 +180,17 @@ def to_markdown(books, fx, built):
                      f"{cost.get('verdict')}")
         if b.get("blocked_on"):
             L.append("- **waiting on:** " + "; ".join(str(x) for x in b["blocked_on"]))
+        if b.get("fx_only"):
+            L.append(f"- feed last written {b.get('feed_age_min')} min ago · account kind read from "
+                     f"`sentry_mac.py`: **{b.get('account_kind')}** · send failures in the last 400 "
+                     f"journal lines: {b.get('send_fail_n') or 0}")
+            if b.get("send_fail_last"):
+                L.append(f"- last send failure: `{b['send_fail_last']}`")
+            L.append("- this page never calls the terminal, so it makes no claim that the bridge is "
+                     "reachable; the feed age above is the honest liveness signal")
+        elif b.get("stale"):
+            L.append(f"- **STALE: last cycle was {b.get('age_min')} min ago** — the launchd job or the "
+                     f"venue feed needs attention; nothing here can restart it, by design")
         poss = b.get("positions") or []
         if poss:
             L += ["", "| position | side | qty | entry | last | R in flight | to stop | $ to stop | PnL |",
@@ -223,6 +271,17 @@ def to_html(books, fx, built, md_path):
                      f'stop {esc(_pct(cost.get("stop_frac")))}</p>')
         if b.get("blocked_on"):
             h.append('<p class="kv warn">waiting on: ' + esc("; ".join(map(str, b["blocked_on"]))) + "</p>")
+        if b.get("stale"):
+            h.append(f'<p class="kv warn">STALE — last cycle {esc(b.get("age_min"))} min ago '
+                     f'(expected every {esc(b.get("cycle_s"))}s). The job is not finishing.</p>')
+        if b.get("fx_only"):
+            h.append(f'<p class="kv">feed last written <b>{esc(b.get("feed_age_min"))} min ago</b> · '
+                     f'account kind, read from <code>sentry_mac.py</code>: <b>{esc(b.get("account_kind"))}</b>'
+                     f' · send failures in the last 400 journal lines: <b>{esc(b.get("send_fail_n") or 0)}</b></p>'
+                     + (f'<p class="kv warn">last send failure: {esc(b.get("send_fail_last"))}</p>'
+                        if b.get("send_fail_last") else "")
+                     + '<p class="kv">this page never calls the terminal, so it cannot say the bridge is '
+                       'reachable — the age above is the honest liveness signal.</p>')
         poss = b.get("positions") or []
         if poss:
             h.append("<table><tr><th>pos</th><th>side</th><th class=n>qty</th><th class=n>entry</th>"
