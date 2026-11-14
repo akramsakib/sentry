@@ -638,9 +638,13 @@ def run():
     journal(f"scan ok · venue {VENUE} · {len(syms)} symbols · {fired} new · {len(s['open_cids'])} pendings · "
             f"{len(s['pos_state'])} positions{eq} · {int(time.time() - t0)}s{_fee_str}")
     if EXEC_MODE == "coinbase" and not CB_KEYED:
-        journal("NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are "
-                "being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the "
-                "Actions secret to trade the real book.")
+        # the sentence has to name THIS runner's key file — "add the Actions secret" was the old
+        # GitHub-executor story, and the Mac book has no Secrets to add (v4.7.2 moved money home).
+        _keyf = ("./coinbase.env (or ./coinbase.pem for a retail CDP key)" if HERE.count("hermes_sentry")
+                 else "the COINBASE_* Actions secrets")
+        journal(f"NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are "
+                f"being written to the SHADOW LEDGER (real prices, simulated fills, no real money). "
+                f"Put the key in {_keyf} to trade the real book; blank it again to disarm.")
     save_state(s)
 
 
