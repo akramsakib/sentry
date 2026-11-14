@@ -65,8 +65,15 @@ def crypto_bars(symbol, timeframe="1Hour", limit=200):
     url = (f"{COINBASE}/products/{_product(symbol)}/candles"
            f"?granularity={g}&start={int(time.time()) - g * (limit + 2)}&end={int(time.time())}")
     rows = _get(url, 20)
+    # Coinbase candles come back as [time, low, high, open, close, volume] (verified against the
+    # live API 2026-11-14). Mapping them in the wrong order turns every candlestick pattern into
+    # noise: with o=low/h=open/l=close/c=high, "bull" is always true and h-l is the body, not the
+    # range — which is how C-H1 fired on five symbols at once with 0.04% stops. See test_data.py.
     out = [{"t": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(c[0])),
-            "o": c[1], "h": c[3], "l": c[4], "c": c[2], "v": c[5]} for c in sorted(rows)]
+            "o": c[3], "h": c[2], "l": c[1], "c": c[4], "v": c[5]} for c in sorted(rows)]
+    for b in out:  # never trust a provider's outliers: geometry must hold
+        if not (b["h"] >= max(b["o"], b["c"]) >= min(b["o"], b["c"]) >= b["l"]):
+            raise BrokerError(f"{symbol} {timeframe}: impossible bar {b}")
     if out and timeframe in _GRAN:
         out.pop()  # last candle is still forming -> closed bars only (matches broker.py)
     return out
