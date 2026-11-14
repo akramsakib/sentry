@@ -87,9 +87,12 @@ Differences that matter, because Bitget is not OKX with different letters:
 * **size is in coins** — no `ctVal` contract multiplier. Reusing OKX's contract maths changes your size.
 * **a trigger is a field, not an endpoint** — `orderType=limit` + `triggerType=fill_price` +
   `triggerPrice` (+ `executePrice` collar) on `/api/v2/mix/order/place-order`.
-* **candles**: `/history-candles` takes `1H/4H/1D` and REFUSES the `*utc` spellings `/candles` accepts,
-  and it returns closed bars only (no `confirm` flag), so the forming bar is dropped by its own open
-  time. Daily bars land at 16:00 UTC — the venue's day. A book that mixes feeds would grade on a
-  different day than it trades.
+* **candles**: `/history-candles` returns closed bars only (no `confirm` flag), so the forming bar is
+  dropped by its own open time, and its granularity list is NOT `/candles`'s: `1Hutc`/`4Hutc` are absent
+  (the earlier mapping that asked for one got `400171 k-line time range should be [...]`), while the
+  day/week/month names exist in BOTH forms and mean different bars — `1D` opens at 16:00 UTC (the
+  venue's own UTC+8 day) and `1Dutc` at 00:00 UTC, both measured live. This book asks for `1Dutc`,
+  because the OKX book's daily features are cut at 00:00 UTC and two books comparing "yesterday's D1"
+  must mean the same candle. Unknown timeframes raise; there is no silent fallback.
 * **0.24 R** per trade at a 0.5 % stop (0.02/0.06, read live) against a `live_max_fee_r` cap of 0.25 R:
   it passes, by 0.01 R. Check `fees` on your own account before trusting that.

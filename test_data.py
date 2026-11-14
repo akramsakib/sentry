@@ -843,6 +843,11 @@ try:
 except _bg23.BrokerError as e:
     check("an unknown timeframe FAILS instead of silently returning 1H (the OKX BAR.get trap)",
           "not a Bitget history-candles granularity" in str(e))
+check("daily/weekly/monthly use the venue's *utc names, so both books cut the day at 00:00 UTC",
+      _bg23.BAR["1Day"] == "1Dutc" and _bg23.BAR["1Week"] == "1Wutc" and _bg23.BAR["1Month"] == "1Mutc"
+      and _bg23.BAR["1Hour"] == "1H" and _bg23.BAR["4Hour"] == "4H"
+      and "1Hutc" not in _bg23.BAR.values() and "4Hutc" not in _bg23.BAR.values(),
+      "history-candles accepts 1Dutc/1Wutc/1Mutc but NOT 1Hutc/4Hutc (measured 400171, 2026-11-14)")
 _kit23 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/mac/crypto_loop.py")).read()
 check("the Mac runner loads EVERY *.env in the folder, so a third lane needs no code change",
       'f.endswith(".env")' in _kit23 and "os.listdir(HERE)" in _kit23)

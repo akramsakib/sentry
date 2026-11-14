@@ -70,7 +70,11 @@ UA = "sentry-bot/4.7"
 # fail the very first fetch: it did exactly that on 2026-11-14, and failed LOUD, which is the point.
 BAR = {"1Minute": "1m", "3Minute": "3m", "5Minute": "5m", "15Minute": "15m", "30Minute": "30m",
        "1Hour": "1H", "4Hour": "4H", "6Hour": "6H", "12Hour": "12H",
-       "1Day": "1D", "1Week": "1W", "1Month": "1M"}
+       # utc-anchored names: /history-candles accepts 1Dutc/1Wutc/1Mutc (measured live 2026-11-14:
+       # 86400 s spacing with bars opening 00:00 UTC, vs 1D's 16:00 UTC = the venue's own UTC+8 day).
+       # Daily features are compared against the OKX book's, so both books must cut the day in the
+       # same place; a 16-hour offset would silently make "yesterday's D1" a different bar per venue.
+       "1Day": "1Dutc", "1Week": "1Wutc", "1Month": "1Mutc"}
 GRANULARITY_OK = set(BAR.values())
 SLACK = float(os.environ.get("BITGET_SLACK") or "0.0015")    # limit clearance past a trigger
 
