@@ -1,0 +1,3 @@
+- **11-14 09:01 UTC** CANDIDATE(score 4/5) — ADA/USD S2-breakdown-short sell_stop 0.16290718 sl0.16556282 tp0.15892372 — paper-graded (spot can't short)
+- **11-14 09:01 UTC** CANDIDATE(score 4/5) — AVAX/USD S2-breakdown-short sell_stop 8.02979072 sl8.14520928 tp7.85666287 — paper-graded (spot can't short)
+- **11-14 09:01 UTC** scan ok · 10 symbols · 0 new · 0 pendings · 0 positions equity $100000.00 · 6s

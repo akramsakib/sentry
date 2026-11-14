@@ -1,0 +1,2 @@
+{"rid": "ADA/USD|S2-breakdown-short|0.16290718", "sym": "ADA/USD", "skill": "S2-breakdown-short", "otype": "sell_stop", "entry": 0.16290718, "sl": 0.16556282, "tp": 0.15892372, "score": 4, "risk": 100, "fired": false, "note": "paper: no crypto shorting on spot", "ts": "2026-11-14 09:01"}
+{"rid": "AVAX/USD|S2-breakdown-short|8.02979072", "sym": "AVAX/USD", "skill": "S2-breakdown-short", "otype": "sell_stop", "entry": 8.02979072, "sl": 8.14520928, "tp": 7.85666287, "score": 4, "risk": 100, "fired": false, "note": "paper: no crypto shorting on spot", "ts": "2026-11-14 09:01"}
