@@ -1088,6 +1088,13 @@ else:
           and "os.replace(" in _m25, " | ".join(_w25))
     check("...and no book folder path appears in a write, only in a read",
           "books" not in "".join(_w25), "".join(_w25))
+    check("the forex card counts what the FX build itself calls its book, not its lifetime ticket list",
+          '"n_positions": items' in _m25 and "book items" in _m25
+          and 'st.get("known_positions")' not in _m25
+          and "only ever appends" in _m25,
+          "known_positions is an ever-growing seen-list; printing its length as 'open' would be a lie")
+    check("...and it says so on the card, so nobody reads it as a position count",
+          "positions_label" in _m25 and _m25.count("positions_label") >= 3)
     check("the page refreshes itself, so it is a dashboard and not a screenshot",
           "http-equiv='refresh'" in _m25 and "REFRESH_S = 60" in _m25)
     check("the monitor shows what a book is WAITING on, not just what it did",

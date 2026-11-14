@@ -54,19 +54,39 @@ def load_books():
     return out
 
 
+_BOOK_ITEMS = __import__("re").compile(r"book items (\d+)")
+
+
 def fx_section():
-    """The MT5 forex build, read the way it is actually readable: its state + journal, no terminal call."""
+    """The MT5 forex build, read the way it is actually readable: its state + journal, no terminal call.
+
+    Note what is NOT counted here. Its state file keeps `known_positions`, which is the list of ticket
+    ids it has EVER seen (its own code only ever appends), so a monitor that printed that length as
+    "open positions" would show a number that only grows — 25 by the time this was written, against a
+    desk book of 5. Real open positions live in the terminal, and monitor.py never calls the terminal
+    (that is its whole safety property), so the honest figure is the build's own last `book items N`.
+    """
     st = _json(os.path.join(ROOT, "state.json"), {}) or {}
     orders = st.get("orders") or []
     desk = _json(os.path.join(ROOT, "desk_mode.json"), {}) or {}
-    pos = st.get("known_positions") or []
+    jl = _tail(os.path.join(ROOT, "sentry_journal.md"), 40)
+    items = None
+    for line in reversed(jl):
+        m = _BOOK_ITEMS.search(line)
+        if m:
+            items = int(m.group(1))
+            break
+    scan = next((l for l in reversed(jl) if "scan ok" in l), "")
     return {"updated": time.strftime("%Y-%m-%d %H:%M KL", time.gmtime(time.time() + 8 * 3600)),
             "book": "forex (MT5)", "execution": "MT5 via the terminal bridge",
-            "state": "resident" if orders or pos else "idle",
+            "state": "resident" if (orders or items) else "idle",
             "money": bool(desk.get("entries_enabled")), "n_pendings": len(orders),
-            "n_positions": len(pos), "equity": None, "positions": [], "pendings": [],
-            "grades": {}, "events": [l[-160:] for l in _tail(os.path.join(ROOT, "sentry_journal.md"), 5)],
-            "last_scan": "", "cycle_s": None, "blocked_on": [],
+            "n_positions": items,
+            "positions_label": "desk book items (the terminal's own position count is not read here)",
+            "equity": None, "positions": [], "pendings": [],
+            "grades": {}, "events": [l[-160:] for l in jl[:5]],
+            "last_scan": scan.split("**")[-1].strip()[-190:] if scan else "",
+            "cycle_s": None, "blocked_on": [],
             "sizing": {"base_risk": 125, "live_max_risk": None}, "cost": {},
             "fx_only": True}
 
@@ -110,9 +130,10 @@ def to_markdown(books, fx, built):
             L.append(f"- equity **${_fmt(b.get('equity'))}** · cash ${_fmt(b.get('cash'))} · "
                      f"realized ${_fmt(b.get('realized'))} · fees ${_fmt(b.get('fees_paid'))} · "
                      f"exposure ${_fmt(b.get('exposure'))}")
-        L.append(f"- open **{b.get('n_positions', len(b.get('positions') or []))}** · "
-                 f"pendings **{b.get('n_pendings', len(b.get('pendings') or []))}** · risk on pendings "
-                 f"${_fmt(b.get('at_risk'))} · per-trade ${_fmt(sz.get('base_risk'), 0)}")
+        L.append(f"- open **{b.get('n_positions', len(b.get('positions') or []))}**"
+                 + (f" _({b['positions_label']})_" if b.get("positions_label") else "")
+                 + f" · pendings **{b.get('n_pendings', len(b.get('pendings') or []))}** · "
+                   f"risk on pendings ${_fmt(b.get('at_risk'))} · per-trade ${_fmt(sz.get('base_risk'), 0)}")
         if g:
             L.append(f"- own record: {g.get('graded', 0)} graded "
                      f"({g.get('wins', 0)}W/{g.get('losses', 0)}L/{g.get('scratch', 0)}S) · "
@@ -181,7 +202,9 @@ def to_html(books, fx, built, md_path):
         h.append(f'<p class="kv">updated <b>{esc(b.get("updated"))}</b>'
                  + (f' · cycle <b>{esc(b.get("cycle_s"))}s</b>' if b.get("cycle_s") else "")
                  + f' · open <b>{esc(b.get("n_positions", len(b.get("positions") or [])))}</b>'
-                   f' · pendings <b>{esc(b.get("n_pendings", len(b.get("pendings") or [])))}</b></p>')
+                   + (f' <span style="font-size:10px">({esc(b["positions_label"])})</span>'
+                      if b.get("positions_label") else "")
+                   + f' · pendings <b>{esc(b.get("n_pendings", len(b.get("pendings") or [])))}</b></p>')
         if b.get("equity") is not None:
             h.append(f'<p class="big">${esc(_fmt(b.get("equity")))} <span style="font-size:11px;'
                      f'color:var(--dim);font-weight:400">equity · cash ${esc(_fmt(b.get("cash")))} · '
