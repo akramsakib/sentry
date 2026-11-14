@@ -1,4 +1,4 @@
-# Sentry v4.5.0 — GitHub-native trading brain (no MT5, no Mac, no Wine)
+# Sentry v4.5.1 — GitHub-native trading brain (no MT5, no Mac, no Wine)
 
 The same checklist engine from the Mac build (`sentry_mac.py` v3.1), ported to run entirely on
 **GitHub Actions**. One workflow run = one full scan cycle, every 10 minutes, 24/7 (crypto has no
