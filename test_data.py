@@ -27,6 +27,29 @@ def check(name, cond, detail=""):
         FAILS.append(name)
 
 
+# A deployed book folder is FLAT (crypto_loop.py sits beside this file); the repo nests the same files
+# under tools/<mac|checks>/. Every section that reads a sibling must resolve, not assume — a suite that
+# crashes in the folder that actually holds his money tests nothing where it matters, and that is exactly
+# how this file behaved on the Mac until the $10 deposit made me run it there.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def _asset(*rel):
+    base = os.path.basename(rel[-1])
+    for cand in (os.path.join(_HERE, *rel),                    # the repo, where this file is authored
+                 os.path.join(_HERE, base),                    # a flat deployed book
+                 os.path.join(os.path.dirname(_HERE), base),   # the desk root, one level up
+                 os.path.expanduser("~/Library/LaunchAgents/" + base)):   # where launchd keeps the jobs
+        if os.path.isfile(cand):
+            return cand
+    return None
+
+
+def _text(*rel):
+    q = _asset(*rel)
+    return open(q).read() if q else ""
+
+
 # ---------- 1 + 2 + 3: bar mapping ----------
 import broker_ledger as bl                                     # noqa: E402
 
@@ -717,7 +740,7 @@ check("the floor is wired at the one place a stop is judged (right after re-anch
       'CFG.get("stop_floor_frac")' in src and "WIDENED —" in src)
 check("the traded stop, not the asked stop, is what gets stored and managed",
       src.count('"sl": c["sl"]') >= 2 and '"sl_ask": sl0' in src)
-_loop22 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/mac/crypto_loop.py")).read()
+_loop22 = _text("tools/mac/crypto_loop.py")
 check("the boot banner tells you WHICH env file the current venue reads (venue-derived, not hard-coded)",
       "def boot_banner" in _loop22 and "_exe = getattr" not in _loop22
       and '"./okx.env"' in _loop22 and '"./bitget.env"' in _loop22
@@ -859,20 +882,17 @@ check("daily/weekly/monthly use the venue's *utc names, so both books cut the da
       and _bg23.BAR["1Hour"] == "1H" and _bg23.BAR["4Hour"] == "4H"
       and "1Hutc" not in _bg23.BAR.values() and "4Hutc" not in _bg23.BAR.values(),
       "history-candles accepts 1Dutc/1Wutc/1Mutc but NOT 1Hutc/4Hutc (measured 400171, 2026-11-14)")
-_kit23 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/mac/crypto_loop.py")).read()
+_kit23 = _text("tools/mac/crypto_loop.py")
 check("the Mac runner loads EVERY *.env in the folder, so a third lane needs no code change",
       'f.endswith(".env")' in _kit23 and "os.listdir(HERE)" in _kit23)
-_bgp23 = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                      "tools/mac/com.hermes.sentry.crypto.bitget.plist")
+_bgp23 = _asset("tools/mac/com.hermes.sentry.crypto.bitget.plist")
 check("a bitget book ships its own launchd label and folder, so two books cannot collide",
-      os.path.exists(_bgp23) and "com.hermes.sentry.crypto.bitget" in open(_bgp23).read()
+      bool(_bgp23) and "com.hermes.sentry.crypto.bitget" in open(_bgp23).read()
       and "crypto-bitget" in open(_bgp23).read())
 check("bitget.env ships as a template that arms NOTHING (every key line commented)",
-      all(not l.strip().startswith("BITGET_API") for l in open(os.path.join(
-          os.path.dirname(os.path.abspath(__file__)), "tools/mac/bitget.env"))))
+      all(not l.strip().startswith("BITGET_API") for l in _text("tools/mac/bitget.env").splitlines()))
 check("no silent default: BAR.get has no fallback argument in crypto_bars",
-      'BAR.get(timeframe)' in open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                               "broker_bitget.py")).read())
+      'BAR.get(timeframe)' in _text("broker_bitget.py"))
 # sizing/price maths: Bitget sizes in COINS (no ctVal), on the venue's own increments
 _m23 = {"tick": "0.1", "lot": "0.0001", "min_sz": "0.0001", "ct_val": 1.0, "live": True,
         "inst": "BTCUSDT", "maker": 0.0002, "taker": 0.0006, "min_usdt": 5.0}
@@ -967,8 +987,8 @@ check("and the refusal names both fixes (fund it, or disarm the key) without tou
 
 # ...and the whole gate end-to-end: the shipped probe runs run_cycle.run() against a stubbed venue
 # that answers the wallet with $0 and records any attempt to place an order. 0.2 s, no network.
-_probe24 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/checks/check_empty_wallet.py")
-if os.path.exists(_probe24):
+_probe24 = _asset("tools/checks/check_empty_wallet.py")
+if _probe24 and os.path.exists(_probe24):
     import subprocess as _sp24
     _r24 = _sp24.run([sys.executable, _probe24], capture_output=True, text=True, timeout=180)
     _out24 = (_r24.stdout or "") + (_r24.stderr or "")
@@ -1065,10 +1085,10 @@ check("a held candidate is logged fired=False (recorded, never counted as a live
 _lg25 = _rc25.split("def live_gate", 1)[1].split("\n\ndef ", 1)[0]
 check("the switch is NOT inside live_gate, so a pause never reads as a gate refusal on the dashboard",
       "if held:" not in _lg25 and "entries_switch" not in _lg25, _lg25[:80])
-_m25p, _b25p = os.path.join(_h25, "tools/mac/monitor.py"), os.path.join(_h25, "tools/mac/book_status.py")
-_pl25 = os.path.join(_h25, "tools/mac/com.hermes.sentry.monitor.plist")
-_skip25 = [q for q in (_m25p, _b25p, _pl25, os.path.join(_h25, "tools/mac/crypto_loop.py"),
-             os.path.join(_h25, "tools/checks/check_held_entries.py")) if not os.path.exists(q)]
+_m25p, _b25p = _asset("tools/mac/monitor.py"), _asset("tools/mac/book_status.py")
+_pl25 = _asset("tools/mac/com.hermes.sentry.monitor.plist")
+_skip25 = [q for q in (_m25p, _b25p, _pl25, _asset("tools/mac/crypto_loop.py"),
+             _asset("tools/checks/check_held_entries.py")) if not q]
 if _skip25:
     print(f"  [skipped here: {len(_skip25)} tools/ files] — this folder is a deployed book, "
           f"so only the run_cycle half of \u00a725 can be checked: {[os.path.basename(q) for q in _skip25]}")
@@ -1114,7 +1134,7 @@ else:
           all(k in _b25 for k in ("r_to_stop", "r_live", "notional")))
     check("the venue's real equity is what gets published, and the fee cap verdict is computed",
           "drag" in _b25 and "cap_r" in _b25 and "OVER CAP" in _b25)
-    _loop25p = os.path.join(_h25, "tools/mac/crypto_loop.py")
+    _loop25p = _asset("tools/mac/crypto_loop.py")
     _loop25 = open(_loop25p).read() if os.path.exists(_loop25p) else ""
     check("crypto_loop publishes status at the end of every cycle",
           chr(10) + "    publish()" in _loop25 and "def publish():" in _loop25)
@@ -1196,7 +1216,7 @@ if _have25:
     _sh25.rmtree(_d25, ignore_errors=True)
 
 
-_probe25 = os.path.join(_h25, "tools/checks/check_held_entries.py")
+_probe25 = _asset("tools/checks/check_held_entries.py")
 if _have25 and os.path.exists(_probe25):
     import subprocess as _sp25
     _r25 = _sp25.run([sys.executable, _probe25], capture_output=True, text=True, timeout=900,
@@ -1266,7 +1286,7 @@ if _nc:
     _rv = __import__("builtins").getattr(rc, "ORDER_VERB", None)
     check("and here, in this fixture run (no key, money=False), the resolved verb IS 'ORDER BOOKED'",
           _rv == "ORDER BOOKED", repr(_rv))
-_probe26 = os.path.join(_h25, "tools/checks/check_small_account.py")
+_probe26 = _asset("tools/checks/check_small_account.py")
 if os.path.exists(_probe26):
     import subprocess as _sp26
     _r26 = _sp26.run([sys.executable, _probe26], capture_output=True, text=True, timeout=900,
