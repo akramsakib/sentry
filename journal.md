@@ -91,3 +91,5 @@
 - **11-14 16:09 UTC** CANDIDATE(score 4/5) — AVAX/USD C-H1-three-crows sell_stop 7.59889137 sl7.95077157 tp7.07107107 — paper-graded (spot can't short)
 - **11-14 16:09 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 2 new · 4 pendings · 0 positions equity $99780.60 · 2s · venue fees $60.38 to date @ 0.40/0.60%
 - **11-14 16:09 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
+- **11-14 16:12 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 4 pendings · 0 positions equity $99780.60 · 2s · venue fees $60.38 to date @ 0.40/0.60%
+- **11-14 16:12 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
