@@ -1,5 +1,5 @@
 {
-  "execution": "coinbase",
+  "execution": "okx",
   "symbols": [
     "BTC/USD",
     "ETH/USD",
@@ -22,14 +22,15 @@
   "pending_ttl_h": 6.0,
   "min_score_fire": 3,
   "fees": {
-    "maker": 0.004,
-    "taker": 0.006
+    "maker": 0.0002,
+    "taker": 0.0005
   },
   "live_max_fee_r": 0.25,
-  "note": "execution: 'okx' = OKX perps via broker_okx.py \u2014 0.02/0.05% fees, TP+SL attached to the entry order by the venue, shorts tradable, and vars.OKX_SIM=1 rehearses on OKX's simulated engine with no money | 'coinbase' = Coinbase via broker_coinbase.py (retail Advanced Trade, or Exchange when a passphrase is set) | 'ledger' = shadow only | 'alpaca' = Alpaca paper. Any venue with no key in the runner falls back to the shadow ledger and says so in the journal. Live orders also require live_ack: true, min_grade_before_live graded outcomes, and a cycle heartbeat younger than max_gap_h. Per-trade live risk = min(sizer, live_max_risk, equity*live_max_risk_frac); if the notional exceeds max_notional_frac of equity the trade is SKIPPED, never quietly trimmed. fees = what the VENUE named in execution charges per side, charged on every fill (paper and live) and netted into the R that grading uses \u2014 it must be changed whenever execution changes, and a mismatch (e.g. Coinbase rates on the OKX venue) is called out in the journal. A live trade whose round-trip fee exceeds live_max_fee_r of its own risk is REFUSED. See README 'Which venue?' and 'The wallet'.",
+  "note": "execution picks the venue and fees must be THAT venue's numbers \u2014 'okx' (what ships) is 0.0002/0.0005 on perps, where TP+SL attach to the entry order and shorts are real; 'coinbase' is 0.004/0.006 and its live trades are refused by live_max_fee_r because 1.82R of fees on a 0.55 % stop is the whole risk budget | 'ledger' = shadow book only | 'alpaca' = Alpaca paper. Any venue with no key in this runner falls back to the shadow ledger and says so in the journal. Live orders also require live_ack: true, min_grade_before_live graded outcomes, and a cycle heartbeat younger than max_gap_h. Per-trade live risk = min(sizer, live_max_risk, equity*live_max_risk_frac); a notional over max_notional_frac of equity is SKIPPED, never quietly trimmed. Fees are charged on every fill (paper and live) and netted into the R that grading and the sizer use.",
   "live_ack": false,
   "min_grade_before_live": 8,
   "max_gap_h": 2.0,
   "live_max_risk": 25.0,
-  "live_max_risk_frac": 0.01
+  "live_max_risk_frac": 0.01,
+  "fees_note": "these are OKX base-tier perp rates, because execution says 'okx'. Coinbase Advanced Trade is 0.40/0.60 % \u2014 if you flip execution back, flip these too or the guard at live_max_fee_r will refuse every trade (correctly: 1.82R of fees on a 0.55 % stop)."
 }

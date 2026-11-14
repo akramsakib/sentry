@@ -1,4 +1,4 @@
-"""Sentry v4.5.1 (GitHub-native) — one full scan/manage cycle per run.
+"""Sentry v4.6.0 (GitHub-native) — one full scan/manage cycle per run.
 
 Designed to be invoked by .github/workflows/scan.yml every 10 minutes.
 State of record = files in this repo (state.json, journal.md, trades_log.jsonl),

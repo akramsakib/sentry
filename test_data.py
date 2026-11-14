@@ -513,6 +513,17 @@ check("env reads treat '' as unset (a CI variable with no value is empty, not ab
 check("  ...and the workflow passes no bare tuning knobs as Actions variables",
       "OKX_SLACK" not in open(os.path.join(_here, ".github", "workflows", "scan.yml")).read())
 
+# The two config lines that decide whether this strategy can pay for itself must not drift apart:
+# fees priced for one venue while trading another is how 4 releases of paper looked profitable.
+_cfgnow = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")))
+_exp_taker = {"okx": 0.0005, "coinbase": 0.006, "ledger": None, "alpaca": None}
+check("config.json: the fee schedule belongs to the venue it names",
+      _exp_taker.get(_cfgnow["execution"]) in (None, (_cfgnow.get("fees") or {}).get("taker")),
+      f"execution={_cfgnow['execution']} taker={(_cfgnow.get('fees') or {}).get('taker')}")
+check("  ...and the live fee guard is enabled (0 = the guard is off, which is not the default)",
+      _cfgnow.get("live_max_fee_r", 0) > 0 and _cfgnow.get("live_ack") is False,
+      f"cap {_cfgnow.get('live_max_fee_r')} / live_ack {_cfgnow.get('live_ack')}")
+
 # ---------- 18: the OKX venue (perps = the only schedule this playbook can pay) ----------
 import broker_okx as ok
 

@@ -1,4 +1,4 @@
-# Sentry v4.5.1 — GitHub-native trading brain (no MT5, no Mac, no Wine)
+# Sentry v4.6.0 — GitHub-native trading brain (no MT5, no Mac, no Wine)
 
 The same checklist engine from the Mac build (`sentry_mac.py` v3.1), ported to run entirely on
 **GitHub Actions**. One workflow run = one full scan cycle, every 10 minutes, 24/7 (crypto has no
@@ -14,7 +14,7 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
 │  1. fetch klines      │   │ ledger.json       (simulated fills)   │
 │  2. reconcile fills   │   │ journal.md        (every decision)    │
 │  3. evaluate skills   │   │ trades_log.jsonl  (accuracy → sizing) │
-│  4. size + fire       │──▶ venue: Coinbase ledger or Alpaca paper │
+│  4. size + fire       │──▶ venue: OKX perps / Coinbase / Alpaca    │
 │  5. push_memory (API) │   └───────────────────────────────────────┘
 └───────────────────────┘
 ```
@@ -29,22 +29,53 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
   API with retry, so two runners can never conflict the way `git push` did).
 
 ## Execution modes (one config line)
-- **`"execution": "coinbase"` (what ships):** Coinbase via `broker_coinbase.py` — **real orders on
+- **`"execution": "okx"` (what ships):** OKX via `broker_okx.py` — real orders on perps, **0.02 %/0.05 %
+  fees**, TP/SL attached to the entry order by the venue, and the short side of the checklist actually
+  tradable. `vars.OKX_SIM=1` switches to OKX's simulated-trading engine: same host, same signatures,
+  real matching, **no money** — the rehearsal Coinbase cannot offer. Same no-key fallback to the
+  shadow book (on Coinbase public candles, so prices are unchanged; only the fee schedule moved).
+- **`"execution": "coinbase"`:** Coinbase via `broker_coinbase.py` — **real orders on
   a real book**, on either Coinbase API (retail Advanced Trade or institutional Exchange; the
   presence of a passphrase picks which, see "Going live"). The key lives only in Actions Secrets.
   With no key in the runner it runs the shadow ledger on the same public data and stamps
   `venue shadow-ledger(coinbase-no-key)` into the journal line, so "did that touch real money?" is
   always answerable from the log.
-- **`"execution": "okx"`:** OKX via `broker_okx.py` — real orders on perps, **0.02 %/0.05 % fees**, TP/SL
-  attached to the entry order by the venue, and the short side of the checklist actually tradable.
-  `vars.OKX_SIM=1` switches it to OKX's simulated-trading engine: same host, same signatures, real
-  matching, **no money** — the rehearsal Coinbase cannot offer. Same no-key fallback to the shadow book.
 - **`"execution": "ledger"`:** shadow book only — real prices, simulated fills in `ledger.json`.
   Paper fills are honest about price (never worse than the tape) but have no depth model.
 - **`"execution": "alpaca"`:** Alpaca paper venue (resting orders on their engine). Needs
   `ALPACA_KEY_ID` + `ALPACA_SECRET`. Same brain, different venue.
 
-## Going live on Coinbase
+## Going live on OKX (the default venue)
+
+One venue, three secrets, one flag. OKX signs with `key + secret + passphrase`, all three required, and
+`run_cycle.py` refuses to boot if `live_ack` is armed with any of them missing — a half-configured live
+venue is worse than none.
+
+1. Mint the API key with **Trade only**. No withdrawal, no transfer. Turn on the withdrawal whitelist
+   on the account side.
+2. Actions → Secrets and variables → Actions → `OKX_API_KEY`, `OKX_API_SECRET`, `OKX_API_PASSPHRASE`.
+   (The workflow already passes all three into both venue steps; a secret in Settings that the step
+   never reads is the failure mode to watch for.)
+3. Rehearse on fake money, from a checkout: `OKX_SIM=1 python3 broker_okx.py` reads the simulated
+   account, and `OKX_SIM=1 python3 broker_okx.py rehearse` places a conditional order 20 % away from the
+   tape, re-finds it **by our own clOrdId**, amends it and cancels it — the round trip unit tests cannot
+   substitute for. To see payloads against the *real* book without sending: `OKX_DRY=1
+   OKX_DRY_EQUITY=20000 python3 run_cycle.py`, which prints `ORDER SENT` lines with venue-shaped bodies
+   and writes `live venue, DRY — payloads built, nothing sent` to STATUS.md, never `REAL MONEY`.
+4. `config.json`: `"execution": "okx"` (already set) **and `"live_ack": true`**. Deliberately a repo
+   file edit, not an env var: pasting a key must not be enough to start trading, and the flip stays
+   visible in the commit history.
+
+`OKX_INSTTYPE` picks `swap` (default — perps, TP/SL on-venue, shorts) or `spot` (no leverage; an opening
+short is refused outright, and the shadow ledger stays spot-only either way, so paper and live grade the
+same). `python3 broker_okx.py verify` is the read-only account check CI runs on every push when a key exists.
+
+**What moved in 4.6.0:** `execution` and `fees` in `config.json` became OKX's. Grades before this commit
+were netted at Coinbase's 0.40/0.60 % and the ledger's `fees_paid` still reflects those; from here the
+book is priced the way the venue it will trade on charges, which is the point — a paper score earned
+against the wrong fee schedule is not a score.
+
+## Going live on Coinbase (alternative venue)
 
 There are **two** Coinbase APIs and one Coinbase bot. `broker_coinbase.py` speaks both; which one
 it uses is decided by the credentials you paste, not by a code change:
@@ -65,9 +96,11 @@ so `run_cycle.py` fails at boot with that sentence instead of sending 80 orders 
    is not enough on current accounts.
 2. Actions → Secrets and variables → Actions → `COINBASE_API_KEY`, then `COINBASE_CDP_PEM` *or*
    `COINBASE_API_SECRET` (+ `COINBASE_API_PASSPHRASE` for an Exchange key).
-3. `config.json`: `"execution": "coinbase"` (already set) **and `"live_ack": true`**. That flag is
-   deliberately a repo file edit, not an env var: pasting a key must not be enough to start
-   trading, and the flip is visible in the commit history.
+3. `config.json`: `"execution": "coinbase"` **and `"live_ack": true`** — plus change `fees` to
+   `{"maker": 0.004, "taker": 0.006}`, because grading charges those numbers. Expect the live guard to
+   then REFUSE entries at `live_max_fee_r: 0.25`: at Coinbase's base tier a 0.55 % stop pays 1.82R in
+   fees, more than the trade risks. That is not a bug to route around — it is why `execution` ships as
+   `okx`. Set `live_max_fee_r: 0` only if you decide fees are not your problem.
 4. Fund it (see **The wallet** below for the size that makes the signals actually fire). Then read
    `journal.md`.
 5. The one thing still unproven end-to-end: **the cid ⇄ order-id round trip against a live venue**.
