@@ -4,7 +4,13 @@
   "FIRE|XRP/USD|C-H1-bull-engulfing|2026-11-14",
   "FIRE|SOL/USD|C-H1-bull-engulfing|2026-11-14",
   "FIRE|LINK/USD|S2-breakdown-short|2026-11-14",
-  "FIRE|LTC/USD|C-M15-three-crows|2026-11-14"
+  "FIRE|LTC/USD|C-M15-three-crows|2026-11-14",
+  "FIRE|ETH/USD|C-H1-three-outside-down|2026-11-14",
+  "FIRE|DOGE/USD|C-H1-bear-engulfing|2026-11-14",
+  "FIRE|DOGE/USD|C-H1-three-outside-down|2026-11-14",
+  "FIRE|ADA/USD|S11-dc20-short|2026-11-14",
+  "FIRE|ADA/USD|S11-dc55-short|2026-11-14",
+  "FIRE|LTC/USD|S11-dc20-short|2026-11-14"
  ],
  "open_cids": {
   "sentryXRPUSD1794662610992n1": {
