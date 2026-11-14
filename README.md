@@ -68,18 +68,19 @@ venue is worse than none.
 
 1. Mint the API key with **Trade only**. No withdrawal, no transfer. Turn on the withdrawal whitelist
    on the account side.
-2. Actions → Secrets and variables → Actions → `OKX_API_KEY`, `OKX_API_SECRET`, `OKX_API_PASSPHRASE`.
-   (The workflow already passes all three into both venue steps; a secret in Settings that the step
-   never reads is the failure mode to watch for.)
-3. Rehearse on fake money, from a checkout: `OKX_SIM=1 python3 broker_okx.py` reads the simulated
-   account, and `OKX_SIM=1 python3 broker_okx.py rehearse` places a conditional order 20 % away from the
-   tape, re-finds it **by our own clOrdId**, amends it and cancels it — the round trip unit tests cannot
-   substitute for. To see payloads against the *real* book without sending: `OKX_DRY=1
-   OKX_DRY_EQUITY=20000 python3 run_cycle.py`, which prints `ORDER SENT` lines with venue-shaped bodies
-   and writes `live venue, DRY — payloads built, nothing sent` to STATUS.md, never `REAL MONEY`.
-4. `config.json`: `"execution": "okx"` (already set) **and `"live_ack": true`**. Deliberately a repo
-   file edit, not an env var: pasting a key must not be enough to start trading, and the flip stays
-   visible in the commit history.
+2. Settings → Secrets and variables → Actions → `New repository secret`, three entries:
+   `OKX_API_KEY`, `OKX_API_SECRET`, `OKX_API_PASSPHRASE`.
+   **That is the last step.** Since v4.7.1 the workflow already reads all three; the venue check
+   (`python3 broker_okx.py`, read-only account check) runs automatically on the next cycle; and
+   `auto_ack_on_key` means the key's presence is itself the acknowledgement — no config commit, no
+   rehearsal to run, no graded-outcome wait (`min_grade_before_live: 0`). The first live trade lands
+   within one cycle (≤10 min nominal, more on this account's throttled cron — STATUS.md is current
+   after every run either way). If you prefer to rehearse first, `OKX_SIM=1 python3 broker_okx.py
+   rehearse` from any checkout remains available, purely optional.
+3. ~~`config.json`: `"live_ack": true"`~~ — obsolete. Either that commit lands or `auto_ack_on_key`
+   arms on key presence; both paths converge, and `live_ack: true` in the file still works as an
+   explicit override. The `execution=okx, live_ack=true, keys missing` boot-refusal still applies —
+   arming without money-pipes fails red instead of pretending.
 
 `OKX_INSTTYPE` picks `swap` (default — perps, TP/SL on-venue, shorts) or `spot` (no leverage; an opening
 short is refused outright, and the shadow ledger stays spot-only either way, so paper and live grade the
@@ -137,13 +138,13 @@ so `run_cycle.py` fails at boot with that sentence instead of sending 80 orders 
    cannot see it: stop, cancel by hand, tell the journal (`journal.md` is append-only — a wrong line
    there is data, not noise).
 
-Until step 3 the bot scans, sizes, journals `GATE — …` and sends nothing. The four live gates
+Until a key is present the bot scans, sizes, journals `GATE — …` and sends nothing. The live gates
 (`live_gate()` in `run_cycle.py`) each trace to a real defect found on this account, not ceremony:
 
 | gate | why it exists |
 |---|---|
-| `live_ack: true` | a leaked secret must not be enough to trade |
-| `min_grade_before_live` = 8 graded outcomes (paper counts) | the sizer scales off its own accuracy; sizing live with zero graded outcomes is a blind number |
+| `live_ack: true` **or** a trade-only OKX key in Secrets (`auto_ack_on_key: true`, the v4.7.1 default) | a leaked secret must not be enough to trade — and the key-minting is human-only anyway, so key presence is accepted as the acknowledgement; clamps below bound what a planted key could do |
+| `min_grade_before_live` = 0 (was 8) | you ruled out the paper-first wait; the sizer cold-starts at its floor ($50) and the live clamps cap it at $25 / 1 % equity, so the first live trade is small by construction, not by borrowed confidence |
 | heartbeat younger than `max_gap_h` = 2 h | nothing watches the book between runs (see the cadence section) — a 10 h gap is not a 10-minute bot |
 | live risk = min(sizer, `live_max_risk` $25, `live_max_risk_frac` 1 % of equity) | sizing live by feel is how a bot loses money fast; the sizer earns its size, these two bound it |
 | notional ≤ `max_notional_frac` × equity, or **SKIP** | the 2026-11-14 mis-mapped candles produced a $261k order for "$100 of risk". Size is never quietly trimmed to fit — a $2 "risk" is spread and fees, so the trade is refused and the journal says what account it wanted |

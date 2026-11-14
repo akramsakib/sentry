@@ -204,9 +204,15 @@ def gate(rows, st, **over):
 
 ok, why = gate(rows_many, {"last_cycle": time.time()})
 check("no live_ack -> entries blocked", (not ok) and "live_ack" in why, why)
-ok, why = gate(rows_none, {"last_cycle": time.time()}, live_ack=True)
-check("live_ack but zero graded outcomes -> blocked (no blind sizing)",
+ok, why = gate(rows_none, {"last_cycle": time.time()}, live_ack=True, min_grade_before_live=8)
+check("live_ack but zero graded outcomes -> blocked when the grade gate is raised (mechanism works)",
       (not ok) and "graded" in why, why)
+ok, why = gate(rows_none, {"last_cycle": time.time()}, live_ack=True, min_grade_before_live=0)
+check("  ...and v4.7.1's shipped config sets that gate to 0 — first real order lands with no wait",
+      ok and int(_orig_cfg.get("min_grade_before_live", 8)) == 0, why)
+ok, why = gate(rows_many, {"last_cycle": time.time()}, live_ack=False, auto_ack_on_key=True)
+check("auto_ack_on_key alone does NOT arm without a key in this process (OKX_KEYED is the other half)",
+      (not ok) and "live_ack" in why, why)
 ok, why = gate(rows_many, {}, live_ack=True, min_grade_before_live=8)
 check("graded history but no heartbeat -> blocked", (not ok) and "heartbeat" in why, why)
 ok, why = gate(rows_many, {"last_cycle": time.time() - 10 * 3600}, live_ack=True, min_grade_before_live=8)
@@ -657,6 +663,19 @@ check("chandelier trail runs on shorts too (Mac behaviour both directions)",
 check("staleness now guards the fast timeframe too (no more blind scans)",
       '"5m", 45 * 60' in _RC_SRC20)
 check("candle one-shot dedupe state survives in the repo state", 'seen_candles' in _RC_SRC20)
+
+# ---------- 21: v4.7.1 — setup is complete; the ONLY remaining human step is the key ----------
+cfg21 = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")))
+check("live ack arms on key presence (no config-commit step left)",
+      cfg21.get("auto_ack_on_key") is True and "auto_ack_on_key" in _RC_SRC20)
+check("  ...via the OKX trade key specifically, not any env noise",
+      "OKX_KEYED" in _RC_SRC20 and 'os.environ.get("OKX_API_KEY")' in _RC_SRC20)
+check("no graded-outcome wait before the first real order",
+      int(cfg21.get("min_grade_before_live", 8)) == 0)
+check("  ...but the live clamps stay armed (this is a smaller first trade, not an unbounded one)",
+      float(cfg21.get("live_max_risk", 0)) > 0 and float(cfg21.get("live_max_risk_frac", 0)) > 0)
+check("half-armed venue still fails red (live_ack w/o keys must not spin silently)",
+      "live_ack=true but these are missing" in _RC_SRC20)
 
 # behavioural: a thin 5m book must gate the WHOLE symbol, exactly like the Mac's len() checks
 _thin20 = {"5m": [], "15m": [], "1h": [], "4h": [], "1d": []}
