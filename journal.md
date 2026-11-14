@@ -42,3 +42,16 @@
 - **11-14 14:53 UTC** CANDIDATE(score 4/5) — ADA/USD S11-dc55-short sell_stop 0.16170003 sl0.16302984 tp0.15771059 — paper-graded (spot can't short)
 - **11-14 14:53 UTC** CANDIDATE(score 4/5) — LTC/USD S11-dc20-short sell_stop 47.89829921 sl48.27420475 tp46.77058257 — paper-graded (spot can't short)
 - **11-14 14:53 UTC** scan ok · 10 symbols · 0 new · 2 pendings · 0 positions equity $100000.00 · 2s
+- **11-14 15:29 UTC** RE-ANCHORED — BTC/USD S4-band-fade-long: trigger 65964.30815 is already through the tape 65567.41 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-14 15:29 UTC** SKIP — BTC/USD S4-band-fade-long: stop only 0.076% of price (<0.40%) — spread noise, not a risk level
+- **11-14 15:29 UTC** RE-ANCHORED — ETH/USD S4-band-fade-long: trigger 1865.29351 is already through the tape 1841.93 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-14 15:29 UTC** SKIP — ETH/USD S4-band-fade-long: stop only 0.111% of price (<0.40%) — spread noise, not a risk level
+- **11-14 15:29 UTC** RE-ANCHORED — DOGE/USD S4-band-fade-long: trigger 0.06128356 is already through the tape 0.06116 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-14 15:29 UTC** ORDER SENT — DOGE/USD S4-band-fade-long (score 4/5) limit buy_limit qty 280544.255856 @ 0.06116 sl0.06080355 tp0.0634155 · risk $100.00
+- **11-14 15:29 UTC** CANDIDATE(score 4/5) — LTC/USD S11-dc55-short sell_stop 47.59892069 sl48.01247585 tp46.35825523 — paper-graded (spot can't short)
+- **11-14 15:29 UTC** RE-ANCHORED — AVAX/USD S4-band-fade-long: trigger 7.7727869 is already through the tape 7.663 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-14 15:29 UTC** ORDER SENT — AVAX/USD S4-band-fade-long (score 4/5) limit buy_limit qty 1326.361799 @ 7.663 sl7.58760579 tp8.10135 · risk $100.00
+- **11-14 15:29 UTC** CANDIDATE(score 4/5) — AVAX/USD S11-dc20-short sell_stop 7.92676763 sl8.00539421 tp7.69088789 — paper-graded (spot can't short)
+- **11-14 15:29 UTC** CANDIDATE(score 4/5) — AVAX/USD S11-dc55-short sell_stop 7.92676763 sl8.00539421 tp7.69088789 — paper-graded (spot can't short)
+- **11-14 15:29 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 2 new · 4 pendings · 0 positions equity $100000.00 · 3s
+- **11-14 15:29 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
