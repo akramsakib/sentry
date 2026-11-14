@@ -18,7 +18,20 @@
   "FIRE|AVAX/USD|S4-band-fade-long|2026-11-14",
   "FIRE|AVAX/USD|S11-dc20-short|2026-11-14",
   "FIRE|AVAX/USD|S11-dc55-short|2026-11-14",
-  "FIRE|AVAX/USD|C-M15-bear-engulfing|2026-11-14"
+  "FIRE|AVAX/USD|C-M15-bear-engulfing|2026-11-14",
+  "FIRE|BTC/USD|S11-dc20-short|2026-11-14",
+  "FIRE|BTC/USD|S11-dc55-short|2026-11-14",
+  "FIRE|BTC/USD|C-M15-bull-engulfing|2026-11-14",
+  "FIRE|ETH/USD|S11-dc20-short|2026-11-14",
+  "FIRE|ETH/USD|S11-dc55-short|2026-11-14",
+  "FIRE|DOGE/USD|S11-dc20-short|2026-11-14",
+  "FIRE|DOGE/USD|S11-dc55-short|2026-11-14",
+  "FIRE|ADA/USD|C-H1-three-crows|2026-11-14",
+  "FIRE|ADA/USD|C-M15-hammer/takuri|2026-11-14",
+  "FIRE|LINK/USD|S11-dc20-short|2026-11-14",
+  "FIRE|LINK/USD|S11-dc55-short|2026-11-14",
+  "FIRE|LTC/USD|C-H1-three-crows|2026-11-14",
+  "FIRE|AVAX/USD|C-H1-three-crows|2026-11-14"
  ],
  "open_cids": {
   "sentryXRPUSD1794662610992n1": {
@@ -44,22 +57,33 @@
    "r_dist": 0.7737646500000039,
    "score": 3,
    "risk": 75
+  },
+  "sentryBTCUSD1794672578368n5": {
+   "sym": "BTC/USD",
+   "skill": "C-M15-bull-engulfing",
+   "otype": "buy_stop",
+   "entry": 65759.92302794,
+   "sl": 64917.64243016,
+   "tp": 67023.34392461,
+   "qty": 0.08904396,
+   "r_dist": 842.280597780009,
+   "score": 3,
+   "risk": 75
+  },
+  "sentryADAUSD1794672578485n6": {
+   "sym": "ADA/USD",
+   "skill": "C-M15-hammer/takuri",
+   "otype": "buy_stop",
+   "entry": 0.15745624,
+   "sl": 0.15511439,
+   "tp": 0.16096902,
+   "qty": 32025.96238017,
+   "r_dist": 0.0023418500000000064,
+   "score": 3,
+   "risk": 75
   }
  },
- "pos_state": {
-  "AVAX/USD": {
-   "side": "long",
-   "entry": 7.641,
-   "sl": 7.58760579,
-   "tp": 8.10135,
-   "r_dist": 0.07539421000000068,
-   "qty": 1326.3617988702194,
-   "skill": "S4-band-fade-long",
-   "be": null,
-   "sent_sl": 7.58760579,
-   "last_price": 7.687
-  }
- },
- "cid_seq": 4,
- "last_cycle": 1794671347.8159506
+ "pos_state": {},
+ "cid_seq": 6,
+ "last_cycle": 1794672578.6147807
 }
