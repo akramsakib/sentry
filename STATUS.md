@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-14 22:30 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $95,406.85 · equity $99,832.24
+**2026-11-14 22:40 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $95,406.85 · equity $99,809.54
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$62.57 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,11 +10,11 @@ _Venue cost: 0.02 % maker / 0.05 % taker per side · **$62.57 paid on this book 
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1761.84 | +4.53% | 141 min |
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1761.84 | +4.53% | 141 min |
-| LINK/USD | buy_stop | 8.8743714 | 274.274 | $2,434 | $50.00 | 8.731 | +1.64% | 8 min |
-| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 69.48 | +4.48% | 141 min |
-| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9042 | +5.82% | 141 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1761.84 | +4.53% | 150 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1761.84 | +4.53% | 150 min |
+| LINK/USD | buy_stop | 8.8743714 | 274.274 | $2,434 | $50.00 | 8.731 | +1.64% | 18 min |
+| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 69.48 | +4.48% | 150 min |
+| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9042 | +5.82% | 150 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -22,7 +22,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BTC/USD | 0.069084 | 63278.87 | 64057.96 | $53.82 | 63069.244 | 66371.462 | +1.08R |
+| BTC/USD | 0.069084 | 63278.87 | 63729.4 | $31.12 | 63069.244 | 66371.462 | +0.62R |
 
 ## Last 12 signals (77 ever logged)
 
