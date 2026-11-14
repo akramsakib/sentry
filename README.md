@@ -79,3 +79,4 @@ private repo at 10-min cadence needs either a paid plan or a slower `cron` (e.g.
 | broker renames a symbol | hardcoded dict breaks | live `/asset-trading-platform/PAPER/reference/crypto` lookup |
 | two writers collide | (hit us: `git push` conflict killed a run) | memory via Contents API, re-read + retry on 409 |
 | state lost | Mac-local file | state lives in git history, diffable forever |
+<!-- push-trigger probe 09:11Z -->
