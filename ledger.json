@@ -1,6 +1,6 @@
 {
- "cash": 89777.07253098687,
- "realized": -74.26286996773753,
+ "cash": 99780.59953293936,
+ "realized": -219.4004670606244,
  "orders": [
   {
    "id": "1794662610992",
@@ -77,18 +77,34 @@
    "qty": 1326.3617988702194,
    "limit_price": null,
    "stop_price": 7.58760579,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794670541
+  },
+  {
+   "id": "1794672578368",
+   "client_order_id": "sentryBTCUSD1794672578368n5",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 0.08904396016918446,
+   "limit_price": null,
+   "stop_price": 65759.92302794,
+   "status": "open",
+   "placed_at": 1794672578
+  },
+  {
+   "id": "1794672578485",
+   "client_order_id": "sentryADAUSD1794672578485n6",
+   "symbol": "ADA/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 32025.962380169436,
+   "limit_price": null,
+   "stop_price": 0.15745624,
+   "status": "open",
+   "placed_at": 1794672578
   }
  ],
- "positions": [
-  {
-   "symbol": "AVAX/USD",
-   "qty": 1326.3617988702194,
-   "entry": 7.651505500000001,
-   "cid": "sentryAVAXUSD1794670198886n4",
-   "opened": 1794670333,
-   "current_price": 7.687
-  }
- ]
+ "positions": [],
+ "fees_paid": 60.38346279
 }
