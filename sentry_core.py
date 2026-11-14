@@ -224,6 +224,7 @@ def evaluate_symbol(sym, tf, min_score_fire=3):
             push(f"{tag}-short", "sell_stop", ll - 0.1 * a, ll + 0.6 * a, ll - 2.2 * a, 4 if htf < 0 else 3)
     # §12 candle library on 1h + 15m closed bars
     for bars, tflabel in ((h1, "H1"), (m15, "M15")):
+        a_tf = atr(bars) or a   # stop geometry must follow the bar it is drawn on, not the hour
         for name, direction, kind in candle_engine(bars):
             if len(bars) < 4:
                 continue
@@ -241,9 +242,9 @@ def evaluate_symbol(sym, tf, min_score_fire=3):
                         (direction == -1 and last["c"] < (last["h"] + last["l"]) / 2)
             score = sum([at_lvl, big, close_ext, htf in (0, direction), True])
             if direction == 1:
-                e = last["h"] + 0.1 * a; sl = last["l"] - 0.25 * a
+                e = last["h"] + 0.1 * a_tf; sl = last["l"] - 0.25 * a_tf
                 push(f"C-{tflabel}-{name}", "buy_stop", e, sl, e + 1.5 * (e - sl), score)
             else:
-                e = last["l"] - 0.1 * a; sl = last["h"] + 0.25 * a
+                e = last["l"] - 0.1 * a_tf; sl = last["h"] + 0.25 * a_tf
                 push(f"C-{tflabel}-{name}", "sell_stop", e, sl, e - 1.5 * (sl - e), score)
     return out
