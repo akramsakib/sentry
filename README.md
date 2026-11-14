@@ -43,7 +43,8 @@ weekend gap — MT5 demo servers do).
 ## Run it yourself (3 commands, from a machine with python3)
 ```bash
 git clone https://github.com/akramsakib/sentry.git && cd sentry
-python3 run_cycle.py        # one full cycle, no accounts, no keys — prints the decisions
+python3 test_data.py         # offline checks (row order, guards) — must print "0 checks failed"
+python3 run_cycle.py         # one full cycle, no accounts, no keys — prints the decisions
 ```
 To run it as a service on GitHub: push these files to a repo, then
 Actions → *sentry-cycle* → **Run workflow**. Green check + a `scan ok · 10 symbols · …`
@@ -54,6 +55,14 @@ To make the repo **private** (recommended once you add real keys): GitHub → fi
 https://<TOKEN>@github.com/<you>/<repo>.git && git push`. Free-tier private repos get 2,000
 Actions minutes/month; this bot burns ~1–2 min per cycle (~5,000/yr at 10-min cadence), so a
 private repo at 10-min cadence needs either a paid plan or a slower `cron` (e.g. `*/30`).
+
+## Data integrity: the Coinbase candle bug (2026-11-14), kept here so it cannot come back quietly
+Coinbase's `/candles` rows are `[time, low, high, open, close, volume]`. An earlier version of
+`broker_ledger.py` read them as OHLC, which made every bar "bullish" (close=high > open=low) and
+turned `high-low` into the *body*. Result: `C-*-three-soldiers` fired on five symbols at once with
+stops 0.04% wide, and `risk / stop-distance` then asked for 3 454 SOL — $261k notional to risk $100.
+`test_data.py` pins the row order, the forming-candle pop, an impossible-bar rejection, and both
+sizing guards; the workflow runs it before every cycle, so a regression is a red run, not a bad trade.
 
 ## Cadence: GitHub's cron is throttled on this account (read this)
 Measured on 2026-11-14: `sentry-cycle` declares `*/10 * * * *` and every *other* trigger
