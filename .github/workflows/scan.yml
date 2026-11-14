@@ -22,12 +22,5 @@ jobs:
         env:
           ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
           ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
+          GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}   # Contents API memory push
         run: python run_cycle.py
-      - name: commit memory
-        run: |
-          git config user.name "sentry-bot"
-          git config user.email "sentry@users.noreply.github.com"
-          git add state.json journal.md trades_log.jsonl || true
-          git diff --cached --quiet || git commit -m "cycle $(date -u +%m-%d_%H%M)"
-          git pull --rebase || true
-          git push
