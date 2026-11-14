@@ -84,6 +84,11 @@ B.place_order = _place
 B.BrokerError = getattr(B, "BrokerError", Exception)
 rc.MONEY = True
 rc.LIVE = True
+# Insurance, since this probe forces the live code path with faked keys: prove the venue object has been
+# replaced by the recorder before a single cycle runs. If the adapter is ever refactored so that
+# place_order is reachable for real, this line fails loudly instead of sending an order.
+assert B.place_order is _place and os.environ.get("BITGET_API_KEY") == "stub", "PROBE: venue not stubbed"
+print("  venue: STUBBED (place_order is the recorder, keys are the literal string 'stub', temp dir)")
 
 print("  config:", {k: cfg.get(k) for k in ("max_notional_frac", "max_leverage", "min_notional",
                                             "live_max_risk", "live_max_risk_frac")})
@@ -102,7 +107,7 @@ print("  cap refusals   :", len(cap_skips), (cap_skips[-1].split("**")[-1].strip
 min_not = [l for l in lines if "below min notional" in l]
 print("  venue-min refusals:", len(min_not))
 if MODE == "tight":                 # an absurd cap must bind, and say which cap it is
-    ok = not sent and cap_skips and "Cap is 0% of equity" in cap_skips[-1]
+    ok = not sent and cap_skips and "Cap is 0% of equity" in cap_skips[-1] and nf == 0.0001
 elif MODE == "lev":                 # max_leverage replaces the frac cap: that reason must disappear
     ok = not cap_skips and nf == float(cfg.get("max_leverage")) and not sent and len(min_not) >= 1
 else:                               # "free": with the venue floor lifted, a $10 account DOES size an order
@@ -147,7 +152,11 @@ def main():
         # pass A's absurd cap silently leaks into B and C and the comparison means nothing.
         shutil.copy(os.path.join(root, "config.json") if os.path.exists(os.path.join(root, "config.json"))
                     else os.path.join(HERE, "config.json"), os.path.join(d, "config.json"))
-        a, _ = run_pass(d, {"min_notional": 5.0, "max_notional_frac": 0.0001}, "tight",
+        # max_leverage: None HERE is not decoration. A deployed perps book legitimately carries
+        # max_leverage: 3, and notional_cap lets that win over the fraction — so a pass that wants to
+        # prove the FRACTION binds has to say which knob it is testing, or it silently measures the other
+        # one (that is how this probe passed in the repo and failed in the book folder).
+        a, _ = run_pass(d, {"min_notional": 5.0, "max_notional_frac": 0.0001, "max_leverage": None}, "tight",
                         "A — a deliberately absurd notional cap must bind and name itself")
         b, ob = run_pass(d, {"min_notional": 5.0, "max_notional_frac": 0.25, "max_leverage": 3.0},
                          "lev", "B — max_leverage 3.0 replaces the 25 % frac cap on the same $10 account")
