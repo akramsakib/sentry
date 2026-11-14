@@ -91,6 +91,9 @@ Three ways to get a real clock, best first:
    `GITHUB_TOKEN` may fire, so no PAT is needed for that path. You get at least a few cycles/day
    even if GitHub never honours the 10-min cron.
 3. **Accept it.** Crypto has no session gap, so a cycle every 4–8 h is still a usable swing bot;
+     Because that is the mode now running, `config.json` also carries **`pending_ttl_h: 6.0`**:
+     a resting entry trigger older than that is expired (`EXPIRED — … setup no longer valid`)
+     rather than left live to fill on a chart that moved on hours earlier with nobody watching.
    the state machine reconciles whatever happened while it slept. Do not call it an M15 bot then.
 
 Do **not** "fix" this by ending each run with a delayed self-dispatch: the sleep needed to space
