@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-14 21:45 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $99,780.60 · equity $99,780.60
+**2026-11-14 21:52 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $99,780.60 · equity $99,780.60
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$60.38 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,12 +10,12 @@ _Venue cost: 0.02 % maker / 0.05 % taker per side · **$60.38 paid on this book 
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ADA/USD | buy_stop | 0.15745624 | 32026 | $5,043 | $75.00 | 0.1478 | +6.53% | 336 min |
-| BTC/USD | buy_stop | 65759.923 | 0.089044 | $5,856 | $75.00 | 64829.1 | +1.44% | 336 min |
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1787.13 | +3.05% | 95 min |
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1787.13 | +3.05% | 95 min |
-| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 70.54 | +2.91% | 95 min |
-| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9154 | +4.52% | 95 min |
+| ADA/USD | buy_stop | 0.15745624 | 32026 | $5,043 | $75.00 | 0.1478 | +6.53% | 342 min |
+| BTC/USD | buy_stop | 65759.923 | 0.089044 | $5,856 | $75.00 | 64829.1 | +1.44% | 342 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1787.13 | +3.05% | 102 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1787.13 | +3.05% | 102 min |
+| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 70.54 | +2.91% | 102 min |
+| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9154 | +4.52% | 102 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
