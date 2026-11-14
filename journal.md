@@ -165,3 +165,5 @@
 - **11-14 22:22 UTC** CANDIDATE(score 4/5) — LTC/USD S16-inside-short sell_stop 43.99367577 sl44.90081058 tp42.92513651 — paper-graded (spot can't short)
 - **11-14 22:22 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-evening-star sell_stop 7.05146814 sl7.19532965 tp6.83567588 — paper-graded (spot can't short)
 - **11-14 22:22 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 5 pendings · 1 positions equity $99835.59 · 8s · venue fees $62.57 to date @ 0.02/0.05%
+- **11-14 22:24 UTC** BE +1R: BTC/USD stop -> entry 63278.87
+- **11-14 22:24 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99846.02 · 8s · venue fees $62.57 to date @ 0.02/0.05%
