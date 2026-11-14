@@ -1,0 +1,27 @@
+name: sentry-watchdog
+# Independent heartbeat check on sentry-cycle: if the brain stops writing to journal.md,
+# this job goes red and GitHub emails you. Runs hourly, 17 min past the hour so it always
+# lands after a scheduled cycle would have.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: journal freshness check
+        env:
+          GITHUB_REPOSITORY: ${ github.repository }
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SENTRY_STALE_HOURS: "3"
+        run: python watchdog.py
