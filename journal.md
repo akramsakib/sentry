@@ -156,3 +156,12 @@
 - **11-14 22:12 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-tweezer-top sell_stop 199.12626646 sl209.28933385 tp183.88166538 — paper-graded (spot can't short)
 - **11-14 22:12 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-three-outside-down sell_stop 199.12626646 sl209.28933385 tp183.88166538 — paper-graded (spot can't short)
 - **11-14 22:12 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 5 pendings · 0 positions equity $99780.60 · 7s · venue fees $62.57 to date @ 0.02/0.05%
+- **11-14 22:22 UTC** FILL — BTC/USD S18-ma-revert-long 0.06908402900547651@63278.87 sl63069.24371769 tp66371.46169169
+- **11-14 22:22 UTC** SKIP — BTC/USD C-M15-tweezer-top: already have pending/position in play
+- **11-14 22:22 UTC** ORDER SENT — LINK/USD S16-inside-long (score 3/5) stop buy_stop qty 274.273582 @ 8.87437135 sl8.69207162 tp9.10357029 · risk $50.00 · fees ~$2.41 (0.05R)
+- **11-14 22:22 UTC** CANDIDATE(score 4/5) — LINK/USD S16-inside-short sell_stop 8.71662865 sl8.89892838 tp8.48742971 — paper-graded (spot can't short)
+- **11-14 22:22 UTC** CANDIDATE(score 3/5) — LINK/USD C-M15-bear-engulfing sell_stop 8.71862865 sl8.86792838 tp8.49467905 — paper-graded (spot can't short)
+- **11-14 22:22 UTC** NOTE — LTC/USD S16-inside-long: soft cap on open items (6) — advisory, skipping
+- **11-14 22:22 UTC** CANDIDATE(score 4/5) — LTC/USD S16-inside-short sell_stop 43.99367577 sl44.90081058 tp42.92513651 — paper-graded (spot can't short)
+- **11-14 22:22 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-evening-star sell_stop 7.05146814 sl7.19532965 tp6.83567588 — paper-graded (spot can't short)
+- **11-14 22:22 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 5 pendings · 1 positions equity $99835.59 · 8s · venue fees $62.57 to date @ 0.02/0.05%
