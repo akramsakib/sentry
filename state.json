@@ -1,7 +1,96 @@
 {
  "day": "2026-11-14",
- "fired_today": [],
- "open_cids": {},
+ "fired_today": [
+  "FIRE|ADA/USD|S2-breakdown-short|2026-11-14",
+  "FIRE|AVAX/USD|S2-breakdown-short|2026-11-14",
+  "FIRE|BCH/USD|S18-rsi2-short|2026-11-14",
+  "FIRE|BTC/USD|C-H1-three-soldiers|2026-11-14",
+  "FIRE|BTC/USD|C-M15-three-soldiers|2026-11-14",
+  "FIRE|ETH/USD|C-H1-three-soldiers|2026-11-14",
+  "FIRE|ETH/USD|C-M15-three-soldiers|2026-11-14",
+  "FIRE|SOL/USD|C-H1-three-soldiers|2026-11-14",
+  "FIRE|SOL/USD|C-M15-three-soldiers|2026-11-14",
+  "FIRE|LINK/USD|C-H1-three-soldiers|2026-11-14",
+  "FIRE|LINK/USD|C-M15-three-soldiers|2026-11-14",
+  "FIRE|BCH/USD|C-H1-three-soldiers|2026-11-14",
+  "FIRE|BCH/USD|C-M15-three-soldiers|2026-11-14",
+  "FIRE|XRP/USD|C-H1-bull-engulfing|2026-11-14",
+  "FIRE|LINK/USD|S2-breakdown-short|2026-11-14"
+ ],
+ "open_cids": {
+  "sentryBTCUSD1794662107596n1": {
+   "sym": "BTC/USD",
+   "skill": "C-H1-three-soldiers",
+   "otype": "buy_stop",
+   "entry": 67273.58922668,
+   "sl": 67107.33193329,
+   "tp": 67522.97516678,
+   "qty": 0.60147737,
+   "r_dist": 166.25729338999372,
+   "score": 4,
+   "risk": 100
+  },
+  "sentryBTCUSD1794662107642n2": {
+   "sym": "BTC/USD",
+   "skill": "C-M15-three-soldiers",
+   "otype": "buy_stop",
+   "entry": 67174.37922668,
+   "sl": 66959.77193329,
+   "tp": 67496.29016678,
+   "qty": 0.34947554,
+   "r_dist": 214.60729338999954,
+   "score": 3,
+   "risk": 75
+  },
+  "sentryETHUSD1794662107698n3": {
+   "sym": "ETH/USD",
+   "skill": "C-H1-three-soldiers",
+   "otype": "buy_stop",
+   "entry": 1908.70498631,
+   "sl": 1905.08253422,
+   "tp": 1914.13866444,
+   "qty": 27.6056101,
+   "r_dist": 3.6224520900000243,
+   "score": 4,
+   "risk": 100
+  },
+  "sentryETHUSD1794662107792n4": {
+   "sym": "ETH/USD",
+   "skill": "C-M15-three-soldiers",
+   "otype": "buy_stop",
+   "entry": 1907.79498631,
+   "sl": 1898.96253422,
+   "tp": 1921.04366444,
+   "qty": 11.32188423,
+   "r_dist": 8.83245209000006,
+   "score": 4,
+   "risk": 100
+  },
+  "sentrySOLUSD1794662107892n5": {
+   "sym": "SOL/USD",
+   "skill": "C-H1-three-soldiers",
+   "otype": "buy_stop",
+   "entry": 75.71969939,
+   "sl": 75.69075153,
+   "tp": 75.76312118,
+   "qty": 3454.48679108,
+   "r_dist": 0.02894786000000238,
+   "score": 4,
+   "risk": 100
+  },
+  "sentrySOLUSD1794662108035n6": {
+   "sym": "SOL/USD",
+   "skill": "C-M15-three-soldiers",
+   "otype": "buy_stop",
+   "entry": 75.89969939,
+   "sl": 75.40075153,
+   "tp": 76.64812118,
+   "qty": 200.42174347,
+   "r_dist": 0.49894786000000124,
+   "score": 4,
+   "risk": 100
+  }
+ },
  "pos_state": {},
- "cid_seq": 0
+ "cid_seq": 6
 }
