@@ -2,14 +2,14 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-14 15:47 UTC** · venue `shadow-ledger(coinbase-no-key)` → shadow book (paper) · cash $89,777.07 · equity $99,972.82
+**2026-11-14 15:49 UTC** · venue `shadow-ledger(coinbase-no-key)` → shadow book (paper) · cash $89,777.07 · equity $99,972.82
 
 ## Orders resting on the book now (2)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| SOL/USD | buy_stop | 76.06679 | 96.9287 | $7,373 | $75.00 | 73.89 | +2.95% | 144 min |
-| XRP/USD | buy_stop | 0.99525853 | 6634.32 | $6,603 | $75.00 | 0.9723 | +2.36% | 144 min |
+| SOL/USD | buy_stop | 76.06679 | 96.9287 | $7,373 | $75.00 | 73.89 | +2.95% | 146 min |
+| XRP/USD | buy_stop | 0.99525853 | 6634.32 | $6,603 | $75.00 | 0.9723 | +2.36% | 146 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -19,10 +19,11 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 |---|---|---|---|---|---|---|---|
 | AVAX/USD | 1326.36 | 7.641 | 7.687 | $61.01 | 7.5876058 | 8.10135 | +0.61R |
 
-## Last 12 signals (29 ever logged)
+## Last 12 signals (30 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-14 15:47 | AVAX/USD | C-M15-bear-engulfing | 3/5 | 7.6075433 | 7.7111418 | 7.4521455 | $75.00 | not fired (guard/duplicate) |
 | 11-14 15:29 | AVAX/USD | S11-dc55-short | 4/5 | 7.9267676 | 8.0053942 | 7.6908879 | $100.00 | paper-graded (spot cannot short) |
 | 11-14 15:29 | AVAX/USD | S11-dc20-short | 4/5 | 7.9267676 | 8.0053942 | 7.6908879 | $100.00 | paper-graded (spot cannot short) |
 | 11-14 15:29 | AVAX/USD | S4-band-fade-long | 4/5 | 7.7727869 | 7.5876058 | 8.10135 | $100.00 | order placed |
@@ -34,11 +35,10 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 | 11-14 14:53 | DOGE/USD | C-H1-three-outside-down | 4/5 | 0.06250046 | 0.06337386 | 0.06119036 | $100.00 | paper-graded (spot cannot short) |
 | 11-14 14:53 | DOGE/USD | C-H1-bear-engulfing | 4/5 | 0.06250046 | 0.06337386 | 0.06119036 | $100.00 | paper-graded (spot cannot short) |
 | 11-14 14:53 | ETH/USD | C-H1-three-outside-down | 5/5 | 1893.6322 | 1914.7395 | 1861.9713 | $125.00 | paper-graded (spot cannot short) |
-| 11-14 13:34 | LTC/USD | C-M15-three-crows | 5/5 | 47.577631 | 47.995922 | 46.950196 | $125.00 | paper-graded (spot cannot short) |
 
 ## Accuracy so far
 
-0 graded outcomes · win rate 0% · avg +0.00R · sizing today: score 3 -> $75.00 · score 4 -> $100.00 · score 5 -> $125.00
+0 graded outcomes (0 win / 0 loss) · win rate 0% · avg +0.00R · sizing today: score 3 -> $75.00 · score 4 -> $100.00 · score 5 -> $125.00
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
