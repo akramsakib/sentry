@@ -64,7 +64,9 @@ bl._get = _orig_get
 src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_cycle.py")).read()
 check("min-stop-width guard present", "spread noise, not a risk level" in src)
 check("notional cap present", "CAPPED —" in src and "max_notional_frac" in src)
-check("both guards read from config", "CFG.get(\"min_stop_frac\"" in src and "CFG.get(\"max_notional_frac\"" in src)
+check("both guards read from config (the notional one ONLY via notional_cap, so it has one home)",
+      'CFG.get("min_stop_frac"' in src and "def notional_cap(cfg)" in src
+      and 'cfg.get("max_notional_frac", 0.25)' in src and src.count("max_notional_frac") == 2)
 
 cfg = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")))
 for k in ("min_stop_frac", "max_notional_frac", "min_notional", "max_open"):
@@ -1212,6 +1214,70 @@ elif not _have25:
     pass
 else:
     check("held-entries probe is shipped", False, _probe25)
+
+
+# ---------- 26: small-account sizing — the cap must be satisfiable, and the refusal must name the RIGHT cap ----------
+# Found the moment the user deposited $10: run the shipped guards over a ladder of account sizes and the
+# book refused EVERY size below ~$20k. Not "most setups" — every one. The 25 %-of-equity notional cap and
+# a 1 %-of-equity risk cap with a 0.5 % stop are mutually unsatisfiable (0.01 / 0.005 = 2.0x equity), and
+# a config whose guards can never be satisfied is not caution, it is a dead book that looks like one.
+print("\n== 26: small-account sizing (max_leverage vs max_notional_frac)")
+_nc = getattr(rc, "notional_cap", None)
+check("run_cycle exposes notional_cap (one place decides what 'too big for this account' means)",
+      _nc is not None)
+if _nc:
+    f, w = _nc({"max_notional_frac": 0.25})
+    check("no max_leverage -> the frac cap still rules, byte-for-byte as before (repo/CI unchanged)",
+          f == 0.25 and w == "25% of equity", str(f) + " " + repr(w))
+    f, w = _nc({"max_notional_frac": 0.25, "max_leverage": 3.0})
+    check("max_leverage REPLACES the frac cap rather than multiplying it (same ratio, perp units)",
+          f == 3.0 and "leverage cap 3x" in w, str(f) + " " + repr(w))
+    f, w = _nc({"max_notional_frac": 0.25, "max_leverage": None})
+    check("max_leverage: null is the documented OFF state, not zero (0 would refuse absolutely everything)",
+          f == 0.25, repr(f) + " " + repr(w))
+    f, w = _nc({"max_leverage": 0.5})
+    check("a leverage cap below 1x is honoured, not clamped up to 1 (a spot-style account may want that)",
+          f == 0.5, repr(f))
+    f, w = _nc({})
+    check("and a config with neither key still gets the shipped default instead of an exception",
+          f == 0.25, repr(f))
+    _cfg26 = json.load(open(os.path.join(_h25, "config.json")))
+    check("the shipped repo config leaves max_leverage null (the mirror arms nothing, spot semantics)",
+          "max_leverage" in _cfg26 and _cfg26["max_leverage"] is None, repr(_cfg26.get("max_leverage")))
+    _rc26 = open(os.path.join(_h25, "run_cycle.py")).read()
+    check("run() reads the cap from the helper, so the guard and its message cannot disagree",
+          "max_nf, cap_what = notional_cap(CFG)" in _rc26)
+    check("...and BOTH refusal messages quote cap_what, never a hard-coded 25 %",
+          "Cap is {cap_what}" in _rc26 and "over {cap_what}" in _rc26)
+    f, w = _nc({"max_notional_frac": 0.25, "max_leverage": 0})
+    check("max_leverage: 0 is a HARD STOP, not 'unset' — a typo'd cap must never disable itself",
+          f == 0.0 and "0x equity" in w, str(f) + " " + repr(w))
+    check("...and 0 is refused only because it is read as a cap ('is not None'), never with `or`",
+          "if lev is not None:" in _rc26 and "if lev:" not in _rc26)
+_probe26 = os.path.join(_h25, "tools/checks/check_small_account.py")
+if os.path.exists(_probe26):
+    import subprocess as _sp26
+    _r26 = _sp26.run([sys.executable, _probe26], capture_output=True, text=True, timeout=900,
+                     cwd=_h25, env=dict(os.environ, CHECK_BOOK_DIR=_h25))
+    _o26 = (_r26.stdout or "") + (_r26.stderr or "")
+    _cnt26 = [int(x) for x in _re.findall(r"orders attempted: (\d+)", _o26)]
+    check("THE PROBE, pass A: an absurd notional cap binds, and the refusal NAMES that cap",
+          (_cnt26 and _cnt26[0] == 0) and "Cap is 0% of equity" in _o26, " ".join(_o26.split())[-140:])
+    check("pass B: max_leverage removes the cap refusal, leaving only the venue's own $5 floor",
+          len(_cnt26) >= 2 and _cnt26[1] == 0 and "venue-min refusals: 10" in _o26,
+          " ".join([l for l in _o26.splitlines() if "venue-min" in l][:1]))
+    check("pass C: with the venue floor lifted, a $10 account DOES size and place real orders",
+          len(_cnt26) >= 3 and _cnt26[2] >= 1, "orders per pass: " + str(_cnt26))
+    check("...and every notional it placed is inside the 3x leverage cap",
+          "notionals: [2.5706" in _o26 or "notionals: []" not in _o26.split("C \u2014")[-1][:600],
+          " ".join([l for l in _o26.splitlines() if "notionals" in l][-1:]))
+    check("all three passes PASS (plus the aggregate line), with no traceback anywhere",
+          _o26.count("RESULT: PASS") == 4 and "RESULT: FAIL" not in _o26 and "Traceback" not in _o26,
+          str(_o26.count("RESULT: PASS")) + " RESULT: PASS lines, 4 expected")
+elif _have25:
+    check("small-account probe is shipped", False, _probe26)
+else:
+    print("  [skipped here: check_small_account.py] — deployed book folder")
 
 
 print("\n%d checks failed" % len(FAILS))

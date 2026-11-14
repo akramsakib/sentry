@@ -356,6 +356,27 @@ def entries_switch():
     return HOLD, HOLD_WHY
 
 
+def notional_cap(cfg):
+    """The cap on position size, as a multiple of equity, plus how to say it. Returns (factor, words).
+
+    `max_notional_frac: 0.25` and `max_leverage: 3` are the SAME measurement — notional ÷ equity — and
+    only one of them should be in force, so `max_leverage` (the perp-native way to say it) replaces the
+    fraction when present. Why this knob had to exist: with a 0.5 % stop and risk capped at 1 % of
+    equity, the size this strategy asks for is always 2.0x equity of notional, so a 0.25 cap is
+    unsatisfiable at ANY account size below ~$20k — measured on the shipped code, 2026-11-15: the guard
+    returned "refused" for $10, $100, $500, $1,000 and $5,000 alike. That is not risk management, it is a
+    dead book that looks like a cautious one. A perp account of any size needs leverage > 1 to trade a
+    tight stop at all; what must be bounded is HOW MUCH (3x here, not the venue's 20-100x). Leaving the
+    key unset keeps the spot-book behaviour byte-for-byte, which is what the Coinbase lane wants.
+    """
+    lev = cfg.get("max_leverage")
+    if lev is not None:               # 0 is a HARD STOP ("send nothing"), not "unset" — a refusal is
+        f = float(lev)                # never the thing a mis-typed config should be able to disable
+        return f, f"leverage cap {f:g}x equity"
+    f = float(cfg.get("max_notional_frac", 0.25))
+    return f, f"{100 * f:.0f}% of equity"
+
+
 def live_gate(rows, s):
     """What must be true before real money moves. Returns (allow_new_entries, why_not).
 
@@ -561,7 +582,7 @@ def run():
         journal(f"ALERT — {VENUE}: {funded_why}. No new entries this cycle (open positions and "
                 f"resting stops are still managed). Fund the account or disarm the key.")
     min_frac = float(CFG.get("min_stop_frac", 0.004))
-    max_nf = float(CFG.get("max_notional_frac", 0.25))
+    max_nf, cap_what = notional_cap(CFG)      # one measurement, two possible units — see notional_cap()
     for sym in (syms if allow_new else []):
         cands = core.evaluate_symbol(sym, tf_map[sym], CFG["min_score_fire"],
                                      seen=s.setdefault("seen_candles", []))
@@ -645,14 +666,14 @@ def run():
             if LIVE and notional > equity * max_nf:
                 journal(f"SKIP — {sym} {c['skill']}: risking ${risk:.2f} through a "
                         f"{100 * r_dist / entry:.2f}% stop needs ${notional:,.0f} notional = "
-                        f"{notional / equity:.1f}x equity. Cap is {100 * max_nf:.0f}% (${equity * max_nf:,.0f}) "
+                        f"{notional / equity:.1f}x equity. Cap is {cap_what} (${equity * max_nf:,.0f}) "
                         f"— this trade wants a ~${notional / max_nf:,.0f} account. Fund it or accept fewer "
                         f"signals; the size is NOT being quietly trimmed.")
                 continue
             if notional > equity * max_nf:
                 qty = equity * max_nf / entry
                 risk = qty * r_dist
-                journal(f"CAPPED — {sym} {c['skill']}: notional ${notional:,.0f} over {100 * max_nf:.0f}% "
+                journal(f"CAPPED — {sym} {c['skill']}: notional ${notional:,.0f} over {cap_what} "
                         f"of equity (${equity * max_nf:,.0f}) → size {qty:.6f}, risk now ${risk:.0f}")
             if entry * qty < CFG["min_notional"]:
                 journal(f"SKIP — {sym} {c['skill']}: qty below min notional (risk ${risk} too small for ${entry:.2f} price)")
