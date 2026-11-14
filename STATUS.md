@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-14 21:06 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $99,780.60 · equity $99,780.60
+**2026-11-14 21:07 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $99,780.60 · equity $99,780.60
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$60.38 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,12 +10,12 @@ _Venue cost: 0.02 % maker / 0.05 % taker per side · **$60.38 paid on this book 
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ADA/USD | buy_stop | 0.15745624 | 32026 | $5,043 | $75.00 | 0.1479 | +6.46% | 297 min |
-| BTC/USD | buy_stop | 65759.923 | 0.089044 | $5,856 | $75.00 | 64734.3 | +1.58% | 297 min |
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1782.66 | +3.31% | 56 min |
-| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1782.66 | +3.31% | 56 min |
-| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 70.48 | +3.00% | 56 min |
-| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9266 | +3.26% | 56 min |
+| ADA/USD | buy_stop | 0.15745624 | 32026 | $5,043 | $75.00 | 0.1479 | +6.46% | 298 min |
+| BTC/USD | buy_stop | 65759.923 | 0.089044 | $5,856 | $75.00 | 64734.3 | +1.58% | 298 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1782.66 | +3.31% | 57 min |
+| ETH/USD | buy_stop | 1841.7081 | 2.63387 | $4,851 | $50.00 | 1782.66 | +3.31% | 57 min |
+| SOL/USD | buy_stop | 72.591023 | 59.2712 | $4,303 | $50.00 | 70.48 | +3.00% | 57 min |
+| XRP/USD | buy_stop | 0.9568033 | 5548.44 | $5,309 | $50.00 | 0.9266 | +3.26% | 57 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -69,4 +69,4 @@ curl -s https://raw.githubusercontent.com/akramsakib/sentry/main/ledger.json | p
 curl -s https://raw.githubusercontent.com/akramsakib/sentry/main/trades_log.jsonl | tail -5      # one line per signal
 ```
 
-_On a live venue the exchange is the authority: the orders above are what Sentry believes it placed, the Coinbase app's Orders/History tab is what actually exists._
+_On a live venue the exchange is the authority: the orders above are what Sentry believes it placed, the venue's own Orders/Positions tab (OKX app or web) is what actually exists._
