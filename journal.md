@@ -167,3 +167,6 @@
 - **11-14 22:22 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 5 pendings · 1 positions equity $99835.59 · 8s · venue fees $62.57 to date @ 0.02/0.05%
 - **11-14 22:24 UTC** BE +1R: BTC/USD stop -> entry 63278.87
 - **11-14 22:24 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99846.02 · 8s · venue fees $62.57 to date @ 0.02/0.05%
+- **11-14 22:30 UTC** NOTE — DOGE/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-14 22:30 UTC** NOTE — BCH/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-14 22:30 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99832.24 · 6s · venue fees $62.57 to date @ 0.02/0.05%
