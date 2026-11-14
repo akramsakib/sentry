@@ -97,3 +97,4 @@
 - **11-14 16:47 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
 - **11-14 16:48 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 4 pendings · 0 positions equity $99780.60 · 6s · venue fees $60.38 to date @ 0.40/0.60%
 - **11-14 16:48 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
+- **11-14 16:53 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 4 pendings · 0 positions equity $99780.60 · 2s · venue fees $60.38 to date @ 0.02/0.05%
