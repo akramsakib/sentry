@@ -433,18 +433,18 @@ def run():
             if DRY:
                 order_ok = True
                 pending_syms.add(sym)
-                journal(f"DRY-FIRE — {sym} {c['skill']} {c['otype']} qty {qty:.6f} @ {entry} sl{c['sl']} tp{c['tp']} risk ${risk:.2f}")
+                journal(f"DRY-FIRE — {sym} {c['skill']} {c['otype']} qty {qty:.6f} @ {entry * (1 - 0.0015) if (note and not stop_entry) else entry} sl{c['sl']} tp{c['tp']} risk ${risk:.2f}")
             else:
                 try:
+                    # A re-anchored marketable entry gets a collar, not a naked market order: a
+                    # limit a hair through the tape crosses but refuses to chase a gap.
+                    lim = entry * (1 - 0.0015) if (note and not stop_entry) else entry
                     if stop_entry:
-                        broker.place_order("buy", sym, qty=qty, otype="stop", stop_price=entry, tif="gtc", cid=cid)
+                        broker.place_order("buy", sym, qty=qty, otype="stop", stop_price=lim, tif="gtc", cid=cid)
                     else:
-                        # re-anchored marketable entries get a collar, not a naked market order:
-                        # a limit a hair through the tape crosses but refuses to chase a gap.
-                        lim = entry * (1 - 0.0015) if note else entry
                         broker.place_order("buy", sym, qty=qty, otype="limit", limit_price=lim, tif="gtc", cid=cid)
                     order_ok = True
-                    journal(f"ORDER SENT — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {entry} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}")
+                    journal(f"ORDER SENT — {sym} {c['skill']} (score {c['score']}/5) {'stop' if stop_entry else 'limit'} {c['otype']} qty {qty:.6f} @ {lim}{' (collar on ' + format(entry, '.10g') + ')' if lim != entry else ''} sl{c['sl']} tp{c['tp']} · risk ${risk:.2f}")
                 except broker.BrokerError as e:
                     order_ok = False
                     journal(f"ORDER FAILED — {sym} {c['skill']}: {e}")

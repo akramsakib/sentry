@@ -291,5 +291,44 @@ check("clamped risk still fits the notional cap on a real account",
 check("...and a $1k account is refused rather than degraded",
       not (need < 1000.0 * 0.25), "would have quietly traded a fraction of the intended risk")
 
+# cash basis, fill price and the position's entry must be ONE number (the DOGE/AVAX paper fills of
+# 2026-11-14 debited cash at the collar while quoting a different fill price — a $109 phantom)
+_L = {"cash": 10000.0, "realized": 0.0, "positions": [],
+      "orders": [{"id": "t2", "client_order_id": "sentryT2", "symbol": "TEST/USD", "side": "buy",
+                  "type": "limit", "qty": 10.0, "limit_price": 100.5, "stop_price": None,
+                  "status": "open", "placed_at": 0}]}
+_f2 = os.path.join(_ledger_dir, "l2.json"); _save2 = bl.LEDGER_F
+with open(_f2, "w") as _fh:
+    _json.dump(_L, _fh)
+bl.LEDGER_F = _f2
+_tp2 = bl._ticker_price
+bl._ticker_price = lambda sym: 100.0
+bl._tick(_L)
+bl._ticker_price = _tp2
+bl.LEDGER_F = _save2
+_o, _p = _L["orders"][0], _L["positions"][0]
+check("fill price, cash debit and position basis are the same number",
+      _o["filled_avg_price"] == _p["entry"] == 100.0 and _L["cash"] == 9000.0,
+      f"{_o['filled_avg_price']} / {_p['entry']} / {_L['cash']}")
+
+# ---------- 11: a market close must actually realize (this used to leave the book open forever)
+_L3 = {"cash": 500.0, "realized": 0.0, "orders": [],
+       "positions": [{"symbol": "TEST/USD", "qty": 10.0, "entry": 100.0, "cid": "sentryT3", "opened": 0}]}
+_f3 = os.path.join(_ledger_dir, "l3.json"); _keep = bl.LEDGER_F
+with open(_f3, "w") as _fh:
+    _json.dump(_L3, _fh)
+_L3["orders"] = [{"id": "t3x", "client_order_id": "sentryT3x", "symbol": "TEST/USD", "side": "sell",
+                  "type": "market", "qty": 10.0, "limit_price": None, "stop_price": None,
+                  "status": "open", "placed_at": 0}]
+bl.LEDGER_F = _f3
+_tp3 = bl._ticker_price
+bl._ticker_price = lambda sym: 96.0
+bl._tick(_L3)
+bl._ticker_price = _tp3
+bl.LEDGER_F = _keep
+check("market close realizes P/L and frees the cash",
+      _L3["positions"] == [] and abs(_L3["realized"] + 40.0) < 1e-9 and _L3["cash"] == 1460.0,
+      f"realized {_L3['realized']} cash {_L3['cash']} pos {_L3['positions']}")
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

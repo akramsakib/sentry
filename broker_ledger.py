@@ -107,16 +107,18 @@ def _tick(L):
         px = prices[sym]
         if o["side"] == "buy":
             if o["type"] == "limit" and o.get("limit_price") and px <= o["limit_price"]:
+                # Never worse than the market it walked into: a buy limit resting above the tape
+                # fills at the touch, not at the limit. One number, used for the fill price, the
+                # cash debit and the position basis — they disagreed once and the R-figures were
+                # graded off a price nobody paid.
+                fill = min(o["limit_price"], px)
                 o["status"] = "filled"
-                # never worse than the market it walked into (a buy limit above the tape fills at
-                # the touch, not at your limit) — this keeps paper fills honest
-                o["filled_avg_price"] = min(o["limit_price"], px)
+                o["filled_avg_price"] = fill
                 o["filled_qty"] = o["qty"]; o["filled_at"] = int(time.time())
-                cost = o["filled_qty"] * o["limit_price"]
-                L["cash"] -= cost
+                L["cash"] -= o["filled_qty"] * fill
                 L["positions"].append({"symbol": sym, "qty": o["filled_qty"],
-                                        "entry": o["limit_price"], "cid": o["client_order_id"],
-                                        "opened": int(time.time())})
+                                       "entry": fill, "cid": o["client_order_id"],
+                                       "opened": int(time.time())})
             elif o["type"] == "stop" and o.get("stop_price") and px >= o["stop_price"]:
                 o["status"] = "filled"; o["filled_avg_price"] = o["stop_price"]
                 o["filled_qty"] = o["qty"]; o["filled_at"] = int(time.time())
@@ -130,6 +132,16 @@ def _tick(L):
             if pos and px <= o["stop_price"]:
                 o["status"] = "canceled"
                 _close_pos(L, pos, o["stop_price"])
+        elif o["side"] == "sell" and o["type"] == "market":
+            # the orchestrator's own stop/TP exit path sends a market close; without this the
+            # shadow book opened positions it never closed, so realized P/L (and therefore the
+            # accuracy loop that sizes the next trade) stayed at zero forever.
+            pos = next((p for p in L["positions"] if p["symbol"] == sym), None)
+            if pos:
+                fill = px or pos["entry"]
+                o["status"] = "filled"; o["filled_avg_price"] = fill
+                o["filled_qty"] = pos["qty"]; o["filled_at"] = int(time.time())
+                _close_pos(L, pos, fill)
     # refresh mark prices on held positions
     for p in L["positions"]:
         try:
