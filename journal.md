@@ -59,3 +59,7 @@
 - **11-14 15:31 UTC** FILL — AVAX/USD S4-band-fade-long 1326.3617988702194@7.64 sl7.58760579 tp8.10135
 - **11-14 15:31 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 2 pendings · 2 positions equity $99847.76 · 5s
 - **11-14 15:31 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
+- **11-14 15:32 UTC** FILL — DOGE/USD S4-band-fade-long 280544.25585636037@0.06068 sl0.06080355 tp0.0634155
+- **11-14 15:32 UTC** FILL — AVAX/USD S4-band-fade-long 1326.3617988702194@7.641 sl7.58760579 tp8.10135
+- **11-14 15:32 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 2 pendings · 2 positions equity $99871.53 · 1s
+- **11-14 15:32 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
