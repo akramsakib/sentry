@@ -85,5 +85,34 @@ if stamp:
     check("journal stamp matches watchdog regex",
           bool(re.match(r"^\d{2}-\d{2} \d{2}:\d{2} UTC$", stamp)), repr(stamp))
 
+# ---------- 6: resting-order TTL (a stale trigger is not the same trade) ----------
+import re as _re
+check("run_cycle parses placement time from its own cid", '_CID_TS = re.compile(' in src)
+check("TTL is configurable", "pending_ttl_h" in cfg, "config.json missing pending_ttl_h")
+_cid_re = _re.compile(r"(\d{13})n\d+$")                      # same contract as run_cycle
+_mine = "sentrySOLUSD1794662107892n5"
+check("own cid yields its placement ms", _cid_re.search(_mine) is not None)
+if _cid_re.search(_mine):
+    check("parsed time is a plausible epoch", 1_700_000_000_000 < int(_cid_re.search(_mine).group(1)) < 4_000_000_000_000)
+check("foreign cids are ignored (never expire what we did not place)",
+      _cid_re.search("ledger1794662107892") is None)
+
+# ---------- 7: a legacy ledger row must not kill the cycle ----------
+_save = bl._save
+bl._save = lambda *a, **k: None
+try:
+    legacy = {"cash": 1000.0, "orders": [{"symbol": "TEST/USD", "side": "buy", "type": "stop",
+                                          "qty": 1.0, "status": "open", "client_order_id": "sentryX1"}],
+              "positions": []}
+    _gp = bl._ticker_price
+    bl._ticker_price = lambda sym: 100.0
+    bl._tick(legacy)
+    bl._ticker_price = _gp
+    check("missing stop_price is skipped, not fatal", legacy["orders"][0]["status"] == "open")
+except Exception as e:                                        # noqa: BLE001
+    check("missing stop_price is skipped, not fatal", False, f"{type(e).__name__}: {e}")
+finally:
+    bl._save = _save
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
