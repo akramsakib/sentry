@@ -694,5 +694,90 @@ _b20 = core.evaluate_symbol("TEST/USD", _ok20, 3, _seen20)
 check("same closed candle can never fire twice — seen_candles blocks the rerun",
       not any(c["skill"].startswith("C-") for c in _b20), str([c["skill"] for c in _b20][:6]))
 
+# ---------- 22: v4.7.3 — the Coinbase lane and the fee-widening floor ----------
+import re as _re22
+import broker_coinbase as _cb22                                 # noqa: E402
+import broker_okx as _okx22                                     # noqa: E402
+cfg22 = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")))
+check("stop_floor_frac exists and the shipped (OKX) book does NOT widen it",
+      "stop_floor_frac" in cfg22 and float(cfg22["stop_floor_frac"]) == 0.0,
+      f"{cfg22.get('stop_floor_frac')!r}")
+check("the floor is wired at the one place a stop is judged (right after re-anchor)",
+      'CFG.get("stop_floor_frac")' in src and "WIDENED —" in src)
+check("the traded stop, not the asked stop, is what gets stored and managed",
+      src.count('"sl": c["sl"]') >= 2 and '"sl_ask": sl0' in src)
+check("Coinbase Exchange is spot for us: no CAN_SHORT -> shorts stay paper-graded",
+      not hasattr(_cb22, "CAN_SHORT") and getattr(_okx22, "CAN_SHORT", False) is True)
+
+import broker_ledger as _bl22                                   # noqa: E402
+# The arithmetic that makes a floor necessary, computed with the venue model the bot itself uses
+# (round_trip_fees charges BOTH legs as taker — the pessimistic case a guard should assume).
+_fees_backup = dict(_bl22.FEES)
+_CAP = float(cfg22["live_max_fee_r"])
+
+
+def _drag(fees, stop_frac, tp_frac=0.015, risk=100.0, entry=100.0):
+    _bl22.set_fees(fees)
+    rd = entry * stop_frac
+    qty = risk / rd
+    usd, r = _bl22.round_trip_fees(entry, entry - rd, rd, qty)
+    return usd, r, qty * entry
+
+
+_cb_fees = {"maker": 0.0040, "taker": 0.0060}
+_usd_a, _r_a, _n_a = _drag(_cb_fees, 0.005)
+# 2.39R, not the back-of-envelope 2.0R: the exit leg is charged on the LOSS price (99.5), and
+# rounding leaves 4 dimes on a $100 risk, so the model is the number of record.
+check("Coinbase base tier at the book's 0.5 % stop costs >2R (guard cap 0.25R) -> refused",
+      abs(_r_a - 2.39) < 0.02 and _r_a > _CAP, f"{_r_a:.2f}R on ${_n_a:,.0f} notional")
+_usd_b, _r_b, _n_b = _drag(_cb_fees, 0.02)
+check("the same trade with a 4x wider stop divides the drag by 4 -> 0.60R",
+      abs(_r_b - _r_a / 4.0) < 0.005 and abs(_r_b - 0.60) < 0.02, f"{_r_b:.2f}R")
+check("and the notional it has to touch shrinks by the same 4x (less market, same dollars at risk)",
+      abs(_n_b * 4.0 - _n_a) < 1.0, f"${_n_a:,.0f} -> ${_n_b:,.0f}")
+_usd_c, _r_c, _n_c = _drag({"maker": 0.0010, "taker": 0.0020}, 0.02)
+check("Coinbase at the $100k-1M tier with the floor is 0.17R — under the cap, tradeable",
+      _r_c < _CAP, f"{_r_c:.2f}R")
+_usd_d, _r_d, _n_d = _drag({"maker": 0.0002, "taker": 0.0005}, 0.005)
+check("OKX perps at the UNWIDENED 0.5 % stop is 0.14R — why OKX stays the shipped venue",
+      _r_d < _CAP, f"{_r_d:.2f}R")
+_bl22.set_fees(_fees_backup)
+
+# behavioural: execute the SHIPPED floor block (dedented from run_cycle) on real numbers
+_m22 = _re22.search(r'(\n {12}floor_frac = float\(CFG\.get\("stop_floor_frac"\).*?)\n {12}# On a live venue',
+                    src, _re22.S)
+check("floor block extractable from run_cycle source for a behavioural run", _m22 is not None)
+if _m22:
+    _body = "\n".join(l[12:] for l in _m22.group(1).strip("\n").split("\n"))
+    for _sell, _floor, _want in ((False, 0.02, "wide"), (True, 0.02, "wide"),
+                                 (False, 0.0, "keep"), (True, 0.0, "keep")):
+        _sl0, _tp0 = (99.5, 101.5) if not _sell else (100.5, 98.5)
+        _ns = {"CFG": {"stop_floor_frac": _floor}, "journal": lambda line: _ns.setdefault("LOG", []).append(line),
+               "entry": 100.0, "r_dist": 0.5, "is_sell": _sell, "sym": "TEST/USD", "min_frac": 0.004,
+               "c": {"skill": "S4-test", "sl": _sl0, "tp": _tp0}, "sl0": _sl0, "tp0": _tp0,
+               "risk": 100.0, "LOG": []}
+        exec(compile(_body, "<floor>", "exec"), _ns)
+        _sl, _tp, _rd = _ns["c"]["sl"], _ns["c"]["tp"], _ns["r_dist"]
+        _tag = f"{'short' if _sell else 'long'}, floor={_floor} ({_want})"
+        check(f"{_tag}: stop {'moved to the floor' if _want == 'wide' else 'untouched'}",
+              abs(abs(_sl - 100.0) - 100.0 * _floor) < 1e-9 if _want == "wide" else _sl == _sl0,
+              f"sl {_sl0} -> {_sl}")
+        _rr0 = abs(_tp0 - 100.0) / abs(_sl0 - 100.0)
+        _rr1 = abs(_tp - 100.0) / abs(_sl - 100.0)
+        check(f"{_tag}: reward-to-risk preserved ({_rr0:.2f}R target — the strategy is re-priced, not rewritten)",
+              abs(_rr1 - _rr0) < 1e-9, f"{_rr0:.3f} -> {_rr1:.3f}")
+        check(f"{_tag}: reward distance scaled by exactly the widening factor",
+              abs(abs(_tp - 100.0) - abs(_tp0 - 100.0) * (4.0 if _want == "wide" else 1.0)) < 1e-9,
+              f"tp dist {abs(_tp - 100.0):.4f} vs {abs(_tp0 - 100.0):.4f} x "
+              f"{(4.0 if _want == 'wide' else 1.0):.1f}")
+        check(f"{_tag}: order still valid — entry sits between stop and target",
+              (_sl < 100.0 < _tp) if not _sell else (_tp < 100.0 < _sl), f"sl {_sl} tp {_tp}")
+        check(f"{_tag}: dollars of risk unchanged, size falls out of the wider distance",
+              abs(_ns["risk"] - 100.0) < 1e-9 and abs(_rd - (2.0 if _want == "wide" else 0.5)) < 1e-9,
+              f"r_dist {_rd}")
+        if _want == "wide":
+            check(f"{_tag}: journal says WIDENED (the change is loud, not silent)",
+                  any("WIDENED" in l for l in _ns["LOG"]), str(_ns["LOG"])[:80])
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

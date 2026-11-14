@@ -48,7 +48,8 @@ with what happened to each one. `journal.md` is the full decision log; `STATUS.m
   fees**, TP/SL attached to the entry order by the venue, and the short side of the checklist actually
   tradable. `vars.OKX_SIM=1` switches to OKX's simulated-trading engine: same host, same signatures,
   real matching, **no money** — the rehearsal Coinbase cannot offer. Same no-key fallback to the
-  shadow book (on Coinbase public candles, so prices are unchanged; only the fee schedule moved).
+  shadow book (on the same OKX public candles the scanner reads, so prices are unchanged; only the
+  fee schedule moved).
 - **`"execution": "coinbase"`:** Coinbase via `broker_coinbase.py` — **real orders on
   a real book**, on either Coinbase API (retail Advanced Trade or institutional Exchange; the
   presence of a passphrase picks which, see "Going live"). The key lives only in Actions Secrets.
@@ -79,7 +80,50 @@ the same folder — simulated-trading header, real payload shapes, re-find by `c
 the real book without sending. STATUS.md in this repo reflects the mirror; the Mac's own
 `crypto/journal.md` + hermes desk alerts are the live record.
 
-**What moved in 4.7.2:** execution home is the Mac; repo config arms on nothing (`auto_ack_on_key`
+## Going live on Coinbase (the lane he asked about — built, rehearsed, not the default)
+
+`execution: "coinbase"` is not a stub and I am not guessing about it: on 2026-11-14 the full cycle was
+run against it with real market data, six signals turned into six real-shaped orders, and the numbers
+came back. What that rehearsal says, in the venue's own words:
+
+| Coinbase Exchange tier (30-day volume) | maker/taker | fee per trade at this book's 0.5 % stop | verdict |
+|---|---|---|---|
+| $0–10 k | 0.40 / 0.60 % | **2.39 R** | every live signal refused by `live_max_fee_r` — correct, not a bug |
+| $10–50 k | 0.25 / 0.40 % | 1.60 R | refused |
+| $50–100 k | 0.15 / 0.25 % | 1.00 R | refused |
+| $100 k–1 M | 0.10 / 0.20 % | 0.80 R | refused |
+
+The lane is only tradeable here two ways, and v4.7.3 ships the second one as a config line:
+**`stop_floor_frac: 0.02`** — the stop is widened to what the fee can live inside, the target is scaled
+by the same factor so R stays R, size falls out of the wider distance, and the same six signals went out
+at **0.40 R** instead of 0.74–0.86 R with risk per trade untouched at $75.00. Journal lines say
+`WIDENED —` for every one of them; nothing about the re-price is quiet. What it costs is honesty about
+the history: the widened book is a different trade, so do not read the OKX grade history as its track
+record. That is why the floor ships at `0.0` and the OKX book is byte-for-byte unchanged.
+
+Three things a fee table will not tell you, from the same investigation:
+1. **The retail app and the API are different accounts.** The Exchange API (`api.exchange.coinbase.com`,
+   the one whose fee ladder is above) is a separate signup with a **passphrase** on the key; the retail
+   Advanced Trade key signs a different host with a CDP ES256 private key. `broker_coinbase.py` speaks
+   both — a passphrase in `coinbase.env` selects `exchange`, otherwise `advanced`; `COINBASE_MODE` overrides.
+   A retail key pointed at the Exchange host returns 401 and the adapter says so instead of retrying.
+2. **Malaysia.** The retail app's funding rails (MYR, local card) are not the plan — there is nothing to
+   route money through. The Exchange API is a keys-and-crypto affair: fund it by on-chain USDC/BTC
+   transfer from wherever the money already sits, and eligibility is decided by KYC, not by my guess.
+   OKX needs the same on-chain transfer and is already wired, which is the whole reason it ships.
+3. **Coinbase Exchange is spot for this book.** `CAN_SHORT` is absent, so a short signal is graded on
+   paper (`paper-graded (spot can't short)`) rather than sold into the book — 12 of the 18 signals in
+   that rehearsal were shorts. OKX perps trade both sides and attach TP/SL venue-side; that is a strategy
+   difference, not a preference.
+
+Arming it, when you want it: the same file shape as `okx.env`, in the Coinbase folder
+(`tools/mac/coinbase.env` → `~/hermes_sentry/crypto-coinbase/coinbase.env`) — `COINBASE_API_KEY` plus
+`COINBASE_CDP_PEM` (retail) or `COINBASE_API_SECRET` + `COINBASE_API_PASSPHRASE` (Exchange). Keys present
++ `auto_ack_on_key: true` is the acknowledgement; the clamps (`live_max_risk`, `live_max_risk_frac`,
+`max_notional_frac`, `live_max_fee_r`) are unchanged and still bind every order. Read the account's true
+tier with `GET /fee` before you set `config.fees` — the guard prices every trade off it.
+
+**What moved in 4.7.3:** the Coinbase lane measured end-to-end and `config.stop_floor_frac` added (fee-aware stop widening, default 0 = no behaviour change). **What moved in 4.7.2:** execution home is the Mac; repo config arms on nothing (`auto_ack_on_key`
 false — the gate itself stays tested, and the Mac copy ships it true). The runner sources
 (`tools/mac/`) now live in this repo too, so both books are one source of truth.
 

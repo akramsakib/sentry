@@ -1,4 +1,10 @@
-"""Sentry v4.7.2 (GitHub-native) — one full scan/manage cycle per run.
+"""Sentry v4.7.3 (GitHub-native) — one full scan/manage cycle per run.
+
+v4.7.3: the Coinbase lane, measured not guessed — `execution: coinbase` now rehearses end to end
+(public candles in, real payload shapes out, shorts auto-papered because Coinbase Exchange is
+spot-only for this account type), and config.stop_floor_frac exists so a high-fee venue can be
+traded honestly (wider stop, same R) instead of being refused or, worse, accepted while paying
+1.8R of fees per ticket. Default 0.0 = every existing book behaves exactly as before.
 
 v4.7.2: real-money trading moved HOME to the Mac runner (~/hermes_sentry/crypto/) — this repo
 cycle keeps scanning, grading and rehearsing as the mirror, but its shipped config no longer arms
@@ -512,6 +518,7 @@ def run():
             if note:
                 journal(f"RE-ANCHORED — {sym} {c['skill']}: {note}")
             r_dist = abs(entry - c["sl"])
+            sl0, tp0 = c["sl"], c["tp"]             # what the signal asked for, before any floor
             # A stop a few ticks from entry is not a risk level, it is spread noise: the
             # "risk / distance" formula then prints an absurd size (2026-11-14 run #8 asked
             # for 3 454 SOL — $261k notional to risk $100). Refuse those instead of trading them.
@@ -519,6 +526,23 @@ def run():
                 journal(f"SKIP — {sym} {c['skill']}: stop only {100 * r_dist / entry:.3f}% of price "
                         f"(<{100 * min_frac:.2f}%) — spread noise, not a risk level")
                 continue
+            # Venue fee problem, honest lever (v4.7.3). A venue that charges 1.8R per ticket is not
+            # outsmarted by sizing up — it is outsmarted only by moving the stop further out, which
+            # divides the same dollars of risk by more distance. The target is pushed by the SAME
+            # amount, so R stays R: the grade means what it means on OKX, and sizing (risk/r_dist)
+            # falls out of it. Default 0 = no floor = the shipped OKX book is untouched.
+            floor_frac = float(CFG.get("stop_floor_frac") or 0.0)
+            if floor_frac > 0 and r_dist < entry * floor_frac:
+                _k = (entry * floor_frac) / r_dist             # >= 1, how much room the ticket needs
+                tp_d = abs(c["tp"] - entry)
+                c["sl"] = entry - entry * floor_frac if not is_sell else entry + entry * floor_frac
+                c["tp"] = entry + tp_d * _k if not is_sell else entry - tp_d * _k   # R stays R
+                r_dist = abs(entry - c["sl"])
+                journal(f"WIDENED — {sym} {c['skill']}: venue needs a stop ≥{100 * floor_frac:.2f}% of price "
+                        f"(fees at {100 * min_frac:.2f}%+ geometry pay more than the risk can carry). "
+                        f"Stop {sl0:.8g}→{c['sl']:.8g}, target {tp0:.8g}→{c['tp']:.8g} — reward scaled by "
+                        f"{_k:.2f}x so R stays R, risk ${risk:.2f} unchanged, size now {risk / r_dist:.6f} "
+                        f"({100 * r_dist / entry:.2f}% stop instead of {100 * abs(entry - sl0) / entry:.2f}%)")
             # On a live venue the sizer's number is a REQUEST: a small account must shrink the RISK
             # it takes, never the distance of its stop (shrinking size instead silently trades a
             # different, degenerate bet — the $250-ceiling rehearsal on 2026-11-14 turned a $100
@@ -589,7 +613,8 @@ def run():
                                        "sl": c["sl"], "tp": c["tp"], "qty": round(qty, 8), "r_dist": r_dist,
                                        "score": c["score"], "risk": risk}
                 tl_log({"rid": rid, "sym": sym, "skill": c["skill"], "otype": c["otype"], "entry": c["entry"],
-                        "sl": c["sl"], "tp": c["tp"], "score": c["score"], "risk": risk, "fired": True})
+                        "sl": c["sl"], "tp": c["tp"], "score": c["score"], "risk": risk, "fired": True,
+                        **({"sl_ask": sl0, "widened": True} if c["sl"] != sl0 else {})})
                 fired += 1
     eq = f" equity ${float(acct['equity']):.2f}" if acct else ""
     s["last_cycle"] = time.time()
@@ -601,9 +626,12 @@ def run():
         journal(f"ALERT — every live signal this cycle was refused because the venue's fee is bigger "
                 f"than the trade's risk ({FEE_REFUSED[0]} refused). This is arithmetic, not a bug: a "
                 f"{100 * (FEES['maker'] + FEES['taker']):.2f} % round trip against 0.4-1.2 % stops costs "
-                f"more than one R. Either trade a maker-only venue, set config.fees to what the account "
-                f"actually pays, or widen the stops — and widening them invalidates the score history, so "
-                f"it is a decision, not a tuning knob. (Paper still trades: the guard is live-only.)")
+                f"more than one R. Either trade a cheaper venue, set config.fees to what the account "
+                f"actually pays, or set config.stop_floor_frac (>= 0.02 on Coinbase) — that widens every "
+                f"stop to what the fee can live inside and carries the target with it, so R stays R; it "
+                f"also means the graded history of the UNwidened book no longer describes this one. That "
+                f"is a decision, not a tuning knob, which is why the floor ships at 0. (Paper still "
+                f"trades: the guard is live-only.)")
     _fs = ledger.fee_stats() if hasattr(ledger, "fee_stats") else {}
     _fee_str = (f" · venue fees ${_fs.get('paid', 0.0):,.2f} to date @ "
                 f"{100 * FEES['maker']:.2f}/{100 * FEES['taker']:.2f}%") if (FEES["maker"] or FEES["taker"]) else ""

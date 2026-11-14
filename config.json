@@ -17,6 +17,7 @@
   "max_risk": 200.0,
   "min_notional": 10.0,
   "min_stop_frac": 0.004,
+  "stop_floor_frac": 0.0,
   "max_notional_frac": 0.25,
   "max_open": 6,
   "pending_ttl_h": 6.0,
@@ -26,12 +27,16 @@
     "taker": 0.0005
   },
   "live_max_fee_r": 0.25,
-  "note": "execution picks the venue and fees must be THAT venue's numbers \u2014 'okx' (what ships) is 0.0002/0.0005 on perps, where TP+SL attach to the entry order and shorts are real; 'coinbase' is 0.004/0.006 and its live trades are refused by live_max_fee_r because 1.82R of fees on a 0.55 % stop is the whole risk budget | 'ledger' = shadow book only | 'alpaca' = Alpaca paper. Any venue with no key in this runner falls back to the shadow ledger and says so in the journal. Live orders also require live_ack: true, min_grade_before_live graded outcomes, and a cycle heartbeat younger than max_gap_h. Per-trade live risk = min(sizer, live_max_risk, equity*live_max_risk_frac); a notional over max_notional_frac of equity is SKIPPED, never quietly trimmed. Fees are charged on every fill (paper and live) and netted into the R that grading and the sizer use. | v4.7.1 (user directive 2026-11-14): setup completed by the agent end-to-end \u2014 live_ack is armed by KEY PRESENCE (auto_ack_on_key: pasting a trade-only OKX key into repo Secrets is the acknowledgement; no config commit left to do) and min_grade_before_live is 0 (no paper-first waiting period; the sizer cold-starts at its own floor and the live $25 / 1% equity clamps still bound every real order). The fail() for 'live_ack=true with keys missing' stays: a half-armed venue must not spin silently. | v4.7.2: real-money execution moved HOME to the user's Mac (~/hermes_sentry/crypto/), which ships with auto_ack_on_key TRUE. This repo copy is a mirror + rehearsal book and arms on NOTHING: two armed books on one account double-send, and the Mac is the trader now.",
+  "note": "execution picks the venue and fees must be THAT venue's numbers \u2014 'okx' (what ships) is 0.0002/0.0005 on perps, where TP+SL attach to the entry order and shorts are real; 'coinbase' is 0.004/0.006 and its live trades are refused by live_max_fee_r because 1.82R of fees on a 0.55 % stop is the whole risk budget | 'ledger' = shadow book only | 'alpaca' = Alpaca paper. Any venue with no key in this runner falls back to the shadow ledger and says so in the journal. Live orders also require live_ack: true, min_grade_before_live graded outcomes, and a cycle heartbeat younger than max_gap_h. Per-trade live risk = min(sizer, live_max_risk, equity*live_max_risk_frac); a notional over max_notional_frac of equity is SKIPPED, never quietly trimmed. Fees are charged on every fill (paper and live) and netted into the R that grading and the sizer use. | v4.7.1 (user directive 2026-11-14): setup completed by the agent end-to-end \u2014 live_ack is armed by KEY PRESENCE (auto_ack_on_key: pasting a trade-only OKX key into repo Secrets is the acknowledgement; no config commit left to do) and min_grade_before_live is 0 (no paper-first waiting period; the sizer cold-starts at its own floor and the live $25 / 1% equity clamps still bound every real order). The fail() for 'live_ack=true with keys missing' stays: a half-armed venue must not spin silently. | v4.7.2: real-money execution moved HOME to the user's Mac (~/hermes_sentry/crypto/), which ships with auto_ack_on_key TRUE. This repo copy is a mirror + rehearsal book and arms on NOTHING: two armed books on one account double-send, and the Mac is the trader now. | v4.7.3 (Coinbase lane asked for 2026-11-14): stop_floor_frac added \u2014 a venue whose ticket costs more than this book's stop geometry can pay for has to be traded with a wider stop or not at all. It is 0.0 here so the OKX book is byte-for-byte the strategy it was; a Coinbase book sets it (0.02 = 2 % floor) so a trade is never accepted while paying 1.8R of fees.",
   "live_ack": false,
   "min_grade_before_live": 0,
   "max_gap_h": 2.0,
   "live_max_risk": 25.0,
   "live_max_risk_frac": 0.01,
   "fees_note": "these are OKX base-tier perp rates, because execution says 'okx'. Coinbase Advanced Trade is 0.40/0.60 % \u2014 if you flip execution back, flip these too or the guard at live_max_fee_r will refuse every trade (correctly: 1.82R of fees on a 0.55 % stop).",
-  "auto_ack_on_key": false
+  "auto_ack_on_key": false,
+  "venue_notes": {
+    "okx (shipped)": "execution=okx, fees {0.0002, 0.0005}, stop_floor_frac 0.0. Perps: TP/SL on-venue, shorts real. 0.5 % stop pays 0.14R of fees \u2014 under live_max_fee_r, so the checklist trades exactly as graded.",
+    "coinbase (the other lane, v4.7.3)": "execution=coinbase, fees {0.0025, 0.0040} (Exchange $10k-50k tier \u2014 read the account's real tier at /fee and use that), stop_floor_frac 0.02. Measured on the live shadow lane 2026-11-14: the same 6 signals went out with stops widened to 2 % and the fee bill fell from 0.74-0.86R to 0.40R per trade, risk per trade unchanged at $75. At the base tier (0.40/0.60) it is 2.39R and every live signal is refused by live_max_fee_r \u2014 that refusal is correct, not a bug to tune away."
+  }
 }

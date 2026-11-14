@@ -6,9 +6,9 @@ the way the MT5 forex build does: one cycle every CRYPTO_CYCLE seconds, its own 
 its own alerts into the hermes desk channel. No MT5, no Wine, no GitHub cron — OKX REST only,
 24/7, five timeframes, the full Mac skill array (22 §12 patterns + 16 families).
 
-Keys, when they exist, live ONLY in ./okx.env (chmod 600) and nowhere else: not in this folder's
-journal, not on GitHub. To arm real money:
-    1. put OKX_API_KEY / OKX_API_SECRET / OKX_API_PASSPHRASE lines in ./okx.env  (uncomment)
+Keys, when they exist, live ONLY in ./okx.env (or ./coinbase.env + ./coinbase.pem for the Coinbase
+lane), chmod 600, and nowhere else: not in this folder's journal, not on GitHub. To arm real money:
+    1. uncomment the key lines in the env file that matches config.json's "execution" value
     2. launchctl kickstart -k gui/$(id -u)/com.hermes.sentry.crypto
 Kill switches: blank the env values (next cycle falls back to shadow, never to half-sent),
 or `launchctl bootout gui/$(id -u)/com.hermes.sentry.crypto` — venue-side TP/SL still protect
@@ -22,14 +22,23 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 sys.path.insert(0, HERE)
 
-ENVF = os.path.join(HERE, "okx.env")
-if os.path.exists(ENVF):
+# Two lanes, two key files, loaded in this order. okx.env holds OKX_API_KEY/SECRET/PASSPHRASE;
+# coinbase.env holds COINBASE_API_KEY + either COINBASE_API_SECRET+COINBASE_API_PASSPHRASE
+# (Exchange, institutional host) or nothing if the retail CDP private key sits in ./coinbase.pem.
+# Whichever file is EMPTY is the lane that stays on the shadow ledger — so an OKX-armed folder with
+# no coinbase.env simply ignores the Coinbase branch, and vice versa. chmod 600 on all three.
+for ENVF in (os.path.join(HERE, "okx.env"), os.path.join(HERE, "coinbase.env")):
+    if not os.path.exists(ENVF):
+        continue
     for _line in open(ENVF):
         _line = _line.strip()
         if not _line or _line.startswith("#") or "=" not in _line:
             continue
         _k, _v = _line.split("=", 1)
         os.environ.setdefault(_k.strip(), _v.strip().strip("'\""))
+_pem = os.path.join(HERE, "coinbase.pem")
+if os.path.exists(_pem):                                   # retail CDP keys are a PEM blob, not an env line
+    os.environ.setdefault("COINBASE_CDP_PEM", open(_pem).read())   # the adapter wants the TEXT (openssl)
 
 import run_cycle as rc                                        # noqa: E402
 
