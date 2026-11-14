@@ -43,33 +43,34 @@
    "r_dist": 0.7737646500000039,
    "score": 3,
    "risk": 75
-  },
-  "sentryDOGEUSD1794670198764n3": {
-   "sym": "DOGE/USD",
-   "skill": "S4-band-fade-long",
-   "otype": "buy_limit",
-   "entry": 0.06116,
-   "sl": 0.06080355,
-   "tp": 0.0634155,
-   "qty": 280544.25585636,
-   "r_dist": 0.0003564500000000012,
-   "score": 4,
-   "risk": 100
-  },
-  "sentryAVAXUSD1794670198886n4": {
-   "sym": "AVAX/USD",
-   "skill": "S4-band-fade-long",
-   "otype": "buy_limit",
-   "entry": 7.663,
-   "sl": 7.58760579,
-   "tp": 8.10135,
-   "qty": 1326.36179887,
-   "r_dist": 0.07539421000000068,
-   "score": 4,
-   "risk": 100
   }
  },
- "pos_state": {},
+ "pos_state": {
+  "DOGE/USD": {
+   "side": "long",
+   "entry": 0.06068,
+   "sl": 0.06080355,
+   "tp": 0.0634155,
+   "r_dist": 0.0003564500000000012,
+   "qty": 280544.25585636037,
+   "skill": "S4-band-fade-long",
+   "be": null,
+   "sent_sl": null,
+   "last_price": null
+  },
+  "AVAX/USD": {
+   "side": "long",
+   "entry": 7.64,
+   "sl": 7.58760579,
+   "tp": 8.10135,
+   "r_dist": 0.07539421000000068,
+   "qty": 1326.3617988702194,
+   "skill": "S4-band-fade-long",
+   "be": null,
+   "sent_sl": null,
+   "last_price": null
+  }
+ },
  "cid_seq": 4,
- "last_cycle": 1794670199.113203
+ "last_cycle": 1794670311.3256931
 }
