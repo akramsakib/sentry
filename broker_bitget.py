@@ -9,7 +9,8 @@ offline and then proven from the user's own Mac, which reaches all four venues.
 
 Cost, read from the venue's own `/api/v2/mix/market/contracts` (not from a help page): BTC/ETH/
 XRP/SOL/DOGE/ADA/LINK/LTC/BCH/AVAX perps all publish **0.02 % maker / 0.06 % taker** at the base
-tier. This playbook risks 1R through ~0.5 % stops, so taker both ways costs 0.16R — inside the
+tier. This playbook risks 1R through ~0.5 % stops, so taker both ways costs 0.24R (0.16R if the
+entry leg fills as a maker) — inside the
 0.25R live guard (`live_max_fee_r`), which is the only reason a venue is interesting here at all.
 `python3 broker_bitget.py fees` re-reads that schedule and prints what every symbol actually pays.
 
@@ -532,13 +533,25 @@ def fees():
               "LTC/USD", "BCH/USD", "AVAX/USD"):
         m = _meta(s)
         px = last_price(s)
-        stop = 0.005 * px                                     # the book's typical stop distance
-        drag = (m["maker"] + m["taker"]) / 0.005               # R = fees/notional / stop/notional
-        tot.append(drag)
+        # Two numbers, because they answer different questions and mixing them up is how a venue
+        # gets judged as cheap on an assumption the live guard does not make:
+        #   best  = entry leg fills as maker, exit at the stop as taker  (what the tape usually does)
+        #   guard = taker BOTH legs, which is what broker_ledger.round_trip_fees and therefore
+        #           `live_max_fee_r` actually compute — and the entry leg is a trigger on Bitget
+        #           (executePrice crossing into the market), so the guard number is the honest one.
+        best = (m["maker"] + m["taker"]) / 0.005
+        guard = 2 * m["taker"] / 0.005
+        tot.append((best, guard))
         print(f"  {m['inst']:9s} {px:>11,.4g}  mkr {100 * m['maker']:.2f}% tkr {100 * m['taker']:.2f}%"
-              f"  -> a 0.50 % stop pays {drag:.2f}R of fees   {'OK' if drag <= 0.25 else 'OVER CAP'}")
-    print(f"  mean {sum(tot) / len(tot):.3f}R · live_max_fee_r must stay >= that or signals get refused")
-    return sum(tot) / len(tot)
+              f"  -> 0.50 % stop pays {best:.2f}R (maker entry) / {guard:.2f}R (taker both)"
+              f"   {'OK vs live_max_fee_r' if guard <= 0.25 else 'OVER CAP — signals get refused'}")
+    mb = sum(a for a, _ in tot) / len(tot)
+    mg = sum(b for _, b in tot) / len(tot)
+    print(f"  mean {mb:.3f}R optimistic · {mg:.3f}R as the live guard measures it "
+          f"(cap 0.250R) · headroom {0.25 - mg:+.3f}R")
+    print("  the guard number is the one that decides: this book's entries are triggers, so the venue "
+          "charges taker on both legs nearly always.")
+    return mg
 
 
 def rehearse():
