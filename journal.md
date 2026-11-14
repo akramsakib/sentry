@@ -112,3 +112,22 @@
 - **11-14 20:10 UTC** NOTE — LTC/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
 - **11-14 20:10 UTC** CANDIDATE(score 3/5) — BCH/USD C-H1-bear-engulfing sell_stop 205.78705375 sl209.73236561 tp199.86908597 — paper-graded (spot can't short)
 - **11-14 20:10 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 4 new · 6 pendings · 0 positions equity $99780.60 · 5s · venue fees $60.38 to date @ 0.02/0.05%
+- **11-14 21:06 UTC** NOTE — DOGE/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
+- **11-14 21:06 UTC** CANDIDATE(score 4/5) — DOGE/USD S13-ichimoku-short sell_stop 0.0576742 sl0.06288161 tp0.05554486 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** CANDIDATE(score 5/5) — DOGE/USD C-M15-bear-engulfing sell_stop 0.05844613 sl0.05968967 tp0.05658081 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** CANDIDATE(score 5/5) — DOGE/USD C-M15-tweezer-top sell_stop 0.05844613 sl0.05968967 tp0.05658081 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** CANDIDATE(score 5/5) — DOGE/USD C-M15-three-outside-down sell_stop 0.05844613 sl0.05968967 tp0.05658081 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** NOTE — LINK/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-14 21:06 UTC** NOTE — LINK/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
+- **11-14 21:06 UTC** CANDIDATE(score 4/5) — LINK/USD S13-ichimoku-short sell_stop 8.7944732 sl9.5785536 tp8.47294025 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** CANDIDATE(score 4/5) — LTC/USD S13-ichimoku-short sell_stop 44.37089931 sl47.70820137 tp42.8798566 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** NOTE — LTC/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-14 21:06 UTC** NOTE — BCH/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-14 21:06 UTC** NOTE — BCH/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
+- **11-14 21:06 UTC** CANDIDATE(score 4/5) — BCH/USD S13-ichimoku-short sell_stop 201.40108425 sl217.3078315 tp193.89923565 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** CANDIDATE(score 5/5) — BCH/USD C-M15-bear-engulfing sell_stop 203.07405617 sl207.66485959 tp196.18785104 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** CANDIDATE(score 5/5) — BCH/USD C-M15-tweezer-top sell_stop 203.07405617 sl207.66485959 tp196.18785104 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** CANDIDATE(score 5/5) — BCH/USD C-M15-three-outside-down sell_stop 203.07405617 sl207.66485959 tp196.18785104 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** NOTE — AVAX/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
+- **11-14 21:06 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 7.14926007 sl7.96047985 tp6.86581441 — paper-graded (spot can't short)
+- **11-14 21:06 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 10s · venue fees $60.38 to date @ 0.02/0.05%
