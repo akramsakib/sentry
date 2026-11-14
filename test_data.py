@@ -1141,6 +1141,8 @@ if _have25:
         "- **11-15 07:12 KL** scan ok \u00b7 book items 5\n"
         "- **11-13 04:48 KL** CHECK/SEND FAILED XAUUSD sell stop: isError true\n")
     open(os.path.join(_d25, "desk_mode.json"), "w").write('{"entries_enabled": true}')
+    json.dump({"orders": [], "known_positions": [], "bridge": "down"},
+              open(os.path.join(_d25, "state.json"), "w"))
     json.dump({"updated": "now", "book": "crypto-x", "execution": "bitget", "state": "shadow",
                "money": False, "cycle_s": 300, "updated_ts": _t25.time() - 1800, "positions": [],
                "pendings": [], "open_cids": {}, "blocked_on": ["no venue key"]},
@@ -1153,16 +1155,24 @@ if _have25:
     check("...and entries_enabled=true alone cannot read as live money (tonight's own bug: the switch "
           "means allowed-to-send, not money-moved)", "DEMO account" in _p25[0] and "switch on" in _p25[0],
           _p25[0])
-    check("a REAL-account build would still get the live pill (the rule keys off evidence, not pessimism)",
-          _mon._money_pill(dict(_fx25, account_kind="live", feed_stale=False))
+    check("a REAL-account build with a live bridge still gets the live pill (evidence, not pessimism)",
+          _mon._money_pill(dict(_fx25, account_kind="live", feed_stale=False, bridge="up"))
           == ("switch on \u00b7 REAL account", "live"),
-          str(_mon._money_pill(dict(_fx25, account_kind="live", feed_stale=False))))
+          str(_mon._money_pill(dict(_fx25, account_kind="live", feed_stale=False, bridge="up"))))
+    check("...and even a REAL account is NOT called live while its bridge is down",
+          _mon._money_pill(dict(_fx25, account_kind="live", feed_stale=False, bridge="down"))[1]
+          == "hold", str(_mon._money_pill(dict(_fx25, account_kind="live", bridge="down"))))
     check("the FX card reports the age of its own feed, so a job that went quiet cannot look healthy",
           _fx25["feed_stale"] is True and abs(_fx25["feed_age_min"] - 40.0) < 1.5,
           f"{_fx25['feed_age_min']} min, stale={_fx25['feed_stale']}")
     check("...and it counts the build's own send failures, quoting the last one verbatim",
           _fx25["send_fail_n"] == 1 and "CHECK/SEND FAILED" in _fx25["send_fail_last"],
           _fx25["send_fail_last"][:70])
+    check("a build that says its bridge is down gets a BRIDGE DOWN pill, not a green one",
+          _mon._money_pill(_fx25)[0].startswith("BRIDGE DOWN") and _mon._money_pill(_fx25)[1] == "hold",
+          _mon._money_pill(_fx25)[0])
+    check("and the card quotes the build's own conclusion rather than inventing one",
+          _mon.fx_section()["bridge"] == "down" and "terminal bridge" in _mon.to_markdown([], _mon.fx_section(), "t"))
     _bk25 = _mon.load_books()
     check("a crypto book whose status file is 30 min old on a 5-min cycle reads STALE, not SHADOW",
           _bk25[0]["stale"] is True and _mon._money_pill(_bk25[0])[0].startswith("STALE"),

@@ -102,6 +102,10 @@ def fx_section():
         feed_age_min = None
     fails = [l for l in reversed(_tail(os.path.join(ROOT, "sentry_journal.md"), 400))
              if "SEND FAILED" in l or "CHECK/SEND FAILED" in l]
+    # `bridge` is what the FX build itself concluded on its last cycle — it only exists once that build
+    # publishes it, and its absence is shown as "not reported", never as "up". A dashboard that invents
+    # an ok is the exact failure this card exists to prevent.
+    bridge = st.get("bridge") or "not reported by the build"
     return {"updated": time.strftime("%Y-%m-%d %H:%M KL", time.gmtime(time.time() + 8 * 3600)),
             "book": "forex (MT5)", "execution": "MT5 via the terminal bridge",
             "state": "resident" if (orders or items) else "idle",
@@ -116,7 +120,7 @@ def fx_section():
             "fx_only": True, "account_kind": kind, "feed_age_min": feed_age_min,
             "feed_stale": (feed_age_min is not None and feed_age_min > 15),
             "send_fail_last": (fails[0][:150] if fails else ""),
-            "send_fail_n": len(fails)}
+            "send_fail_n": len(fails), "bridge": bridge}
 
 
 def _money_pill(b):
@@ -126,6 +130,8 @@ def _money_pill(b):
         kind = b.get("account_kind") or "unknown"
         acct = {"demo": "DEMO account", "live": "REAL account"}.get(kind, "account kind unknown")
         sw = "switch on" if b.get("money") else "switch OFF"
+        if str(b.get("bridge") or "").lower().startswith("down"):
+            return (f"BRIDGE DOWN — {acct} · {sw} · quotes may be stale", "hold")
         if b.get("feed_stale"):
             return (f"STALE — {acct} · {sw} · feed {b.get('feed_age_min')} min", "hold")
         return (f"{sw} · {acct}", "live" if (b.get("money") and kind == "live") else "hold")
@@ -181,6 +187,7 @@ def to_markdown(books, fx, built):
         if b.get("blocked_on"):
             L.append("- **waiting on:** " + "; ".join(str(x) for x in b["blocked_on"]))
         if b.get("fx_only"):
+            L.append(f"- terminal bridge, per the build itself: **{b.get('bridge')}**")
             L.append(f"- feed last written {b.get('feed_age_min')} min ago · account kind read from "
                      f"`sentry_mac.py`: **{b.get('account_kind')}** · send failures in the last 400 "
                      f"journal lines: {b.get('send_fail_n') or 0}")
@@ -280,8 +287,9 @@ def to_html(books, fx, built, md_path):
                      f' · send failures in the last 400 journal lines: <b>{esc(b.get("send_fail_n") or 0)}</b></p>'
                      + (f'<p class="kv warn">last send failure: {esc(b.get("send_fail_last"))}</p>'
                         if b.get("send_fail_last") else "")
-                     + '<p class="kv">this page never calls the terminal, so it cannot say the bridge is '
-                       'reachable — the age above is the honest liveness signal.</p>')
+                     + '<p class="kv warn">terminal bridge, per the build itself: <b>'
+                       + esc(b.get("bridge")) + '</b>. This page never calls the terminal, so that verdict '
+                       'is the build\'s own, not a probe by me.</p>')
         poss = b.get("positions") or []
         if poss:
             h.append("<table><tr><th>pos</th><th>side</th><th class=n>qty</th><th class=n>entry</th>"
