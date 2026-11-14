@@ -1,15 +1,15 @@
 name: sentry-cycle
 on:
   schedule:
-    - cron: "*/10 * * * *"     # same cadence as the Mac build (CYCLE=300s ≈ 5-10 min)
+    - cron: "*/10 * * * *"        # declared cadence; this account delivers far less (see README)
   repository_dispatch:
-    types: [sentry-tick]   # external pinger (or the watchdog) can drive a cycle on demand
+    types: [sentry-tick]   # the watchdog (or any external pinger) can drive a cycle on demand
   workflow_dispatch: {}          # "Run workflow" button = manual scan-now
   push:
     branches: [main]        # re-scan after code changes
     paths-ignore:           # ...but not after memory/docs commits, which used to pile up and
-      - journal.md           #  cancel each other in the concurrency group (red herrings in the
-      - state.json            #  run list that the email alarm reads as noise)
+      - journal.md           #  cancel each other in the concurrency group (red herrings that the
+      - state.json            #  email alarm then reads as noise)
       - ledger.json
       - trades_log.jsonl
       - README.md
@@ -22,16 +22,24 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     timeout-minutes: 9
+    # Job-level so a step can check for the key's presence in its own `if:`.
+    env:
+      COINBASE_API_KEY: ${{ secrets.COINBASE_API_KEY }}
+      COINBASE_API_SECRET: ${{ secrets.COINBASE_API_SECRET }}
+      COINBASE_API_PASSPHRASE: ${{ secrets.COINBASE_API_PASSPHRASE }}
+      COINBASE_CDP_PEM: ${{ secrets.COINBASE_CDP_PEM }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - name: data + sizing guards (offline, no keys)
         run: python test_data.py
+      - name: coinbase venue check (reads the account, places nothing)
+        if: env.COINBASE_API_KEY != ''
+        run: python broker_coinbase.py
       - name: run cycle
         env:
           ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
           ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python run_cycle.py
-# scheduler-resync 2026-11-14T09:55Z
