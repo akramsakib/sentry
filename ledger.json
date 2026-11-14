@@ -166,6 +166,18 @@
    "filled_avg_price": 63278.87,
    "filled_qty": 0.06908402900547651,
    "filled_at": 1794694366
+  },
+  {
+   "id": "1794694962782",
+   "client_order_id": "sentryLINKUSD1794694962782n12",
+   "symbol": "LINK/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 274.27358230316565,
+   "limit_price": null,
+   "stop_price": 8.87437135,
+   "status": "open",
+   "placed_at": 1794694962
   }
  ],
  "positions": [
@@ -176,7 +188,7 @@
    "cid": "sentryBTCUSD1794694366699n11",
    "fees": 2.18577965,
    "opened": 1794694366,
-   "current_price": 63278.87
+   "current_price": 64106.44
   }
  ],
  "fees_paid": 62.56924244
