@@ -46,18 +46,6 @@
   }
  },
  "pos_state": {
-  "DOGE/USD": {
-   "side": "long",
-   "entry": 0.06068,
-   "sl": 0.06080355,
-   "tp": 0.0634155,
-   "r_dist": 0.0003564500000000012,
-   "qty": 280544.25585636037,
-   "skill": "S4-band-fade-long",
-   "be": null,
-   "sent_sl": 0.06080355,
-   "last_price": 0.06086
-  },
   "AVAX/USD": {
    "side": "long",
    "entry": 7.641,
@@ -68,9 +56,9 @@
    "skill": "S4-band-fade-long",
    "be": null,
    "sent_sl": 7.58760579,
-   "last_price": 7.654
+   "last_price": 7.649
   }
  },
  "cid_seq": 4,
- "last_cycle": 1794670541.1064062
+ "last_cycle": 1794670980.6741345
 }
