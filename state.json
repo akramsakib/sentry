@@ -83,7 +83,9 @@
   "FIRE|LINK/USD|C-M15-bear-engulfing|2026-11-14",
   "FIRE|LTC/USD|S16-inside-long|2026-11-14",
   "FIRE|LTC/USD|S16-inside-short|2026-11-14",
-  "FIRE|AVAX/USD|C-M15-evening-star|2026-11-14"
+  "FIRE|AVAX/USD|C-M15-evening-star|2026-11-14",
+  "FIRE|DOGE/USD|C-M15-hammer/takuri|2026-11-14",
+  "FIRE|BCH/USD|C-M15-hammer/takuri|2026-11-14"
  ],
  "open_cids": {
   "sentryETHUSD1794687006124n7": {
@@ -158,11 +160,11 @@
    "skill": "S18-ma-revert-long",
    "be": 63278.87,
    "sent_sl": 63278.87,
-   "last_price": 64257.46
+   "last_price": 64057.96
   }
  },
  "cid_seq": 12,
- "last_cycle": 1794695097.0072463,
+ "last_cycle": 1794695451.1433365,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
@@ -200,6 +202,15 @@
   "BCH/USD|M15|hammer/takuri|2026-11-14T21:45:00Z",
   "BCH/USD|M15|bear-engulfing|2026-11-14T21:45:00Z",
   "AVAX/USD|M15|bear-engulfing|2026-11-14T21:45:00Z",
-  "AVAX/USD|M15|evening-star|2026-11-14T21:45:00Z"
+  "AVAX/USD|M15|evening-star|2026-11-14T21:45:00Z",
+  "ETH/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "XRP/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "SOL/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "DOGE/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "ADA/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "LINK/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "LTC/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "BCH/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
+  "AVAX/USD|M15|hammer/takuri|2026-11-14T22:00:00Z"
  ]
 }
