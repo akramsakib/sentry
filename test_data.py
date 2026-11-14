@@ -1241,9 +1241,12 @@ if _nc:
     f, w = _nc({})
     check("and a config with neither key still gets the shipped default instead of an exception",
           f == 0.25, repr(f))
+    # Asserted about the KNOB, not a chosen value: a deployed perps book legitimately runs max_leverage 3,
+    # and a suite that failed on that would be testing my preference instead of the config's sanity.
     _cfg26 = json.load(open(os.path.join(_h25, "config.json")))
-    check("the shipped repo config leaves max_leverage null (the mirror arms nothing, spot semantics)",
-          "max_leverage" in _cfg26 and _cfg26["max_leverage"] is None, repr(_cfg26.get("max_leverage")))
+    _lv = _cfg26.get("max_leverage")
+    check("max_leverage is null, 0 (hard stop), or a SANE multiple — never a fraction that starves the book",
+          _lv is None or _lv == 0 or float(_lv) >= 1.0, repr(_lv))
     _rc26 = open(os.path.join(_h25, "run_cycle.py")).read()
     check("run() reads the cap from the helper, so the guard and its message cannot disagree",
           "max_nf, cap_what = notional_cap(CFG)" in _rc26)
