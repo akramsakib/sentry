@@ -1,5 +1,5 @@
 {
- "cash": 99780.59953293936,
+ "cash": 95406.85446277559,
  "realized": -219.4004670606244,
  "orders": [
   {
@@ -89,7 +89,7 @@
    "qty": 0.08904396016918446,
    "limit_price": null,
    "stop_price": 65759.92302794,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794672578
   },
   {
@@ -101,7 +101,7 @@
    "qty": 32025.962380169436,
    "limit_price": null,
    "stop_price": 0.15745624,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794672578
   },
   {
@@ -151,8 +151,33 @@
    "stop_price": 72.59102278,
    "status": "open",
    "placed_at": 1794687006
+  },
+  {
+   "id": "1794694366699",
+   "client_order_id": "sentryBTCUSD1794694366699n11",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "limit",
+   "qty": 0.06908402900547651,
+   "limit_price": 63793.0,
+   "stop_price": null,
+   "status": "filled",
+   "placed_at": 1794694366,
+   "filled_avg_price": 63278.87,
+   "filled_qty": 0.06908402900547651,
+   "filled_at": 1794694366
   }
  ],
- "positions": [],
- "fees_paid": 60.38346279
+ "positions": [
+  {
+   "symbol": "BTC/USD",
+   "qty": 0.06908402900547651,
+   "entry": 63278.87,
+   "cid": "sentryBTCUSD1794694366699n11",
+   "fees": 2.18577965,
+   "opened": 1794694366,
+   "current_price": 63278.87
+  }
+ ],
+ "fees_paid": 62.56924244
 }
