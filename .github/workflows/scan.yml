@@ -22,5 +22,5 @@ jobs:
         env:
           ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
           ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
-          GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}   # Contents API memory push
+          GITHUB_TOKEN: *** secrets.GITHUB_TOKEN }}
         run: python run_cycle.py
