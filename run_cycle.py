@@ -1,4 +1,4 @@
-"""Sentry v4.3 (GitHub-native) — one full scan/manage cycle per run.
+"""Sentry v4.3.3 (GitHub-native) — one full scan/manage cycle per run.
 
 Designed to be invoked by .github/workflows/scan.yml every 10 minutes.
 State of record = files in this repo (state.json, journal.md, trades_log.jsonl),
@@ -135,6 +135,16 @@ def fetch_bars(sym):
     if len(h1) < 60 or len(m15) < 20 or len(d1) < 12:
         fail(f"THIN DATA: {sym} h1={len(h1)} m15={len(m15)} d1={len(d1)} — expected a healthy history")
     return {"1h": h1, "15m": m15, "1d": d1}, 0
+
+
+def grade(r_mult):
+    """One rule for grading a closed trade: sign of the realised R. `scratch` covers the ~0 cases
+    (fees/spread ate it) so they neither flatter nor punish the accuracy loop."""
+    if r_mult > 0.05:
+        return "win"
+    if r_mult < -0.05:
+        return "loss"
+    return "scratch"
 
 
 def live_risk_cap(risk, equity, cfg):
@@ -276,11 +286,14 @@ def run():
     for sym, ps in list(s["pos_state"].items()):
         if sym not in live:
             last = ps.get("last_price") or ps["entry"]
-            win = (last > ps["tp"]) if ps["side"] == "long" else (last < ps["tp"])
-            res = "win" if win else "loss"
-            r_mult = round((last - ps["entry"]) / ps["r_dist"], 2) if ps.get("r_dist") else 0
+            # Grade on what was actually made, not on whether the target was ever touched: a
+            # 2026-11-14 DOGE stop-out exited ABOVE its entry (a favourable scratch), and the
+            # target test still called it a loss with "+0.36R" — which then fed a false miss into
+            # the accuracy loop that sizes every future trade.
+            r_mult = round((last - ps["entry"]) / ps["r_dist"], 2) if ps.get("r_dist") else 0.0
+            res = grade(r_mult)
             tl_update(sym, res, last, r_mult)
-            journal(f"CLOSED {sym} — graded {res} ({r_mult:+.2f}R)")
+            journal(f"CLOSED {sym} — graded {res} ({r_mult:+.2f}R) from exit {last:.8g}")
             if not DRY:
                 # Cancel ONLY this symbol's leftovers. A blanket cancel_all() here once deleted two
                 # unrelated resting entries (XRP/SOL, 2026-11-14) while the journal still claimed
@@ -335,7 +348,24 @@ def run():
                 o = broker.order_by_cid(cid)
                 if o and o.get("status") == "filled":
                     sym = meta["sym"]
-                    s["pos_state"][sym] = {"side": "long", "entry": float(o["filled_avg_price"] or meta["entry"]),
+                    fill = float(o["filled_avg_price"] or meta["entry"])
+                    # A re-anchored (marketable) entry can fill BETTER than the level it was scored
+                    # from, which can put the fill beyond the stop — DOGE 2026-11-14: filled at
+                    # 0.06068 against a 0.06080 stop, a position that is stopped out the instant it
+                    # exists. Scratch it now instead of holding a contradiction.
+                    if fill <= meta["sl"]:
+                        tl_update(sym, "scratch", fill, 0.0)
+                        journal(f"SCRATCH — {sym}: filled {fill:.8g} at/below its own stop "
+                                f"{meta['sl']:.8g} — no valid risk to hold, closing immediately")
+                        if not DRY:
+                            try:
+                                broker.place_order("sell", sym, qty=float(o.get("filled_qty") or meta["qty"]),
+                                                   otype="market")
+                            except broker.BrokerError as e:
+                                journal(f"ALERT — {sym} needs a manual close, market order rejected: {e}")
+                        s["open_cids"].pop(cid, None)
+                        continue
+                    s["pos_state"][sym] = {"side": "long", "entry": fill,
                                            "sl": meta["sl"], "tp": meta["tp"], "r_dist": meta["r_dist"],
                                            "qty": float(o.get("filled_qty") or meta["qty"]), "skill": meta["skill"],
                                            "be": None, "sent_sl": None, "last_price": None}
@@ -464,7 +494,7 @@ def run():
     eq = f" equity ${float(acct['equity']):.2f}" if acct else ""
     s["last_cycle"] = time.time()
     try:
-        write_status(acct, live, s, rows, tf_map, fired)
+        write_status(acct, live, s, tl_rows(), tf_map, fired)   # re-read: grading just landed
     except Exception as e:                                    # noqa: BLE001
         journal(f"NOTE — status page not written: {type(e).__name__}: {e}")
     journal(f"scan ok · venue {VENUE} · {len(syms)} symbols · {fired} new · {len(s['open_cids'])} pendings · "
@@ -598,9 +628,12 @@ def write_status(acct, live, s, rows, tf_map, fired):
     avg_r = sum(float(r.get("R") or 0) for r in graded) / len(graded) if graded else 0.0
     out.append("## Accuracy so far")
     out.append("")
-    out.append(f"{len(graded)} graded outcomes · win rate "
-               f"{(100.0 * len(wins) / len(graded)) if graded else 0:.0f}% · avg {avg_r:+.2f}R · "
-               f"sizing today: {sizes}")
+    losses = [r for r in graded if r["result"] == "loss"]
+    scratches = len(graded) - len(wins) - len(losses)
+    wr = (100.0 * len(wins) / (len(wins) + len(losses))) if (wins or losses) else 0.0
+    out.append(f"{len(graded)} graded outcomes ({len(wins)} win / {len(losses)} loss"
+               + (f" / {scratches} scratch" if scratches else "") + f") · win rate {wr:.0f}% · "
+               f"avg {avg_r:+.2f}R · sizing today: {sizes}")
     out.append("")
     out.append("_Risk per trade is this bot's own decision: it scales with the accuracy it has "
                "demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by "
@@ -673,9 +706,12 @@ def push_memory():
 
     if JOURNAL_LINES:
         push("journal.md", "\n".join(JOURNAL_LINES) + "\n", True)
-    if TL_LINES:
-        push("trades_log.jsonl", "\n".join(TL_LINES) + "\n", True)
-    for f_ in ("state.json", "ledger.json", "STATUS.md"):
+    # trades_log is REPLACED, not appended. Outcomes are written back into rows that already
+    # exist (tl_update), so an append-only push ships the new signal and silently drops its grade —
+    # which is what happened on 2026-11-14: the journal read "CLOSED DOGE/USD — graded loss" while
+    # trades_log on main still had zero graded rows, so the accuracy loop that sizes every future
+    # trade could never learn, forever. The local file already holds history + this run's rows.
+    for f_ in ("trades_log.jsonl", "state.json", "ledger.json", "STATUS.md"):
         p = os.path.join(HERE, f_)
         if os.path.exists(p):
             push(f_, open(p).read(), False)

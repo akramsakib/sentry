@@ -343,5 +343,47 @@ check("close-out cancels only that symbol's leftovers (no cancel_all on a fill)"
 check("STATUS.md is written by the cycle and pushed with the memory files",
       "STATUS.md" in _rc_src and "write_status(acct, live, s, rows, tf_map, fired)" in _rc_src)
 
+# ---------- 13: grading comes from realised R, not from touching the target ----------
+check("a favourable scratch is not a loss", rc.grade(0.36) == "win")
+check("0R scratch is neither win nor loss", rc.grade(0.0) == "scratch" and rc.grade(-0.02) == "scratch")
+check("a real stop-out is a loss", rc.grade(-1.0) == "loss")
+check("grading feeds the win/loss vocabulary trades_log uses",
+      rc.grade(1.2) == "win" and rc.grade(-0.9) == "loss")
+check("status page re-reads the log (never shows a stale tally)",
+      "write_status(acct, live, s, tl_rows(), tf_map, fired)" in
+      open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_cycle.py")).read())
+
+# ---------- 14: a scratch must not be scored as a loss ----------
+_sz = core.Sizer(100.0, 50.0, 200.0)
+_rows_wl = [{"result": "win", "fired": True}, {"result": "loss", "fired": True}]
+_rows_ws = [{"result": "win", "fired": True}, {"result": "scratch", "fired": True}]
+check("win+loss -> 0.5 accuracy", abs(_sz.acc("S11-dc20-long", _rows_wl) - 0.5) < 1e-9, str(_sz.acc("S11-dc20-long", _rows_wl)))
+check("win+scratch -> 0.75 (flat pays half, not zero)",
+      abs(_sz.acc("S11-dc20-long", _rows_ws) - 0.75) < 1e-9, str(_sz.acc("S11-dc20-long", _rows_ws)))
+
+# ---------- 15: a computed outcome must survive the push (append-only lost every grade) ----------
+_pm = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_cycle.py")).read()
+_seg = _pm[_pm.index("def push_memory"): _pm.index('if __name__ == "__main__"')]
+check("trades_log.jsonl is pushed as state (replace), not appended",
+      '"trades_log.jsonl"' in _seg.split("for f_ in (")[1].split(")")[0]
+      and 'push("trades_log.jsonl"' not in _seg, "still append-only")
+check("journal.md stays append-only (a diary is not re-written)",
+      'push("journal.md"' in _seg and ", True)" in _seg.split('push("journal.md"')[1][:40])
+import tempfile as _tf
+_d = _tf.mkdtemp(); _f = os.path.join(_d, "tl.jsonl")
+with open(_f, "w") as _fh:
+    _fh.write(json.dumps({"rid": "r1", "sym": "TEST/USD", "skill": "S11-dc20-long", "otype": "buy_stop",
+                          "entry": 100.0, "sl": 99.0, "tp": 102.0, "score": 4, "risk": 100,
+                          "fired": True}) + "\n")
+_TL = rc.TL_F
+rc.TL_F = _f
+try:
+    rc.tl_update("TEST/USD", "win", 101.5, 1.5)
+    _after = [json.loads(x) for x in open(_f) if x.strip()]
+    check("grading lands on the existing row and the file keeps one row per signal",
+          len(_after) == 1 and _after[0]["result"] == "win" and _after[0]["R"] == 1.5, str(_after))
+finally:
+    rc.TL_F = _TL
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

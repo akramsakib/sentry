@@ -134,7 +134,9 @@ class Sizer:
             if not r.get("result"):
                 continue
             wt = 2.0 if r.get("fired") else 1.0
-            win = 1.0 if r["result"] == "win" else 0.0
+            # a scratch (~flat, fees ate it) is half a point, not a loss: treating it as a loss
+            # punished the sizer for a trade that lost nothing
+            win = 1.0 if r["result"] == "win" else (0.5 if r["result"] == "scratch" else 0.0)
             gn += wt; gw += wt * win
             if r.get("skill") == skill:
                 n += wt; w += wt * win

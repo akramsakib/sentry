@@ -1,4 +1,4 @@
-# Sentry v4.3 — GitHub-native trading brain (no MT5, no Mac, no Wine)
+# Sentry v4.3.3 — GitHub-native trading brain (no MT5, no Mac, no Wine)
 
 The same checklist engine from the Mac build (`sentry_mac.py` v3.1), ported to run entirely on
 **GitHub Actions**. One workflow run = one full scan cycle, every 10 minutes, 24/7 (crypto has no
@@ -81,8 +81,9 @@ No-money rehearsals: `COINBASE_DRY=1` builds and prints the exact payload it wou
   Machine-written every cycle, safe to bookmark, never edited by hand.
 - **`journal.md`** — every cycle and every decision, newest at the bottom. This is the bot's diary;
   read it instead of logs (Actions keeps 90 days, git keeps forever).
-- **`trades_log.jsonl`** — one row per closed trade (symbol, skill, P/L, bars held, grade). Its
-  rolling win rate is what the bot sizes itself with.
+- **`trades_log.jsonl`** — one row per signal (symbol, skill, entry/stop/target, score, size) and
+  the grade written back into that same row when it closes. Its rolling win rate is what the bot
+  sizes itself with, so this file is pushed whole each cycle rather than appended.
 - **`state.json`** — machine state: open orders, positions, `sizing` tiers, `seen` (one fire per
   symbol-skill-day), `realized`.
 - **`ledger.json`** — cash, positions and marks in ledger mode.
