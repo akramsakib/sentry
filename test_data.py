@@ -706,6 +706,10 @@ check("the floor is wired at the one place a stop is judged (right after re-anch
       'CFG.get("stop_floor_frac")' in src and "WIDENED —" in src)
 check("the traded stop, not the asked stop, is what gets stored and managed",
       src.count('"sl": c["sl"]') >= 2 and '"sl_ask": sl0' in src)
+_loop22 = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools/mac/crypto_loop.py")).read()
+check("the boot banner tells you WHICH env file the current venue reads",
+      '_exe = getattr(rc, "EXEC_MODE"' in _loop22 and "both empty" in _loop22
+      and "keys from ./okx.env only" not in _loop22)
 check("the no-key note names the local key file, not GitHub Secrets (money moved home in 4.7.2)",
       'Actions secret to trade the real book' not in src and "./coinbase.env" in src)
 check("Coinbase Exchange is spot for us: no CAN_SHORT -> shorts stay paper-graded",

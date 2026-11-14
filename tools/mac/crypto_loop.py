@@ -108,8 +108,13 @@ if __name__ == "__main__":
         run_once()
         print("crypto_loop: single cycle done (verify mode)", flush=True)
         sys.exit(0)
-    rc.journal(f"crypto_loop: resident on this Mac — cycle every {CYCLE}s · keys from ./okx.env only "
-               "· venue per config (okx) · this is the ONLY armed book (repo mirror ships auto_ack off)")
+    _exe = getattr(rc, "EXEC_MODE", "?")
+    _keyf = "./okx.env" if _exe == "okx" else ("./coinbase.env + ./coinbase.pem" if _exe == "coinbase" else "./env files")
+    if not os.environ.get("OKX_API_KEY") and not os.environ.get("COINBASE_API_KEY"):
+        _keyf += " (both empty → shadow ledger, nothing is sent)"
+    rc.journal(f"crypto_loop: resident on this Mac — cycle every {CYCLE}s · venue per config ({_exe}) · "
+               f"keys from {_keyf} · this is the ONLY armed book for its account "
+               f"(the repo mirror ships auto_ack off)")
     while True:
         run_once()
         time.sleep(CYCLE)
