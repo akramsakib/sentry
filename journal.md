@@ -35,3 +35,10 @@
 - **11-14 13:33 UTC** scan ok · 10 symbols · 0 new · 2 pendings · 0 positions equity $100000.00 · 2s
 - **11-14 13:34 UTC** CANDIDATE(score 5/5) — LTC/USD C-M15-three-crows sell_stop 47.57763136 sl47.99592161 tp46.95019597 — paper-graded (spot can't short)
 - **11-14 13:34 UTC** scan ok · 10 symbols · 0 new · 2 pendings · 0 positions equity $100000.00 · 3s
+- **11-14 14:53 UTC** CANDIDATE(score 5/5) — ETH/USD C-H1-three-outside-down sell_stop 1893.63220404 sl1914.73948991 tp1861.97127523 — paper-graded (spot can't short)
+- **11-14 14:53 UTC** CANDIDATE(score 4/5) — DOGE/USD C-H1-bear-engulfing sell_stop 0.06250046 sl0.06337386 tp0.06119036 — paper-graded (spot can't short)
+- **11-14 14:53 UTC** CANDIDATE(score 4/5) — DOGE/USD C-H1-three-outside-down sell_stop 0.06250046 sl0.06337386 tp0.06119036 — paper-graded (spot can't short)
+- **11-14 14:53 UTC** CANDIDATE(score 4/5) — ADA/USD S11-dc20-short sell_stop 0.16170003 sl0.16302984 tp0.15771059 — paper-graded (spot can't short)
+- **11-14 14:53 UTC** CANDIDATE(score 4/5) — ADA/USD S11-dc55-short sell_stop 0.16170003 sl0.16302984 tp0.15771059 — paper-graded (spot can't short)
+- **11-14 14:53 UTC** CANDIDATE(score 4/5) — LTC/USD S11-dc20-short sell_stop 47.89829921 sl48.27420475 tp46.77058257 — paper-graded (spot can't short)
+- **11-14 14:53 UTC** scan ok · 10 symbols · 0 new · 2 pendings · 0 positions equity $100000.00 · 2s
