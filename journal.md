@@ -65,3 +65,6 @@
 - **11-14 15:32 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
 - **11-14 15:35 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 2 pendings · 2 positions equity $99944.88 · 2s
 - **11-14 15:35 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
+- **11-14 15:43 UTC** CLOSED DOGE/USD — graded loss (+0.50R)
+- **11-14 15:43 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 2 pendings · 1 positions equity $99922.41 · 2s
+- **11-14 15:43 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
