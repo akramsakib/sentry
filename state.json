@@ -156,13 +156,13 @@
    "r_dist": 723.7562823100016,
    "qty": 0.06908402900547651,
    "skill": "S18-ma-revert-long",
-   "be": null,
-   "sent_sl": null,
-   "last_price": null
+   "be": 63278.87,
+   "sent_sl": 63278.87,
+   "last_price": 64257.46
   }
  },
  "cid_seq": 12,
- "last_cycle": 1794694963.0038385,
+ "last_cycle": 1794695097.0072463,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
