@@ -141,3 +141,18 @@
 - **11-14 21:45 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 10s · venue fees $60.38 to date @ 0.02/0.05%
 - **11-14 21:52 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 6s · venue fees $60.38 to date @ 0.02/0.05%
 - **11-14 21:56 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $99780.60 · 8s · venue fees $60.38 to date @ 0.02/0.05%
+- **11-14 22:12 UTC** EXPIRED — BTC/USD C-M15-bull-engulfing: entry trigger rested 6.1 h (>6 h), setup no longer valid
+- **11-14 22:12 UTC** EXPIRED — ADA/USD C-M15-hammer/takuri: entry trigger rested 6.1 h (>6 h), setup no longer valid
+- **11-14 22:12 UTC** ORDER SENT — BTC/USD S18-ma-revert-long (score 3/5) limit buy_limit qty 0.069084 @ 63793.0 sl63069.24371769 tp66371.46169169 · risk $50.00 · fees ~$4.38 (0.09R)
+- **11-14 22:12 UTC** CANDIDATE(score 4/5) — BTC/USD S13-ichimoku-short sell_stop 63684.43655765 sl66986.62688469 tp62200.73617893 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 5/5) — BTC/USD C-H1-bear-engulfing sell_stop 64371.62437177 sl66034.53907058 tp61877.25232356 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 5/5) — BTC/USD C-H1-tweezer-top sell_stop 64371.62437177 sl66034.53907058 tp61877.25232356 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 5/5) — BTC/USD C-H1-three-outside-down sell_stop 64371.62437177 sl66034.53907058 tp61877.25232356 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 4/5) — ADA/USD S13-ichimoku-short sell_stop 0.14446253 sl0.16042495 tp0.13848373 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 4/5) — ADA/USD S3-momentum-short sell_stop 0.14660835 sl0.1553833 tp0.12935011 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 4/5) — LTC/USD S3-momentum-short sell_stop 44.01367577 sl45.83264847 tp40.4520546 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 4/5) — BCH/USD S11-dc20-short sell_stop 204.13626646 sl206.82240123 tp196.07786214 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 4/5) — BCH/USD S11-dc55-short sell_stop 204.13626646 sl206.82240123 tp196.07786214 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-tweezer-top sell_stop 199.12626646 sl209.28933385 tp183.88166538 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-three-outside-down sell_stop 199.12626646 sl209.28933385 tp183.88166538 — paper-graded (spot can't short)
+- **11-14 22:12 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 5 pendings · 0 positions equity $99780.60 · 7s · venue fees $62.57 to date @ 0.02/0.05%
