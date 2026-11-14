@@ -11,7 +11,7 @@
    "qty": 6634.320667678077,
    "limit_price": null,
    "stop_price": 0.99525853,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794662610
   },
   {
@@ -23,7 +23,7 @@
    "qty": 96.92869789282777,
    "limit_price": null,
    "stop_price": 76.0667899,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794662611
   },
   {
@@ -103,6 +103,54 @@
    "stop_price": 0.15745624,
    "status": "open",
    "placed_at": 1794672578
+  },
+  {
+   "id": "1794687006124",
+   "client_order_id": "sentryETHUSD1794687006124n7",
+   "symbol": "ETH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 2.633874701871072,
+   "limit_price": null,
+   "stop_price": 1841.70812546,
+   "status": "open",
+   "placed_at": 1794687006
+  },
+  {
+   "id": "1794687006211",
+   "client_order_id": "sentryETHUSD1794687006211n8",
+   "symbol": "ETH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 2.633874701871072,
+   "limit_price": null,
+   "stop_price": 1841.70812546,
+   "status": "open",
+   "placed_at": 1794687006
+  },
+  {
+   "id": "1794687006293",
+   "client_order_id": "sentryXRPUSD1794687006293n9",
+   "symbol": "XRP/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 5548.435063890242,
+   "limit_price": null,
+   "stop_price": 0.9568033,
+   "status": "open",
+   "placed_at": 1794687006
+  },
+  {
+   "id": "1794687006419",
+   "client_order_id": "sentrySOLUSD1794687006419n10",
+   "symbol": "SOL/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 59.27122027932071,
+   "limit_price": null,
+   "stop_price": 72.59102278,
+   "status": "open",
+   "placed_at": 1794687006
   }
  ],
  "positions": [],
