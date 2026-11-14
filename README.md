@@ -1,4 +1,4 @@
-# Sentry v4 — GitHub-native trading brain (no MT5, no Mac, no Wine)
+# Sentry v4.3 — GitHub-native trading brain (no MT5, no Mac, no Wine)
 
 The same checklist engine from the Mac build (`sentry_mac.py` v3.1), ported to run entirely on
 **GitHub Actions**. One workflow run = one full scan cycle, every 10 minutes, 24/7 (crypto has no
@@ -25,10 +25,52 @@ weekend gap — MT5 demo servers do).
   API with retry, so two runners can never conflict the way `git push` did).
 
 ## Execution modes (one config line)
-- **`"execution": "ledger"` (default):** real Coinbase prices, paper fills in `ledger.json`.
-  Works with nothing but a repo. `config.json` ships in this mode.
-- **`"execution": "alpaca"`:** real paper-trading venue (resting orders on their engine). Needs
-  `ALPACA_KEY_ID` + `ALPACA_SECRET` in Actions Secrets. Same brain, different venue.
+- **`"execution": "coinbase"` (what ships):** Coinbase Exchange via `broker_coinbase.py` — **real
+  orders on a real book**. The key lives only in Actions Secrets. With no key in the runner it runs
+  the shadow ledger on the same host's public data and stamps `venue shadow-ledger(coinbase-no-key)`
+  into the journal line, so "did that touch real money?" is always answerable from the log.
+- **`"execution": "ledger"`:** shadow book only — real prices, simulated fills in `ledger.json`.
+  Paper fills are honest about price (never worse than the tape) but have no depth model.
+- **`"execution": "alpaca"`:** Alpaca paper venue (resting orders on their engine). Needs
+  `ALPACA_KEY_ID` + `ALPACA_SECRET`. Same brain, different venue.
+
+## Going live on Coinbase
+
+1. Coinbase → Settings → **API keys** → create a key for **Exchange** with **View + Trade** only.
+   Never enable transfers/withdrawals. Keep the **passphrase** (the Exchange API requires it;
+   Advanced Trade does not — one reason this adapter speaks the Exchange API on
+   `api.exchange.coinbase.com`, which also serves the public candles).
+2. Actions → Secrets and variables → Actions → `COINBASE_API_KEY`, `COINBASE_API_SECRET`,
+   `COINBASE_API_PASSPHRASE`.
+3. `config.json`: `"execution": "coinbase"` (already set) **and `"live_ack": true`**. That flag is
+   deliberately a repo file edit, not an env var: pasting a key must not be enough to start
+   trading, and the flip is visible in the commit history.
+4. Fund it. Then read `journal.md`.
+
+Until step 3 the bot scans, sizes, journals `GATE — …` and sends nothing. The four live gates
+(`live_gate()` in `run_cycle.py`) each trace to a real defect found on this account, not ceremony:
+
+| gate | why it exists |
+|---|---|
+| `live_ack: true` | a leaked secret must not be enough to trade |
+| `min_grade_before_live` = 8 graded outcomes (paper counts) | the sizer scales off its own accuracy; sizing live with zero graded outcomes is a blind number |
+| heartbeat younger than `max_gap_h` = 2 h | nothing watches the book between runs (see the cadence section) — a 10 h gap is not a 10-minute bot |
+| live risk = min(sizer, `live_max_risk` $25, `live_max_risk_frac` 1 % of equity) | sizing live by feel is how a bot loses money fast; the sizer earns its size, these two bound it |
+| notional ≤ `max_notional_frac` × equity, or **SKIP** | the 2026-11-14 mis-mapped candles produced a $261k order for "$100 of risk". Size is never quietly trimmed to fit — a $2 "risk" is spread and fees, so the trade is refused and the journal says what account it wanted |
+
+Two Exchange-API traps the adapter handles, both pinned by `test_data.py`:
+- **`client_oid` must be a lowercase UUIDv4.** Coinbase *accepts* a malformed one, then never
+  processes it and never returns it from any later REST call — a silently vanished order. Sentry's
+  ids look like `sentryXRPUSD1794662610992n5`, so `oid_for()` maps each cid to a deterministic
+  UUIDv4 (and back) and never sends the raw cid.
+- **A stop order executes as a LIMIT once triggered.** The limit must clear the trigger in the
+  direction of travel, or the order triggers and sits unfilled forever; on coarse-tick products a
+  naive 0.15 % slack rounds *back onto* the trigger, so it widens to at least one full tick
+  (Decimal, because `int(0.94 / 0.01)` is 93).
+
+No-money rehearsals: `COINBASE_DRY=1` builds and prints the exact payload it would send;
+`COINBASE_TEST=1` points at Coinbase's sandbox host (which also disarms the live gates);
+`python3 broker_coinbase.py` runs a read-only auth/account check and places nothing.
 
 ## Files you care about
 - **`journal.md`** — every cycle and every decision, newest at the bottom. This is the bot's diary;
@@ -103,8 +145,9 @@ runs would keep a runner occupied 24/7, which is exactly what GitHub's abuse det
 - **Long-only execution.** Spot crypto can't be shorted here, so short signals are *paper-graded*
   into the accuracy loop (they earn sizing trust, never fire). A futures/perp venue would be needed
   for real shorts.
-- **Ledger fills are simulated** against Coinbase quotes; slippage/liquidity on thin alts is
-  optimistic. Alpaca mode puts the orders on a real venue, which is the honest next step.
+- **Ledger-mode fills are simulated** against Coinbase quotes; slippage/liquidity on thin alts is
+  optimistic (a fill is never priced worse than the tape, but there is no order-book depth model).
+  `coinbase` mode puts the orders on the real book.
 - **Stop/TP enforcement is per-cycle** (up to ~10 min reaction latency, cron jitter included).
   Fine for an M15 playbook; not scalping.
 - **Cron is best-effort** — on this account it is actively throttled; see *Cadence* above before

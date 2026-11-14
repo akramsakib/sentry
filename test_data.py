@@ -15,6 +15,7 @@ import math
 import os
 import sys
 import tempfile
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 FAILS = []
@@ -113,6 +114,182 @@ except Exception as e:                                        # noqa: BLE001
     check("missing stop_price is skipped, not fatal", False, f"{type(e).__name__}: {e}")
 finally:
     bl._save = _save
+
+
+# ---------- 6: the live Coinbase adapter's contracts ----------
+# These four are the ways a real order dies quietly on Coinbase. All offline: product metadata is
+# stubbed, DRY mode builds the payload and never opens a socket.
+import re as _re
+
+import broker_coinbase as cb
+
+oid = cb.oid_for("sentryXRPUSD1794662610992n5")
+check("cid mapped to a valid lowercase UUIDv4",
+      bool(_re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", oid)), oid)
+check("  ...and deterministic (runners are ephemeral, no mapping to lose)",
+      oid == cb.oid_for("sentryXRPUSD1794662610992n5"))
+check("  ...and unique per cid", oid != cb.oid_for("sentryXRPUSD1794662610993n6"))
+check("raw cid never sent as client_oid", "_CID_OK" and "n5" not in oid)
+
+check("size floored to base_increment", cb._quant(0.123456789, "0.0001") == "0.1234", cb._quant(0.123456789, "0.0001"))
+check("price floored to quote_increment", cb._quant(74.156, "0.01") == "74.15", cb._quant(74.156, "0.01"))
+check("8-decimal base size survives untouched",
+      cb._quant(6634.3207012345, "0.00000001") == "6634.32070123", cb._quant(6634.3207012345, "0.00000001"))
+
+bars = cb._bars([[1_700_000_000, 90.0, 110.0, 100.0, 105.0, 7.0],
+                 [1_700_003_600, 99.0, 121.0, 118.0, 101.0, 9.0]], now_ts=1_700_007_200)
+check("live host maps [time,low,high,open,close,vol] the same way",
+      len(bars) == 2 and bars[0]["o"] == 100.0 and bars[0]["h"] == 110.0
+      and bars[0]["l"] == 90.0 and bars[0]["c"] == 105.0, str(bars[0]))
+check("the close below the open reads as a down bar", bars[1]["c"] < bars[1]["o"])
+
+_meta_saved, _dry_saved = cb._meta, cb.DRY
+cb._meta = lambda sym: {"quote": "0.01", "base": "0.00000001", "min_funds": 1.0, "ok": True}
+cb.DRY = True
+try:
+    r = cb.place_order("buy", "XRP/USD", qty=100.0, otype="stop", stop_price=0.99537, cid="sentryXRP1n1")
+    b = r["payload"]
+    check("breakout entry goes out as stop_limit (never a market buy)", b["type"] == "stop_limit", b["type"])
+    check("  ...with stop=entry for buys (buy triggers at/above)", b["stop"] == "entry")
+    check("  ...limit sits ABOVE the trigger so it can actually fill", float(b["price"]) > float(b["stop_price"]),
+          f"{b['price']} vs {b['stop_price']}")
+    check("  ...size is a tick-aligned string", b["size"] == "100" or _re.fullmatch(r"\d+(\.\d{1,8})?", b["size"]), b["size"])
+    check("  ...time_in_force GTC so it survives a dead runner", b["time_in_force"] == "GTC")
+    # coarse tick: 0.15% of 0.9953 is smaller than a 0.01 tick, so it must widen a whole tick
+    check("  ...slack never rounds below one tick",
+          float(b["price"]) - float(b["stop_price"]) >= 0.01 - 1e-9, f"{b['price']} - {b['stop_price']}")
+    check("  ...exactly one tick, no float drift (0.94 not 0.93)", b["price"] == "1.00", b["price"])
+    s2 = cb.place_order("sell", "XRP/USD", qty=100.0, otype="stop", stop_price=0.955, cid="sentryXRP1n2")["payload"]
+    check("protective stop drops exactly one tick, not two",
+          float(s2["stop_price"]) - float(s2["price"]) <= 0.0201, f"{s2['stop_price']}->{s2['price']}")
+    check("protective sell stop uses stop=loss, limit BELOW trigger",
+          s2["stop"] == "loss" and float(s2["price"]) < float(s2["stop_price"]), f"{s2['price']} vs {s2['stop_price']}")
+    m = cb.place_order("buy", "SOL/USD", notional=75.0, otype="market", limit_price=None, cid="sentrySOL1n3")["payload"]
+    check("market close on a buy spends funds, not size", "funds" in m and "size" not in m, str(m))
+    try:
+        cb.place_order("buy", "XRP/USD", qty=0.5, otype="limit", limit_price=1.0, cid="x")
+        check("sub-minimum notional refused", False, "it accepted a $0.50 order")
+    except cb.BrokerError as e:
+        check("sub-minimum notional refused", "minimum" in str(e).lower(), str(e))
+    cb._meta = lambda sym: {"quote": "0.01", "base": "0.00000001", "min_funds": 1.0, "ok": False}
+    try:
+        cb.place_order("buy", "AVAX/USD", qty=1.0, otype="limit", limit_price=10.0, cid="y")
+        check("halted product refused", False, "it placed into a disabled market")
+    except cb.BrokerError as e:
+        check("halted product refused", "not tradeable" in str(e).lower(), str(e))
+finally:
+    cb._meta, cb.DRY = _meta_saved, _dry_saved
+
+# ---------- 7: the live gate ----------
+import run_cycle as rc
+
+_orig_live, _orig_cfg = rc.LIVE, rc.CFG
+rc.LIVE = True
+rows_none, rows_many = [], [{"fired": True, "result": "win"}] * 8
+
+
+def gate(rows, st, **over):
+    rc.CFG = {**_orig_cfg, **over}
+    try:
+        return rc.live_gate(rows, st)
+    finally:
+        rc.CFG = _orig_cfg
+
+
+ok, why = gate(rows_many, {"last_cycle": time.time()})
+check("no live_ack -> entries blocked", (not ok) and "live_ack" in why, why)
+ok, why = gate(rows_none, {"last_cycle": time.time()}, live_ack=True)
+check("live_ack but zero graded outcomes -> blocked (no blind sizing)",
+      (not ok) and "graded" in why, why)
+ok, why = gate(rows_many, {}, live_ack=True, min_grade_before_live=8)
+check("graded history but no heartbeat -> blocked", (not ok) and "heartbeat" in why, why)
+ok, why = gate(rows_many, {"last_cycle": time.time() - 10 * 3600}, live_ack=True, min_grade_before_live=8)
+check("stale heartbeat (10 h) -> blocked", (not ok) and "ago" in why, why)
+ok, why = gate(rows_many, {"last_cycle": time.time() - 600}, live_ack=True, min_grade_before_live=8)
+check("acked + graded + fresh clock -> allowed", ok, why)
+rc.LIVE = False
+ok, why = gate([], {}, live_ack=False)
+check("paper/ledger venues are never gated (else grading could never start)", ok, why)
+rc.LIVE, rc.CFG = _orig_live, _orig_cfg
+
+# ---------- 8: tape sanity + a mistyped ledger file must not stop the bot ----------
+check("buy limit above the tape is refused (it would fill instantly, worse than market)",
+      not rc.entry_sane("pullback_limit", 65964.31, 65454.71)[0])
+check("buy limit below the tape is a real pullback",
+      rc.entry_sane("pullback_limit", 65000.0, 65454.71)[0])
+check("buy stop above the tape is a real breakout",
+      rc.entry_sane("h1_breakout_stop", 66000.0, 65454.71)[0])
+check("buy stop below the tape is refused",
+      not rc.entry_sane("h1_breakout_stop", 65000.0, 65454.71)[0])
+check("sell stop below the tape is a real breakdown",
+      rc.entry_sane("sell_breakdown_stop", 64800.0, 65454.71)[0])
+check("sell limit above the tape is a real bounce-short",
+      rc.entry_sane("sell_retest_limit", 66000.0, 65454.71)[0])
+check("no reference price -> refuse rather than guess", not rc.entry_sane("pullback_limit", 1.0, 0)[0])
+
+import json as _json, importlib
+_ledger_dir = tempfile.mkdtemp()
+_f = os.path.join(_ledger_dir, "ledger.json")
+with open(_f, "w") as _fh:
+    _json.dump({"cash": 1000.0, "realized": 0.0, "orders": [], "positions": {}}, _fh)
+_saved_ledger = bl.LEDGER_F
+bl.LEDGER_F = _f
+try:
+    L2 = bl._load()
+    check("mistyped ledger.json (positions as {}) is coerced, not fatal", isinstance(L2["positions"], list))
+    # and a paper buy limit resting above the tape must fill at the tape, not at the limit
+    L2["orders"] = [{"id": "t1", "client_order_id": "sentryT1", "symbol": "TEST/USD", "side": "buy",
+                     "type": "limit", "qty": 1.0, "limit_price": 110.0, "stop_price": None,
+                     "status": "open", "placed_at": 0}]
+    _tp = bl._ticker_price
+    bl._ticker_price = lambda sym: 100.0
+    bl._tick(L2)
+    bl._ticker_price = _tp
+    check("paper fill never worse than the tape it walked into",
+          abs(L2["orders"][0]["filled_avg_price"] - 100.0) < 1e-9, L2["orders"][0]["filled_avg_price"])
+    check("  ...and the position was recorded, not crashed on", len(L2["positions"]) == 1)
+finally:
+    bl.LEDGER_F = _saved_ledger
+
+# ---------- 9: re-anchoring a signal whose trigger is already through the tape ----------
+check("pullback buy limit below the tape is left exactly where the checklist put it",
+      rc.reanchor(65000.0, 64600.0, 66000.0, 65454.71, "buy_limit")[0] == 65000.0
+      and rc.reanchor(65000.0, 64600.0, 66000.0, 65454.71, "buy_limit")[2])
+check("breakout buy stop above the tape is left alone too",
+      rc.reanchor(66000.0, 65600.0, 67000.0, 65454.71, "h1_breakout_stop")[0] == 66000.0)
+e, n, ok = rc.reanchor(65964.31, 65400.0, 67000.0, 65454.71, "pullback_limit")
+check("buy limit stranded above the tape re-anchors to the tape", ok and abs(e - 65454.71) < 1e-6, str(e))
+check("  ...and journals why", "entering at market" in n, n)
+e2, n2, ok2 = rc.reanchor(65964.31, 65400.0, 65400.0, 65454.71, "pullback_limit")
+check("  ...but is refused when the target is already inside the entry", not ok2 and "target" in n2, n2)
+e3, n3, ok3 = rc.reanchor(65000.0, 64800.0, 65800.0, 65454.71, "h1_breakout_stop")
+check("buy stop stranded below the tape re-anchors (stale Donchian)", ok3 and abs(e3 - 65454.71) < 1e-6, str(e3))
+e4, n4, ok4 = rc.reanchor(65000.0, 65400.0, 64500.0, 65454.71, "sell_retest_limit")
+check("short whose target is on the wrong side of the tape is refused",
+      not rc.reanchor(65000.0, 65400.0, 66000.0, 65454.71, "sell_retest_limit")[2])
+check("sell limit stranded below the tape re-anchors", ok4 and abs(e4 - 65454.71) < 1e-6, str(e4))
+check("R is measured from the price actually paid, not the stale level",
+      abs(abs(e - 65400.0) - 54.71) < 0.01, f"{abs(e - 65400.0)} vs 54.71")
+check("no tape -> no guessing, order is not sent", not rc.reanchor(1.0, 0.9, 1.2, 0.0, "buy_limit")[2])
+
+# ---------- 10: live risk caps (the numbers must be consistent, not just small) ----------
+cfg_live = {"live_max_risk": 25.0, "live_max_risk_frac": 0.01}
+r, n = rc.live_risk_cap(112.0, 100000.0, cfg_live)
+check("big account: sizer's $112 clamps to the $25 ceiling",
+      r == 25.0 and len(n) == 1 and "live_max_risk" in n[0], str(n))
+check("  ...1% of $100k ($1000) is looser, so only one clamp is logged", "$1000" not in str(n), str(n))
+r, n = rc.live_risk_cap(84.0, 1000.0, cfg_live)
+check("$1k account: 1% of equity governs, not the flat ceiling", r == 10.0, f"{r} {n}")
+r, n = rc.live_risk_cap(5.0, 100000.0, cfg_live)
+check("a trade already inside every cap is untouched", r == 5.0 and not n, str(n))
+r, n = rc.live_risk_cap(50.0, 100000.0, {"live_max_risk_frac": 0.02})
+check("no flat ceiling set -> equity fraction still applies", r == 50.0, str(r))
+# stop distance must survive: $25 through 0.55% needs ~$4.5k notional, which a $100k book carries
+need = 25.0 / 0.0055
+check("clamped risk still fits the notional cap on a real account",
+      need < 100000.0 * 0.25 and need > 250.0, f"needs ${need:,.0f}")
+check("...and a $1k account is refused rather than degraded",
+      not (need < 1000.0 * 0.25), "would have quietly traded a fraction of the intended risk")
 
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

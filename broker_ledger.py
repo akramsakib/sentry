@@ -39,6 +39,14 @@ def _load():
         L = {"cash": START_CASH, "realized": 0.0, "orders": [], "positions": []}
     for k, d in (("cash", START_CASH), ("realized", 0.0), ("orders", []), ("positions", [])):
         L.setdefault(k, d)
+    # A hand-edited ledger.json once shipped "positions": {} and every cycle after the first
+    # simulated fill died on dict.append. Coerce, don't crash: a bookkeeping file must never be
+    # able to stop the bot.
+    for k in ("orders", "positions"):
+        if isinstance(L[k], dict):
+            L[k] = list(L[k].values())
+        elif not isinstance(L[k], list):
+            L[k] = []
     return L
 
 
@@ -99,7 +107,10 @@ def _tick(L):
         px = prices[sym]
         if o["side"] == "buy":
             if o["type"] == "limit" and o.get("limit_price") and px <= o["limit_price"]:
-                o["status"] = "filled"; o["filled_avg_price"] = o["limit_price"]
+                o["status"] = "filled"
+                # never worse than the market it walked into (a buy limit above the tape fills at
+                # the touch, not at your limit) — this keeps paper fills honest
+                o["filled_avg_price"] = min(o["limit_price"], px)
                 o["filled_qty"] = o["qty"]; o["filled_at"] = int(time.time())
                 cost = o["filled_qty"] * o["limit_price"]
                 L["cash"] -= cost
