@@ -98,3 +98,17 @@
 - **11-14 16:48 UTC** scan ok · venue shadow-ledger(coinbase-no-key) · 10 symbols · 0 new · 4 pendings · 0 positions equity $99780.60 · 6s · venue fees $60.38 to date @ 0.40/0.60%
 - **11-14 16:48 UTC** NOTE — execution=coinbase but this runner has no COINBASE_API_KEY, so orders are being written to the SHADOW LEDGER (Coinbase public data, no real money). Add the Actions secret to trade the real book.
 - **11-14 16:53 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 4 pendings · 0 positions equity $99780.60 · 2s · venue fees $60.38 to date @ 0.02/0.05%
+- **11-14 20:10 UTC** EXPIRED — XRP/USD C-H1-bull-engulfing: entry trigger rested 6.8 h (>6 h), setup no longer valid
+- **11-14 20:10 UTC** EXPIRED — SOL/USD C-H1-bull-engulfing: entry trigger rested 6.8 h (>6 h), setup no longer valid
+- **11-14 20:10 UTC** ORDER SENT — ETH/USD C-M15-piercing-line (score 3/5) stop buy_stop qty 2.633875 @ 1841.70812546 sl1822.72468636 tp1870.1832841 · risk $50.00 · fees ~$4.83 (0.10R)
+- **11-14 20:10 UTC** ORDER SENT — ETH/USD C-M15-morning-star (score 3/5) stop buy_stop qty 2.633875 @ 1841.70812546 sl1822.72468636 tp1870.1832841 · risk $50.00 · fees ~$4.83 (0.10R)
+- **11-14 20:10 UTC** ORDER SENT — XRP/USD C-M15-morning-star (score 3/5) stop buy_stop qty 5548.435064 @ 0.9568033 sl0.94779175 tp0.97032062 · risk $50.00 · fees ~$5.28 (0.11R)
+- **11-14 20:10 UTC** ORDER SENT — SOL/USD C-M15-bull-engulfing (score 4/5) stop buy_stop qty 59.271220 @ 72.59102278 sl71.74744305 tp73.85639237 · risk $50.00 · fees ~$4.28 (0.09R)
+- **11-14 20:10 UTC** NOTE — DOGE/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-14 20:10 UTC** NOTE — DOGE/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-14 20:10 UTC** NOTE — LINK/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-14 20:10 UTC** NOTE — LINK/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-14 20:10 UTC** NOTE — LTC/USD C-M15-piercing-line: soft cap on open items (6) — advisory, skipping
+- **11-14 20:10 UTC** NOTE — LTC/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-14 20:10 UTC** CANDIDATE(score 3/5) — BCH/USD C-H1-bear-engulfing sell_stop 205.78705375 sl209.73236561 tp199.86908597 — paper-graded (spot can't short)
+- **11-14 20:10 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 4 new · 6 pendings · 0 positions equity $99780.60 · 5s · venue fees $60.38 to date @ 0.02/0.05%
