@@ -98,7 +98,7 @@ def _tick(L):
             continue  # network wobble this cycle; next run retries
         px = prices[sym]
         if o["side"] == "buy":
-            if o["type"] == "limit" and px <= o["limit_price"]:
+            if o["type"] == "limit" and o.get("limit_price") and px <= o["limit_price"]:
                 o["status"] = "filled"; o["filled_avg_price"] = o["limit_price"]
                 o["filled_qty"] = o["qty"]; o["filled_at"] = int(time.time())
                 cost = o["filled_qty"] * o["limit_price"]
@@ -106,7 +106,7 @@ def _tick(L):
                 L["positions"].append({"symbol": sym, "qty": o["filled_qty"],
                                         "entry": o["limit_price"], "cid": o["client_order_id"],
                                         "opened": int(time.time())})
-            elif o["type"] == "stop" and px >= o["stop_price"]:
+            elif o["type"] == "stop" and o.get("stop_price") and px >= o["stop_price"]:
                 o["status"] = "filled"; o["filled_avg_price"] = o["stop_price"]
                 o["filled_qty"] = o["qty"]; o["filled_at"] = int(time.time())
                 cost = o["filled_qty"] * o["stop_price"]
