@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-14 16:47 UTC** · venue `shadow-ledger(coinbase-no-key)` → shadow book (paper) · cash $99,780.60 · equity $99,780.60
+**2026-11-14 16:48 UTC** · venue `shadow-ledger(coinbase-no-key)` → shadow book (paper) · cash $99,780.60 · equity $99,780.60
 
 _Venue cost: 0.40 % maker / 0.60 % taker per side · **$60.38 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,10 +10,10 @@ _Venue cost: 0.40 % maker / 0.60 % taker per side · **$60.38 paid on this book 
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ADA/USD | buy_stop | 0.15745624 | 32026 | $5,043 | $75.00 | 0.15517 | +1.47% | 38 min |
-| BTC/USD | buy_stop | 65759.923 | 0.089044 | $5,856 | $75.00 | 65306.27 | +0.69% | 38 min |
-| SOL/USD | buy_stop | 76.06679 | 96.9287 | $7,373 | $75.00 | 72.64 | +4.72% | 204 min |
-| XRP/USD | buy_stop | 0.99525853 | 6634.32 | $6,603 | $75.00 | 0.959 | +3.78% | 204 min |
+| ADA/USD | buy_stop | 0.15745624 | 32026 | $5,043 | $75.00 | 0.15517 | +1.47% | 39 min |
+| BTC/USD | buy_stop | 65759.923 | 0.089044 | $5,856 | $75.00 | 65306.27 | +0.69% | 39 min |
+| SOL/USD | buy_stop | 76.06679 | 96.9287 | $7,373 | $75.00 | 72.64 | +4.72% | 205 min |
+| XRP/USD | buy_stop | 0.99525853 | 6634.32 | $6,603 | $75.00 | 0.959 | +3.78% | 205 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
