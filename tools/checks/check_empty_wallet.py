@@ -1,12 +1,18 @@
-"""Functional proof, through the REAL run_cycle.run(), that an ARMED venue account with $0 in it
-sends nothing.
+"""Functional check, through the REAL run_cycle.run(), that an ARMED venue account with $0 in it
+sends nothing — whatever the venue in that folder's config is.
 
-Run it directly:  python3 tools/check_empty_wallet.py
+Why this exists: `equity = float((acct or {}).get("equity") or 100000.0)` treated a genuine `0.0` as a
+missing value, so an armed-but-unfunded account (the normal state on key day) was sized against the
+$100,000 shadow wallet. The book would then keep trying to send orders into an empty margin account,
+and the journal's `equity $100,000` line would read as if the check had passed. `venue_equity()` fixes
+it; this file proves the fix by driving the whole cycle, not a copy of the arithmetic.
 
-Nothing is asked of the venue: broker._req is replaced with a stub that answers the wallet as
-`{"data": {"equity": "0"}}` and records every attempt to place an order, and rc.fetch_bars is
-replaced with synthetic flat bars. So this exercises the shipped gate, not a copy of it.
+Run it from a book folder or the repo root:
+    python3 tools/checks/check_empty_wallet.py
+It touches no network: the broker the folder's config names gets its nine call sites stubbed, and the
+wallet stub says zero on purpose. Nothing can leave the machine from here — place_order only records.
 """
+import datetime
 import json
 import os
 import shutil
@@ -14,79 +20,102 @@ import subprocess
 import sys
 import tempfile
 
-SRC = os.path.abspath(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")))
-CODE = ["run_cycle.py", "sentry_core.py", "broker_bitget.py", "broker_okx.py",
-        "broker_ledger.py", "broker_coinbase.py"]
+HERE = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+CODE = ["run_cycle.py", "sentry_core.py", "broker_okx.py", "broker_bitget.py",
+        "broker_coinbase.py", "broker_ledger.py", "config.json"]
 
 PROBE = r'''
-import json, os, sys, datetime
+import datetime, json, os, sys
 sys.path.insert(0, DIR)
 os.chdir(DIR)
-for k in ("BITGET_DRY", "OKX_SIM", "BITGET_SIM", "COINBASE_DRY"):
+for k in ("BITGET_DRY", "OKX_SIM", "BITGET_SIM", "COINBASE_DRY", "COINBASE_MODE", "SENTRY_FIXTURES"):
     os.environ.pop(k, None)
-os.environ["BITGET_API_KEY"] = "test-key"; os.environ["BITGET_API_SECRET"] = "s"; os.environ["BITGET_API_PASSPHRASE"] = "p"
-import broker_bitget as bg
+# one non-empty key trio is enough to arm whichever lane the config names; the others stay unset so
+# the venue actually chosen for this book is the one being tested.
+for k in ("BITGET_API_KEY", "BITGET_API_SECRET", "BITGET_API_PASSPHRASE",
+          "OKX_API_KEY", "OKX_API_SECRET", "OKX_API_PASSPHRASE", "COINBASE_API_KEY"):
+    os.environ[k] = "stub"
 import run_cycle as rc
 
+cfg = json.load(open(os.path.join(DIR, "config.json")))
+venue = cfg.get("execution", "okx")
+B = rc.broker
 sent = []
-def fake_req(method, path, body=None, auth=True):
-    if path.endswith("/accounts"):
-        return {"data": [{"equity": "0", "usdtEquity": "0", "available": "0",
-                          "crossMaxAvailable": "0", "fixedMaxAvailable": "0", "crossAvailableEquity": "0"}]}
-    if path.endswith("/positions"):
-        return {"data": []}
-    if "order" in path:
-        sent.append((method, path, body))
-        return {"data": {"orderId": "FAKE"}}
-    return {"data": {}}
-bg._req = fake_req
-bg.account = lambda: {"equity": 0.0, "cash": 0.0, "raw": {}}
-bg.positions = lambda: []
-bg.open_orders = lambda: []
-bg.fills = lambda *a, **k: []
-bg.cancel_order = lambda *a, **k: True
 
-def bars(sym):
-    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp() // 3600 * 3600)
-    out = {}
-    for tf, step in (("5m", 300), ("15m", 900), ("1h", 3600), ("4h", 14400), ("1d", 86400)):
-        rows = []
-        for i in range(60):
-            px = 100.0 + i * 0.01
-            rows.append({"t": datetime.datetime.utcfromtimestamp(now - step * (60 - i)).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                         "o": px, "h": px * 1.001, "l": px * 0.999, "c": px, "v": 10.0})
-        out[tf] = rows
-    return out, False
-rc.fetch_bars = bars
-rc.live_positions = lambda: []
 
-print("  MONEY:", rc.MONEY, "LIVE:", rc.LIVE, "venue:", rc.VENUE)
+def _bars(sym, tf, limit):
+    """Same shape every broker's crypto_bars returns: dicts, oldest→newest, t as an ISO string.
+
+    (A list-of-lists here dies inside fetch_bars, which is a useful accident: it proves fetch_bars is
+    really being exercised rather than skipped.)
+    """
+    step = {"5Minute": 300, "15Minute": 900, "1Hour": 3600, "4Hour": 14400, "1Day": 86400}[tf]
+    # each timeframe aligned to ITS OWN period, newest bar one step back: floor everything to the top
+    # of the hour and the last 5m bar looks 55 minutes stale, which trips the feed-age guard before
+    # the wallet check is ever reached (it did, on the first run of this file).
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp() // step * step)
+    out = []
+    for i in range(limit):
+        px = 100.0 + i * 0.01
+        t = datetime.datetime.fromtimestamp(now - step * (limit - i), datetime.timezone.utc)
+        out.append({"t": t.strftime("%Y-%m-%dT%H:%M:%SZ"), "o": px, "h": px * 1.001,
+                    "l": px * 0.999, "c": px, "v": 10.0})
+    return out
+
+
+def _place(**kw):
+    sent.append(kw)
+    raise AssertionError("place_order was reached on a $0 account — the gate did not fire")
+
+
+B.account = lambda *a, **k: {"equity": 0.0, "cash": 0.0, "available": 0.0, "raw": {}}
+B.positions = lambda *a, **k: []
+B.open_orders = lambda *a, **k: []
+B.order_by_cid = lambda *a, **k: None
+B.fills = lambda *a, **k: []
+B.cancel_order = lambda *a, **k: True
+B.cancel_for = lambda *a, **k: []
+B.crypto_bars = _bars
+B.place_order = _place
+B.BrokerError = getattr(B, "BrokerError", Exception)
+rc.MONEY = True                      # a real wallet, a real venue: no DRY, no SIM
+rc.LIVE = True
+
+print("  venue:", venue, "| MONEY:", rc.MONEY, "| broker:", B.__name__)
 rc.run()
 j = open(os.path.join(DIR, "journal.md")).read()
-line = [l for l in j.splitlines() if "equity" in l and "ALERT" in l]
-print("  ALERT line:", (line[-1].split("**")[-1].strip() if line else "NONE"))
-print("  orders attempted against the venue:", len(sent))
-ok = bool(line) and not sent and "No new entries" in (line[-1] if line else "")
+alerts = [l for l in j.splitlines() if "ALERT" in l and "equity" in l]
+scan = [l for l in j.splitlines() if "scan ok" in l]
+print("  alert:", (alerts[-1].split("**")[-1].strip() if alerts else "NONE"))
+print("  scan :", (scan[-1].split("**")[-1].strip() if scan else "NONE"))
+print("  orders attempted:", len(sent))
+ok = (bool(alerts) and not sent and "No new entries" in alerts[-1]
+      and "equity $0.00" in (scan[-1] if scan else ""))
 print("RESULT:", "PASS" if ok else "FAIL")
 '''
 
-d = tempfile.mkdtemp()
-for f in CODE:
-    shutil.copy(os.path.join(SRC, f), os.path.join(d, f))
-cfg = json.load(open(os.path.join(SRC, "config.json")))
-cfg["execution"] = "bitget"
-cfg["fees"] = {"maker": 0.0002, "taker": 0.0006}
-cfg["auto_ack_on_key"] = True
-cfg["symbols"] = ["BTC/USD"]
-json.dump(cfg, open(os.path.join(d, "config.json"), "w"), indent=2)
-open(os.path.join(d, "journal.md"), "w").close()
-open(os.path.join(d, "state.json"), "w").write('{"orders":[],"seen_candles":[]}')
-open(os.path.join(d, "ledger.json"), "w").write(
-    '{"cash":100000.0,"realized":0.0,"fees_paid":0.0,"orders":[],"positions":[]}')
-probe = PROBE.replace("DIR", repr(d))
-r = subprocess.run([sys.executable, "-c", probe], capture_output=True, text=True, timeout=300)
-print(r.stdout.strip() or ("STDOUT EMPTY"), "\n" + (r.stderr[-1200:] if r.returncode else ""))
-if "--keep" not in sys.argv:
+
+def main():
+    root = os.environ.get("CHECK_BOOK_DIR") or HERE
+    d = tempfile.mkdtemp(prefix="empty-wallet-")
+    for f in CODE:
+        src = os.path.join(root, f)
+        if not os.path.exists(src):
+            src = os.path.join(HERE, f)
+        shutil.copy(src, os.path.join(d, os.path.basename(f)))
+    for f in ("journal.md",):
+        open(os.path.join(d, f), "w").close()
+    open(os.path.join(d, "state.json"), "w").write('{"orders":[],"seen_candles":[]}')
+    open(os.path.join(d, "ledger.json"), "w").write(
+        '{"cash":100000.0,"realized":0.0,"fees_paid":0.0,"orders":[],"positions":[]}')
+    probe = PROBE.replace("DIR", repr(d))
+    r = subprocess.run([sys.executable, "-c", probe], capture_output=True, text=True, timeout=300)
     shutil.rmtree(d, ignore_errors=True)
-else:
-    print("kept:", d)
+    print((r.stdout or "").strip())
+    if r.returncode != 0:
+        print("probe exited", r.returncode, "\n", (r.stderr or "")[-900:])
+    return 0 if "RESULT: PASS" in (r.stdout or "") else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

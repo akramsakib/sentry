@@ -510,14 +510,23 @@ finally:
 
 # A CI variable that is not set arrives as the EMPTY STRING, not as missing, so `getenv(X, default)`
 # hands float()/urllib a "" and the run dies in import. Pinned because this exact thing broke run #34.
-_cfg_files = ("broker_okx.py", "broker_coinbase.py", "watchdog.py", "broker.py")
 _here = os.path.dirname(os.path.abspath(__file__))
+# This suite is REPO-level. A deployed book folder is a subset of the repo (no watchdog.py, no
+# .github/), and reading a missing file used to raise FileNotFoundError out of the middle of the run —
+# so `python3 test_data.py` in a book died with a traceback instead of a verdict. Present files are
+# checked; absent ones say so on the line, which keeps the check honest without making it unrunnable.
+_cfg_files = [f for f in ("broker_okx.py", "broker_coinbase.py", "watchdog.py", "broker.py")
+              if os.path.exists(os.path.join(_here, f))]
+_missing = sorted({f for f in ("broker_okx.py", "broker_coinbase.py", "watchdog.py", "broker.py")} - set(_cfg_files))
 # an EMPTY default is fine (nothing chokes on ""); a non-empty one hides the case where "" arrives.
 _bad = [f for f in _cfg_files if _re.search(r'os\.environ\.get\("[A-Z_]+", "[^"]',
               open(os.path.join(_here, f)).read())]
-check("env reads treat '' as unset (a CI variable with no value is empty, not absent)", not _bad, str(_bad))
+check("env reads treat '' as unset (a CI variable with no value is empty, not absent)", not _bad,
+      str(_bad) + (f"   [skipped here: {_missing}]" if _missing else ""))
+_wf = os.path.join(_here, ".github", "workflows", "scan.yml")
 check("  ...and the workflow passes no bare tuning knobs as Actions variables",
-      "OKX_SLACK" not in open(os.path.join(_here, ".github", "workflows", "scan.yml")).read())
+      not os.path.exists(_wf) or "OKX_SLACK" not in open(_wf).read(),
+      "" if os.path.exists(_wf) else "   [.github not deployed in this folder — nothing to read]")
 
 # The two config lines that decide whether this strategy can pay for itself must not drift apart:
 # fees priced for one venue while trading another is how 4 releases of paper looked profitable.
@@ -961,9 +970,10 @@ if os.path.exists(_probe24):
     import subprocess as _sp24
     _r24 = _sp24.run([sys.executable, _probe24], capture_output=True, text=True, timeout=180)
     _out24 = (_r24.stdout or "") + (_r24.stderr or "")
-    check("THE PROBE: armed Bitget book + $0 wallet -> LIVE ACK, one ALERT, ZERO orders attempted",
-          "RESULT: PASS" in _out24 and "orders attempted against the venue: 0" in _out24
-          and "MONEY: True" in _out24, " ".join(_out24.split())[-160:])
+    check("THE PROBE: armed book (this repo's venue) + $0 wallet -> one ALERT, ZERO orders attempted",
+          "RESULT: PASS" in _out24 and "orders attempted: 0" in _out24
+          and "MONEY: True" in _out24 and "Traceback" not in _out24,
+          " ".join(_out24.split())[-160:])
     check("...and the equity it reports is the venue's, not the paper wallet's",
           "equity $0.00" in _out24, [l for l in _out24.splitlines() if "scan ok" in l][-1][:150]
           if "scan ok" in _out24 else "no scan line")
