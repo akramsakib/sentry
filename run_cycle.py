@@ -11,6 +11,7 @@ SENTRY_FIXTURES=<dir> reads bars from <dir>/<SYMBOL>.json and skips all writes.
 """
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -23,6 +24,7 @@ sys.path.insert(0, HERE)
 import sentry_core as core
 
 CFG = json.load(open(os.path.join(HERE, "config.json")))
+_CID_TS = re.compile(r"(\d{13})n\d+$")   # sentry{SYM}{ms}n{seq} -> the ms doubles as the placement clock
 EXEC_MODE = CFG.get("execution", "ledger")
 if EXEC_MODE == "alpaca":
     import broker
@@ -138,6 +140,27 @@ def run():
     live = {p["symbol"]: p for p in live_positions()}
     acct = None if DRY else broker.account()
 
+    # a0) expire resting entries whose setup has gone stale. Matters because GitHub's cron on
+    # this account delivers a few cycles per day, not one per 10 min: an H1 breakout trigger from
+    # 13:00 is not the same trade at 03:00, it is just an old order that happens to be reachable.
+    ttl_h = float(CFG.get("pending_ttl_h", 6.0))
+    for cid in list(s["open_cids"].keys()):
+        m = _CID_TS.search(cid)
+        if not m:
+            continue
+        age_h = (time.time() - int(m.group(1)) / 1000.0) / 3600.0
+        if age_h <= ttl_h:
+            continue
+        meta = s["open_cids"].pop(cid)
+        if not DRY:
+            try:
+                for o in broker.open_orders():
+                    if (o.get("client_order_id") or "") == cid:
+                        broker.cancel_order(o["id"])
+            except broker.BrokerError as e:
+                journal(f"NOTE — could not cancel expired pending {cid}: {e}")
+        journal(f"EXPIRED — {meta['sym']} {meta['skill']}: entry trigger rested {age_h:.1f} h "
+                f"(>{ttl_h:g} h), setup no longer valid")
     # ---------- 1) reconcile: fills, exits, protective orders ----------
     # a) positions that vanished since last cycle -> grade the outcome
     for sym, ps in list(s["pos_state"].items()):
