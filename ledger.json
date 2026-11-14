@@ -1,6 +1,79 @@
 {
  "cash": 100000.0,
  "realized": 0.0,
- "orders": [],
+ "orders": [
+  {
+   "id": "1794662107596",
+   "client_order_id": "sentryBTCUSD1794662107596n1",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 0.6014773725771392,
+   "limit_price": null,
+   "stop_price": 67273.58922668,
+   "status": "open",
+   "placed_at": 1794662107
+  },
+  {
+   "id": "1794662107643",
+   "client_order_id": "sentryBTCUSD1794662107642n2",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 0.34947554118631324,
+   "limit_price": null,
+   "stop_price": 67174.37922668,
+   "status": "open",
+   "placed_at": 1794662107
+  },
+  {
+   "id": "1794662107698",
+   "client_order_id": "sentryETHUSD1794662107698n3",
+   "symbol": "ETH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 27.605610099317925,
+   "limit_price": null,
+   "stop_price": 1908.70498631,
+   "status": "open",
+   "placed_at": 1794662107
+  },
+  {
+   "id": "1794662107792",
+   "client_order_id": "sentryETHUSD1794662107792n4",
+   "symbol": "ETH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 11.321884226603183,
+   "limit_price": null,
+   "stop_price": 1907.79498631,
+   "status": "open",
+   "placed_at": 1794662107
+  },
+  {
+   "id": "1794662107892",
+   "client_order_id": "sentrySOLUSD1794662107892n5",
+   "symbol": "SOL/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 3454.486791078573,
+   "limit_price": null,
+   "stop_price": 75.71969939,
+   "status": "open",
+   "placed_at": 1794662107
+  },
+  {
+   "id": "1794662108035",
+   "client_order_id": "sentrySOLUSD1794662108035n6",
+   "symbol": "SOL/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 200.42174346634084,
+   "limit_price": null,
+   "stop_price": 75.89969939,
+   "status": "open",
+   "placed_at": 1794662108
+  }
+ ],
  "positions": []
 }
