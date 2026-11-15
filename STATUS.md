@@ -2,32 +2,29 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-15 04:33 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $87,660.22 · equity $100,071.39
+**2026-11-15 12:14 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $82,783.16 · equity $100,074.16
 
-_Venue cost: 0.02 % maker / 0.05 % taker per side · **$66.44 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
+_Venue cost: 0.02 % maker / 0.05 % taker per side · **$68.88 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
-## Orders resting on the book now (5)
+## Orders resting on the book now (0)
 
-| symbol | order | trigger | size | notional | risk | tape | to trigger | age |
-|---|---|---|---|---|---|---|---|---|
-| ETH/USD | buy_stop | 1824.6496 | 0.402273 | $734 | $50.00 | 1817.86 | +0.37% | 0 min |
-| ETH/USD | buy_stop | 1826.3396 | 0.454283 | $830 | $50.00 | 1817.86 | +0.47% | 0 min |
-| ETH/USD | buy_stop | 1826.3396 | 0.454283 | $830 | $50.00 | 1817.86 | +0.47% | 0 min |
-| ETH/USD | buy_stop | 1826.3396 | 0.454283 | $830 | $50.00 | 1817.86 | +0.47% | 0 min |
-| ETH/USD | buy_stop | 1824.6496 | 2.26927 | $4,141 | $50.00 | 1817.86 | +0.37% | 0 min |
-
-_Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
+_None. Every symbol is scanned each cycle; a resting entry above is a trigger waiting to be hit, not a position._
 
 ## Positions (1)
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BTC/USD | 0.069084 | 63278.87 | 64919.45 | $113.34 | 63069.244 | 66371.462 | +2.27R |
+| BTC/USD | 0.069084 | 63278.87 | 65331.22 | $141.78 | 63069.244 | 66371.462 | +2.84R |
 
-## Last 12 signals (109 ever logged)
+## Last 12 signals (114 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-15 12:14 | AVAX/USD | C-M15-bear-harami | 4/5 | 7.2133485 | 7.3161287 | 7.0591782 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 12:14 | BCH/USD | S23-upthrust-short | 4/5 | 207.56193 | 210.32518 | 203.4788 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 12:14 | LTC/USD | C-M15-tweezer-top | 3/5 | 45.32836 | 45.7891 | 44.637249 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 12:14 | ETH/USD | C-M15-tweezer-top | 4/5 | 1826.6166 | 1845.1486 | 1798.8185 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 12:14 | BTC/USD | C-M15-morning-star | 3/5 | 65639.894 | 65147.615 | 66378.313 | $50.00 | not fired (guard/duplicate) |
 | 11-15 04:33 | LTC/USD | S18-rsi2-short | 3/5 | 44.88 | 45.942915 | 43.551356 | $50.00 | paper-graded (spot cannot short) |
 | 11-15 04:33 | ETH/USD | C-M15-bull-harami | 3/5 | 1824.6496 | 1802.616 | 1857.6999 | $50.00 | order placed |
 | 11-15 04:33 | ETH/USD | C-H1-three-inside-up | 3/5 | 1826.3396 | 1716.276 | 1991.4349 | $50.00 | order placed |
@@ -35,11 +32,6 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 | 11-15 04:33 | ETH/USD | C-H1-marubozu | 3/5 | 1826.3396 | 1716.276 | 1991.4349 | $50.00 | order placed |
 | 11-15 04:33 | ETH/USD | S22-rsi-bull-div | 3/5 | 1824.6496 | 1700.356 | 2011.0899 | $50.00 | order placed |
 | 11-15 04:33 | BTC/USD | C-H1-three-inside-up | 3/5 | 65214.363 | 62214.743 | 69713.793 | $50.00 | not fired (guard/duplicate) |
-| 11-15 04:33 | BTC/USD | C-H1-marubozu | 3/5 | 65214.363 | 62214.743 | 69713.793 | $50.00 | not fired (guard/duplicate) |
-| 11-15 04:33 | BTC/USD | S22-rsi-bull-div | 3/5 | 64999.463 | 61689.943 | 69963.743 | $50.00 | not fired (guard/duplicate) |
-| 11-15 00:24 | AVAX/USD | S13-ichimoku-short | 4/5 | 7.0890152 | 7.6999696 | 6.7885559 | $50.00 | paper-graded (spot cannot short) |
-| 11-15 00:24 | BCH/USD | S13-ichimoku-short | 4/5 | 201.46582 | 212.31835 | 193.34542 | $50.00 | paper-graded (spot cannot short) |
-| 11-15 00:24 | LTC/USD | S3-momentum-short | 4/5 | 43.302236 | 44.465529 | 41.053414 | $50.00 | paper-graded (spot cannot short) |
 
 ## Accuracy so far
 
@@ -47,7 +39,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 5 new order(s), 10 symbols scanned
+## This cycle: 0 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
