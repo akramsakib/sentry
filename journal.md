@@ -259,3 +259,14 @@
 - **11-15 04:33 UTC** NOTE — AVAX/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
 - **11-15 04:33 UTC** NOTE — AVAX/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
 - **11-15 04:33 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $100071.39 · 7s · venue fees $66.44 to date @ 0.02/0.05%
+- **11-15 12:14 UTC** EXPIRED — ETH/USD S22-rsi-bull-div: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-15 12:14 UTC** EXPIRED — ETH/USD C-H1-marubozu: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-15 12:14 UTC** EXPIRED — ETH/USD C-H1-morning-star: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-15 12:14 UTC** EXPIRED — ETH/USD C-H1-three-inside-up: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-15 12:14 UTC** EXPIRED — ETH/USD C-M15-bull-harami: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-15 12:14 UTC** SKIP — BTC/USD C-M15-morning-star: already have pending/position in play
+- **11-15 12:14 UTC** CANDIDATE(score 4/5) — ETH/USD C-M15-tweezer-top sell_stop 1826.61656073 sl1845.14859818 tp1798.81850454 — paper-graded (spot can't short)
+- **11-15 12:14 UTC** CANDIDATE(score 3/5) — LTC/USD C-M15-tweezer-top sell_stop 45.32835989 sl45.78910026 tp44.63724934 — paper-graded (spot can't short)
+- **11-15 12:14 UTC** CANDIDATE(score 4/5) — BCH/USD S23-upthrust-short sell_stop 207.56192865 sl210.32517838 tp203.47880044 — paper-graded (spot can't short)
+- **11-15 12:14 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-bear-harami sell_stop 7.21334852 sl7.31612871 tp7.05917822 — paper-graded (spot can't short)
+- **11-15 12:14 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 1 positions equity $100074.16 · 6s · venue fees $68.88 to date @ 0.02/0.05%
