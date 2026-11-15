@@ -173,6 +173,13 @@ def to_markdown(books, fx, built):
             L.append(f"- equity **${_fmt(b.get('equity'))}** · cash ${_fmt(b.get('cash'))} · "
                      f"realized ${_fmt(b.get('realized'))} · fees ${_fmt(b.get('fees_paid'))} · "
                      f"exposure ${_fmt(b.get('exposure'))}")
+            # Whoever asks "how much do I have?" reads THIS line, so it may not be allowed to look like an
+            # answer about their venue balance: without a key the book cannot query the wallet at all, and
+            # every dollar on the card is the simulator's own. Only say it when it is true (money=False).
+            if not b.get("money"):
+                L.append("- **not your exchange balance** — with no API key this book cannot read your "
+                         "wallet, so the figures above are its paper ledger. Your venue balance is only "
+                         "visible on the exchange's own page.")
         L.append(f"- open **{b.get('n_positions', len(b.get('positions') or []))}**"
                  + (f" _({b['positions_label']})_" if b.get("positions_label") else "")
                  + f" · pendings **{b.get('n_pendings', len(b.get('pendings') or []))}** · "
@@ -264,6 +271,10 @@ def to_html(books, fx, built, md_path):
             h.append(f'<p class="big">${esc(_fmt(b.get("equity")))} <span style="font-size:11px;'
                      f'color:var(--dim);font-weight:400">equity · cash ${esc(_fmt(b.get("cash")))} · '
                      f'realized ${esc(_fmt(b.get("realized")))} · fees ${esc(_fmt(b.get("fees_paid")))}</span></p>')
+        if b.get("equity") is not None and not b.get("money"):
+            h.append('<p class="kv"><b>not your exchange balance</b> — no API key, so this book cannot '
+                     'read your wallet; these dollars are its paper ledger, and your real balance is only '
+                     'on the venue\'s own page</p>')
         if g:
             h.append(f'<p class="kv">own record <b>{esc(g.get("graded", 0))} graded</b> '
                      f'({esc(g.get("wins", 0))}W / {esc(g.get("losses", 0))}L / {esc(g.get("scratch", 0))}S) · '

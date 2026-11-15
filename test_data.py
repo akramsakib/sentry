@@ -1167,6 +1167,8 @@ if _have25:
               open(os.path.join(_d25, "state.json"), "w"))
     json.dump({"updated": "now", "book": "crypto-x", "execution": "bitget", "state": "shadow",
                "money": False, "cycle_s": 300, "updated_ts": _t25.time() - 1800, "positions": [],
+               "equity": 100000.0, "cash": 99000.0, "realized": 0.0, "fees_paid": 1.0, "exposure": 0.0,
+               "sizing": {"max_notional_frac": 0.25, "max_leverage": 3},
                "pendings": [], "open_cids": {}, "blocked_on": ["no venue key"]},
               open(os.path.join(_d25, "books", "crypto-x.json"), "w"))
     _mon.ROOT, _mon.BOOKS = _d25, os.path.join(_d25, "books")
@@ -1213,6 +1215,21 @@ if _have25:
           [l for l in _md25.splitlines() if "STALE" in l][:1])
     check("and the page refuses to claim the terminal bridge is reachable",
           "never calls the terminal" in _md25)
+    # "how much balance do I have" is a question this page can get WRONG by silence: an unkeyed book prints
+    # a six-figure paper equity right under a person who deposited ten dollars. So the card has to say
+    # what the number is, and only say it when money=False proves the wallet was never read.
+    check("book_status publishes max_leverage too, so the page can show the cap that ACTUALLY binds",
+          '"max_leverage": cfg.get("max_leverage")' in _b25)
+    _eq25 = {"equity": 100000.0, "cash": 99000.0, "realized": 0.0, "fees_paid": 1.0, "exposure": 0.0}
+    _bk25b = [dict(_bk25[0], **_eq25)]
+    _md25b = _mon.to_markdown(_bk25b, _fx25, "test")
+    check("an unkeyed book's equity line is labelled NOT your exchange balance (md)",
+          "not your exchange balance" in _md25b, [l for l in _md25b.splitlines() if "equity" in l][-1:])
+    check("...in the html as well, since that is the page he actually opens",
+          "not your exchange balance" in _mon.to_html(_bk25b, _fx25, "test", "TRADING.md"))
+    check("...and a book that MOVED money is not called a paper ledger (no false modesty either)",
+          "not your exchange balance" not in _mon.to_markdown(
+              [dict(_bk25b[0], money=True, state="live")], _fx25, "test"))
     _sh25.rmtree(_d25, ignore_errors=True)
 
 

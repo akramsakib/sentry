@@ -165,6 +165,9 @@ def book_status(here, extra=None):
                    "max": _num(cfg.get("max_risk")), "live_max_risk": _num(cfg.get("live_max_risk")),
                    "live_max_risk_frac": cfg.get("live_max_risk_frac"),
                    "max_notional_frac": cfg.get("max_notional_frac"),
+                   # the cap that ACTUALLY binds: run_cycle.notional_cap lets max_leverage replace the
+                   # fraction, and a page that showed only the fraction would describe a guard that is off
+                   "max_leverage": cfg.get("max_leverage"),
                    "min_stop_frac": cfg.get("min_stop_frac"),
                    "stop_floor_frac": _num(cfg.get("stop_floor_frac"))},
         "cost": {"maker": mk, "taker": tk, "stop_frac": stop, "drag_r": drag, "cap_r": cap,
