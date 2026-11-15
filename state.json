@@ -52,70 +52,14 @@
   "FIRE|BCH/USD|C-H1-bull-engulfing|2026-11-15",
   "FIRE|BCH/USD|C-H1-three-inside-up|2026-11-15",
   "FIRE|AVAX/USD|S22-rsi-bull-div|2026-11-15",
-  "FIRE|AVAX/USD|C-H1-bull-engulfing|2026-11-15"
+  "FIRE|AVAX/USD|C-H1-bull-engulfing|2026-11-15",
+  "FIRE|BTC/USD|C-M15-morning-star|2026-11-15",
+  "FIRE|ETH/USD|C-M15-tweezer-top|2026-11-15",
+  "FIRE|LTC/USD|C-M15-tweezer-top|2026-11-15",
+  "FIRE|BCH/USD|S23-upthrust-short|2026-11-15",
+  "FIRE|AVAX/USD|C-M15-bear-harami|2026-11-15"
  ],
- "open_cids": {
-  "sentryETHUSD1794717219220n13": {
-   "sym": "ETH/USD",
-   "skill": "S22-rsi-bull-div",
-   "otype": "buy_stop",
-   "entry": 1824.6495871,
-   "sl": 1700.35603226,
-   "tp": 2011.08991936,
-   "qty": 0.40227347,
-   "r_dist": 124.29355484000007,
-   "score": 3,
-   "risk": 50.0
-  },
-  "sentryETHUSD1794717219385n14": {
-   "sym": "ETH/USD",
-   "skill": "C-H1-marubozu",
-   "otype": "buy_stop",
-   "entry": 1826.3395871,
-   "sl": 1716.27603226,
-   "tp": 1991.43491936,
-   "qty": 0.45428298,
-   "r_dist": 110.06355484000005,
-   "score": 3,
-   "risk": 50.0
-  },
-  "sentryETHUSD1794717219460n15": {
-   "sym": "ETH/USD",
-   "skill": "C-H1-morning-star",
-   "otype": "buy_stop",
-   "entry": 1826.3395871,
-   "sl": 1716.27603226,
-   "tp": 1991.43491936,
-   "qty": 0.45428298,
-   "r_dist": 110.06355484000005,
-   "score": 3,
-   "risk": 50.0
-  },
-  "sentryETHUSD1794717219591n16": {
-   "sym": "ETH/USD",
-   "skill": "C-H1-three-inside-up",
-   "otype": "buy_stop",
-   "entry": 1826.3395871,
-   "sl": 1716.27603226,
-   "tp": 1991.43491936,
-   "qty": 0.45428298,
-   "r_dist": 110.06355484000005,
-   "score": 3,
-   "risk": 50.0
-  },
-  "sentryETHUSD1794717219656n17": {
-   "sym": "ETH/USD",
-   "skill": "C-M15-bull-harami",
-   "otype": "buy_stop",
-   "entry": 1824.6495871,
-   "sl": 1802.61603226,
-   "tp": 1857.69991936,
-   "qty": 2.26926614,
-   "r_dist": 22.03355483999985,
-   "score": 3,
-   "risk": 50.0
-  }
- },
+ "open_cids": {},
  "pos_state": {
   "BTC/USD": {
    "side": "long",
@@ -126,12 +70,12 @@
    "qty": 0.06908402900547651,
    "skill": "S18-ma-revert-long",
    "be": 63278.87,
-   "sent_sl": 63278.87,
-   "last_price": 64919.45
+   "sent_sl": 63651.3369375,
+   "last_price": 65331.22
   }
  },
  "cid_seq": 17,
- "last_cycle": 1794717219.752191,
+ "last_cycle": 1794744855.9751227,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
@@ -244,6 +188,11 @@
   "BCH/USD|H1|three-inside-up|2026-11-15T02:00:00Z",
   "AVAX/USD|H1|bull-engulfing|2026-11-15T02:00:00Z",
   "AVAX/USD|M15|bull-engulfing|2026-11-15T04:00:00Z",
-  "AVAX/USD|M15|tweezer-bottom|2026-11-15T04:00:00Z"
+  "AVAX/USD|M15|tweezer-bottom|2026-11-15T04:00:00Z",
+  "BTC/USD|M15|morning-star|2026-11-15T11:30:00Z",
+  "ETH/USD|M15|tweezer-top|2026-11-15T11:30:00Z",
+  "DOGE/USD|H1|marubozu|2026-11-15T10:00:00Z",
+  "LTC/USD|M15|tweezer-top|2026-11-15T11:30:00Z",
+  "AVAX/USD|M15|bear-harami|2026-11-15T11:30:00Z"
  ]
 }
