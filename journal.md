@@ -284,3 +284,18 @@
 - **11-15 18:55 UTC** CANDIDATE(score 4/5) — BCH/USD C-H1-bear-harami sell_stop 206.66423499 sl210.12441252 tp201.47396869 — paper-graded (spot can't short)
 - **11-15 18:55 UTC** CANDIDATE(score 4/5) — AVAX/USD S22-rsi-bear-div sell_stop 7.13984153 sl7.25639617 tp6.96500958 — paper-graded (spot can't short)
 - **11-15 18:55 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 1 positions equity $99883.71 · 11s · venue fees $68.88 to date @ 0.02/0.05%
+- **11-15 23:18 UTC** SKIP — BTC/USD C-M15-three-outside-up: already have pending/position in play
+- **11-15 23:18 UTC** CANDIDATE(score 4/5) — ETH/USD C-H1-evening-star sell_stop 1810.67101538 sl1832.17246154 tp1778.41884614 — paper-graded (spot can't short)
+- **11-15 23:18 UTC** ORDER BOOKED — XRP/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 1222.290969 @ 0.97241893 sl0.93151214 tp1.00001096 · risk $50.00 · fees ~$1.16 (0.02R)
+- **11-15 23:18 UTC** ORDER BOOKED — XRP/USD C-M15-bull-engulfing (score 3/5) stop buy_stop qty 6484.386246 @ 0.97184595 sl0.96413512 tp0.9834122 · risk $50.00 · fees ~$6.28 (0.13R)
+- **11-15 23:18 UTC** ORDER BOOKED — XRP/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 6484.386246 @ 0.97184595 sl0.96413512 tp0.9834122 · risk $50.00 · fees ~$6.28 (0.13R)
+- **11-15 23:18 UTC** ORDER BOOKED — SOL/USD C-M15-three-outside-up (score 3/5) stop buy_stop qty 80.822360 @ 72.50246877 sl71.88382809 tp73.43042979 · risk $50.00 · fees ~$5.83 (0.12R)
+- **11-15 23:18 UTC** CANDIDATE(score 4/5) — ADA/USD C-H1-evening-star sell_stop 0.15288433 sl0.15533918 tp0.14920206 — paper-graded (spot can't short)
+- **11-15 23:18 UTC** ORDER BOOKED — ADA/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 39845.399849 @ 0.15461567 sl0.15336082 tp0.15649794 · risk $50.00 · fees ~$6.14 (0.12R)
+- **11-15 23:18 UTC** CANDIDATE(score 4/5) — LINK/USD S22-rsi-bear-div sell_stop 9.23701677 sl9.30395807 tp9.13660483 — paper-graded (spot can't short)
+- **11-15 23:18 UTC** CANDIDATE(score 5/5) — LINK/USD C-M15-evening-star sell_stop 9.23701677 sl9.30595807 tp9.13360483 — paper-graded (spot can't short)
+- **11-15 23:18 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-bear-engulfing sell_stop 45.10483477 sl45.62791307 tp44.32021732 — paper-graded (spot can't short)
+- **11-15 23:18 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-tweezer-top sell_stop 45.10483477 sl45.62791307 tp44.32021732 — paper-graded (spot can't short)
+- **11-15 23:18 UTC** NOTE — BCH/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-15 23:18 UTC** NOTE — BCH/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-15 23:18 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $100019.94 · 11s · venue fees $68.88 to date @ 0.02/0.05%
