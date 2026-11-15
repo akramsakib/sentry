@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-15 12:14 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $82,783.16 · equity $100,074.16
+**2026-11-15 18:55 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $82,783.16 · equity $99,883.71
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$68.88 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -14,24 +14,24 @@ _None. Every symbol is scanned each cycle; a resting entry above is a trigger wa
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BTC/USD | 0.069084 | 63278.87 | 65331.22 | $141.78 | 63069.244 | 66371.462 | +2.84R |
+| BTC/USD | 0.069084 | 63278.87 | 64623.45 | $92.89 | 63069.244 | 66371.462 | +1.86R |
 
-## Last 12 signals (114 ever logged)
+## Last 12 signals (127 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
-| 11-15 12:14 | AVAX/USD | C-M15-bear-harami | 4/5 | 7.2133485 | 7.3161287 | 7.0591782 | $50.00 | paper-graded (spot cannot short) |
-| 11-15 12:14 | BCH/USD | S23-upthrust-short | 4/5 | 207.56193 | 210.32518 | 203.4788 | $50.00 | paper-graded (spot cannot short) |
-| 11-15 12:14 | LTC/USD | C-M15-tweezer-top | 3/5 | 45.32836 | 45.7891 | 44.637249 | $50.00 | paper-graded (spot cannot short) |
-| 11-15 12:14 | ETH/USD | C-M15-tweezer-top | 4/5 | 1826.6166 | 1845.1486 | 1798.8185 | $50.00 | paper-graded (spot cannot short) |
-| 11-15 12:14 | BTC/USD | C-M15-morning-star | 3/5 | 65639.894 | 65147.615 | 66378.313 | $50.00 | not fired (guard/duplicate) |
-| 11-15 04:33 | LTC/USD | S18-rsi2-short | 3/5 | 44.88 | 45.942915 | 43.551356 | $50.00 | paper-graded (spot cannot short) |
-| 11-15 04:33 | ETH/USD | C-M15-bull-harami | 3/5 | 1824.6496 | 1802.616 | 1857.6999 | $50.00 | order placed |
-| 11-15 04:33 | ETH/USD | C-H1-three-inside-up | 3/5 | 1826.3396 | 1716.276 | 1991.4349 | $50.00 | order placed |
-| 11-15 04:33 | ETH/USD | C-H1-morning-star | 3/5 | 1826.3396 | 1716.276 | 1991.4349 | $50.00 | order placed |
-| 11-15 04:33 | ETH/USD | C-H1-marubozu | 3/5 | 1826.3396 | 1716.276 | 1991.4349 | $50.00 | order placed |
-| 11-15 04:33 | ETH/USD | S22-rsi-bull-div | 3/5 | 1824.6496 | 1700.356 | 2011.0899 | $50.00 | order placed |
-| 11-15 04:33 | BTC/USD | C-H1-three-inside-up | 3/5 | 65214.363 | 62214.743 | 69713.793 | $50.00 | not fired (guard/duplicate) |
+| 11-15 18:55 | AVAX/USD | S22-rsi-bear-div | 4/5 | 7.1398415 | 7.2563962 | 6.9650096 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | BCH/USD | C-H1-bear-harami | 4/5 | 206.66423 | 210.12441 | 201.47397 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | LTC/USD | C-H1-shooting-star | 4/5 | 44.625639 | 45.460903 | 43.372743 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | LINK/USD | C-H1-bear-harami | 4/5 | 9.1302324 | 9.3004189 | 8.8749528 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | ADA/USD | C-M15-tweezer-top | 4/5 | 0.15255333 | 0.15411667 | 0.15020833 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | ADA/USD | C-M15-shooting-star | 4/5 | 0.15255333 | 0.15411667 | 0.15020833 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | DOGE/USD | C-M15-gravestone | 4/5 | 0.05840123 | 0.05893192 | 0.05760519 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | XRP/USD | C-H1-tweezer-top | 4/5 | 0.94617165 | 0.96372088 | 0.91984779 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | XRP/USD | C-H1-bear-engulfing | 4/5 | 0.94617165 | 0.96372088 | 0.91984779 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | XRP/USD | S22-rsi-bear-div | 4/5 | 0.94507165 | 0.96372088 | 0.91709779 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | ETH/USD | C-M15-evening-star | 4/5 | 1807.6745 | 1825.7286 | 1780.5934 | $50.00 | paper-graded (spot cannot short) |
+| 11-15 18:55 | BTC/USD | C-M15-gravestone | 4/5 | 64427.979 | 64974.953 | 63607.518 | $50.00 | not fired (guard/duplicate) |
 
 ## Accuracy so far
 
