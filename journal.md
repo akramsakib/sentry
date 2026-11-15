@@ -270,3 +270,17 @@
 - **11-15 12:14 UTC** CANDIDATE(score 4/5) — BCH/USD S23-upthrust-short sell_stop 207.56192865 sl210.32517838 tp203.47880044 — paper-graded (spot can't short)
 - **11-15 12:14 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-bear-harami sell_stop 7.21334852 sl7.31612871 tp7.05917822 — paper-graded (spot can't short)
 - **11-15 12:14 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 1 positions equity $100074.16 · 6s · venue fees $68.88 to date @ 0.02/0.05%
+- **11-15 18:55 UTC** SKIP — BTC/USD C-M15-shooting-star: already have pending/position in play
+- **11-15 18:55 UTC** SKIP — BTC/USD C-M15-gravestone: already have pending/position in play
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — ETH/USD C-M15-evening-star sell_stop 1807.67454575 sl1825.72863563 tp1780.59341094 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — XRP/USD S22-rsi-bear-div sell_stop 0.94507165 sl0.96372088 tp0.91709779 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — XRP/USD C-H1-bear-engulfing sell_stop 0.94617165 sl0.96372088 tp0.91984779 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — XRP/USD C-H1-tweezer-top sell_stop 0.94617165 sl0.96372088 tp0.91984779 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — DOGE/USD C-M15-gravestone sell_stop 0.05840123 sl0.05893192 tp0.05760519 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — ADA/USD C-M15-shooting-star sell_stop 0.15255333 sl0.15411667 tp0.15020833 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — ADA/USD C-M15-tweezer-top sell_stop 0.15255333 sl0.15411667 tp0.15020833 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — LINK/USD C-H1-bear-harami sell_stop 9.13023245 sl9.30041887 tp8.87495283 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-shooting-star sell_stop 44.62563883 sl45.46090293 tp43.37274268 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — BCH/USD C-H1-bear-harami sell_stop 206.66423499 sl210.12441252 tp201.47396869 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** CANDIDATE(score 4/5) — AVAX/USD S22-rsi-bear-div sell_stop 7.13984153 sl7.25639617 tp6.96500958 — paper-graded (spot can't short)
+- **11-15 18:55 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 1 positions equity $99883.71 · 11s · venue fees $68.88 to date @ 0.02/0.05%
