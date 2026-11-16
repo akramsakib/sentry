@@ -347,3 +347,5 @@
 - **11-16 08:42 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-marubozu sell_stop 7.1083341 sl7.19566476 tp6.97733811 — paper-graded (spot can't short)
 - **11-16 08:42 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-three-outside-down sell_stop 7.1083341 sl7.19566476 tp6.97733811 — paper-graded (spot can't short)
 - **11-16 08:42 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $99868.75 · 10s · venue fees $68.88 to date @ 0.02/0.05%
+- **11-16 08:47 UTC** CANDIDATE(score 4/5) — AVAX/USD S18-rsi2-short sell_limit 7.166 sl7.29399083 tp7.00601147 — paper-graded (spot can't short)
+- **11-16 08:47 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99876.72 · 9s · venue fees $68.88 to date @ 0.02/0.05%
