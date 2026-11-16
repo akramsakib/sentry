@@ -403,6 +403,33 @@ Three ways to get a real clock, best first:
 Do **not** "fix" this by ending each run with a delayed self-dispatch: the sleep needed to space
 runs would keep a runner occupied 24/7, which is exactly what GitHub's abuse detection disables.
 
+## The win rate (and why only one file is allowed to compute it)
+
+Asked for his win rate on the radar, the fast answer would have been a `toFixed(1)` in the page's JS. That is
+how two dashboards start disagreeing — and here a third number matters more than either: the **weighted**
+accuracy the sizer multiplies risk by. So the maths lives in `tools/mac/grade_stats.py` and everything else
+calls it:
+
+| surface | what it does with the record |
+|---|---|
+| `book_status.py` | each crypto book publishes its own `grades` object, including the sentence to print |
+| `monitor.py` | the desk page; the forex half reads `trades_log.jsonl` through the same module |
+| `trade_radar.py` | `/data.json` carries `record{fx, books, overall}`; the page, `/embed` and the 4-hour digest all render `line()` |
+
+The rules, deliberately unglamorous:
+
+* **graded rows only** — a candidate that never filled is not a win, a loss, or a denominator;
+* `decisive = wins + losses`, **`win_rate = wins / decisive`**, because a void (`scratch`) is neither;
+  `hit_rate = wins / graded` is printed beside it for anyone who wants voids to count against;
+* **net R** is summed over graded rows, NaN-safe — a rate without its money is a marketing number;
+* per-skill accuracy stays **weighted** (a fired fill counts 2×, a void 0.5×) because that is exactly what
+  `self_size()` reads; the page shows both and never labels the second one a win rate;
+* books are pooled by **adding counts and recomputing**, never by averaging two rates;
+* a skill needs **3 records** before it is ranked at all, and an empty log prints `—`, never `0 %`.
+
+A book whose published JSON predates the win rate is not shown as a dash: `with_line()` completes the ratio
+from the counts that book itself published — the same formula, not a second one.
+
 ## Honest limitations (read before calling it "the same thing")
 - **Long-only execution.** Spot crypto can't be shorted here, so short signals are *paper-graded*
   into the accuracy loop (they earn sizing trust, never fire). A futures/perp venue would be needed
