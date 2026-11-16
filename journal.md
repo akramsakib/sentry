@@ -403,3 +403,13 @@
 - **11-16 18:34 UTC** NOTE — ADA/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-16 18:34 UTC** NOTE — ADA/USD C-M15-bull-harami: soft cap on open items (6) — advisory, skipping
 - **11-16 18:34 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 2 pendings · 4 positions equity $99857.03 · 10s · venue fees $87.49 to date @ 0.02/0.05%
+- **11-16 20:39 UTC** SKIP — BTC/USD C-M15-shooting-star: already have pending/position in play
+- **11-16 20:39 UTC** SKIP — BTC/USD C-M15-bear-harami: already have pending/position in play
+- **11-16 20:39 UTC** SKIP — XRP/USD C-M15-shooting-star: already have pending/position in play
+- **11-16 20:39 UTC** SKIP — SOL/USD C-H1-bull-engulfing: already have pending/position in play
+- **11-16 20:39 UTC** SKIP — SOL/USD C-M15-shooting-star: already have pending/position in play
+- **11-16 20:39 UTC** SKIP — SOL/USD C-M15-bear-harami: already have pending/position in play
+- **11-16 20:39 UTC** NOTE — ADA/USD C-H1-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-16 20:39 UTC** SKIP — LINK/USD C-H1-tweezer-bottom: already have pending/position in play
+- **11-16 20:39 UTC** SKIP — LINK/USD C-M15-shooting-star: already have pending/position in play
+- **11-16 20:39 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 2 pendings · 4 positions equity $99713.60 · 12s · venue fees $87.49 to date @ 0.02/0.05%
