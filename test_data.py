@@ -1329,5 +1329,65 @@ else:
     print("  [skipped here: check_small_account.py] — deployed book folder")
 
 
+# ---------- 27: fx_guards — the FX build must not place orders on a hard-coded dollar band ----------
+# Prompted by a third-party "MT5 bot" site he asked about: their product is order placement inside the
+# terminal, which OUR build already does through MetaQuotes' own MCP API. So the honest question was not
+# "can we get a bot" but "does our bot guard itself" — and grep said the FX build carries none of the
+# crypto books' guards (live_gate / venue_equity / fee cap / ack: 0 hits each) and sizes on
+# `RISK = 100.0` with a $50-$200 band that has no relationship to the account. This module is the fix;
+# wiring it into the deployed sentry_mac.py is the next step, once the Mac is reachable again.
+print("\n== 27: fx_guards (equity-relative risk, min-lot wall, arming)")
+_fxg_path = _asset("tools/mac/fx_guards.py")
+check("fx_guards is shipped", bool(_fxg_path), str(_fxg_path))
+if _fxg_path:
+    import importlib.util as _ilu27
+    _s27 = _ilu27.spec_from_file_location("fx_guards", _fxg_path)
+    _fx27 = _ilu27.module_from_spec(_s27)
+    _s27.loader.exec_module(_fx27)                       # the real module, not a re-implementation
+    _src27 = open(_fxg_path).read()
+    _r, _w = _fx27.risk_clamp(100000.0, 200.0)
+    check("a $100k demo account's $200 trade is NOT clamped (a guard must not invent limits)",
+          _r == 200.0, "%s %s" % (_r, _w))
+    _r, _w = _fx27.risk_clamp(500.0, 200.0)
+    check("a $500 real account wanting $200 is clamped to 1 % = $5, and says which equity/fraction",
+          abs(_r - 5.0) < 1e-9 and "1.00% of equity $500.00" in _w, "%s %s" % (_r, _w))
+    check("the absolute cap is a PARAMETER, never a number borrowed from the crypto books",
+          "hard_cap=None" in _src27, "inheriting $25 would have silently halved every FX trade")
+    _r, _w = _fx27.risk_clamp(None, 200.0)
+    check("unreadable equity is a HOLD with risk 0, never 'no limit'", _r == 0.0 and "hold" in _w, _w)
+    check("min-lot risk is notional x stop FRACTION (the unit bug in this corner: dividing by price again)",
+          "notional * float(stop_frac)" in _src27 and "stop_dist" not in _src27)
+    _rk, _ok, _why = _fx27.min_lot_risk(10.0, 0.01, 100.0, 0.005, 3863.45)
+    check("gold's minimum lot on $10 is refused because the INSTRUMENT is too big ($19 risk = 190 %)",
+          abs(_rk - 19.317) < 0.01 and _ok is False and "Not a strategy problem" in _why, _why[:120])
+    check("...and the refusal states the equity that would make it legal, so it can be checked",
+          "Fund to ~$" in _why, _why[-60:])
+    check("arming: demo needs no ack, a REAL account does",
+          _fx27.arming(True, 100000.0, False, True)[0] is True
+          and _fx27.arming(False, 500.0, False, True)[0] is False)
+    check("arming: a manual hold outranks both account kinds",
+          _fx27.arming(True, 100000.0, True, False)[0] is False
+          and _fx27.arming(False, 500.0, True, False)[0] is False)
+    _ck27 = _asset("tools/checks/check_fx_guards.py")
+    if _ck27:
+        import subprocess as _sp27
+        _o27 = ""
+        try:
+            _x27 = _sp27.run([sys.executable, _ck27], capture_output=True, text=True, timeout=180)
+            _o27 = (_x27.stdout or "") + (_x27.stderr or "")
+            check("THE FX-GUARD PROBE: every case passes, no traceback",
+                  "RESULT: PASS" in _o27 and "FAIL" not in _o27 and "Traceback" not in _o27,
+                  " ".join(_o27.split())[-120:])
+            # matched on the case NAMES, because details are only printed for failures — a check that
+            # looked for a refusal string would pass or fail depending on whether something broke.
+            check("...and it covers the three things the deployed build will be judged on",
+                  "is clamped to 1 %" in _o27 and "REFUSED" in _o27 and "live_ack" in _o27,
+                  str(_o27.count("PASS")) + " cases passed")
+        except Exception as _e27:
+            check("the fx-guards probe runs", False, repr(_e27)[:120])
+    else:
+        print("  [skipped here: check_fx_guards.py]")
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
