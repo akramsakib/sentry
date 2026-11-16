@@ -41,7 +41,8 @@
   "FIRE|AVAX/USD|S13-ichimoku-short|2026-11-16",
   "FIRE|AVAX/USD|S23-spring-long|2026-11-16",
   "FIRE|AVAX/USD|C-M15-marubozu|2026-11-16",
-  "FIRE|AVAX/USD|C-M15-three-outside-down|2026-11-16"
+  "FIRE|AVAX/USD|C-M15-three-outside-down|2026-11-16",
+  "FIRE|AVAX/USD|S18-rsi2-short|2026-11-16"
  ],
  "open_cids": {
   "sentryETHUSD1794818528113n23": {
@@ -115,12 +116,12 @@
    "qty": 0.06908402900547651,
    "skill": "S18-ma-revert-long",
    "be": 63278.87,
-   "sent_sl": 63292.92129894,
-   "last_price": 64519.28
+   "sent_sl": 63309.12129894,
+   "last_price": 64535.48
   }
  },
  "cid_seq": 27,
- "last_cycle": 1794818528.6479752,
+ "last_cycle": 1794818876.439377,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
@@ -306,6 +307,8 @@
   "BCH/USD|M15|marubozu|2026-11-16T08:00:00Z",
   "BCH/USD|M15|three-outside-down|2026-11-16T08:00:00Z",
   "AVAX/USD|M15|marubozu|2026-11-16T08:00:00Z",
-  "AVAX/USD|M15|three-outside-down|2026-11-16T08:00:00Z"
+  "AVAX/USD|M15|three-outside-down|2026-11-16T08:00:00Z",
+  "LTC/USD|M15|marubozu|2026-11-16T08:15:00Z",
+  "BCH/USD|M15|marubozu|2026-11-16T08:15:00Z"
  ]
 }
