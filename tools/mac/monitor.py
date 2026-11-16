@@ -15,6 +15,7 @@ cycle but is never the reason a cycle fails.
     python3 monitor.py --print    # rebuild and dump the markdown to stdout
 """
 import glob
+import sys
 import html
 import json
 import os
@@ -25,6 +26,71 @@ BOOKS = os.path.join(ROOT, "books")
 HTML_F = os.path.join(ROOT, "TRADING.html")
 MD_F = os.path.join(ROOT, "TRADING.md")
 REFRESH_S = 60
+
+
+# The sibling module is found by the folder THIS file lives in: launchd runs these from the book folder and
+# the tests load them by path, so neither __file__-relative sys.path nor cwd can be trusted alone.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+
+try:
+    import grade_stats as _gs        # same folder in the repo, same folder on the desk: one file, both pages
+except Exception:
+    _gs = None                       # never let a missing helper take the page down — the card says so
+
+
+def _mod():
+    """The shared win-rate module, from wherever THIS copy of the desk lives.
+
+    The repo keeps it beside monitor.py, the deployer drops a copy at the desk root and in each book folder,
+    and a test loads the module by path. Losing it is never silent: callers get an ``error`` string, which
+    both renderers print on the card. A missing maths helper must not turn into a wrong number.
+    """
+    if _gs is not None:
+        return _gs
+    import importlib.util
+    for cand in (os.path.join(ROOT, "grade_stats.py"), os.path.join(BOOKS, "grade_stats.py"),
+                 os.path.join(ROOT, "tools", "mac", "grade_stats.py")):
+        if not os.path.isfile(cand):
+            continue
+        try:
+            sp = importlib.util.spec_from_file_location("grade_stats", cand)
+            mod = importlib.util.module_from_spec(sp)
+            sp.loader.exec_module(mod)
+            return mod
+        except Exception:
+            continue
+    return None
+
+
+def _grades(b):
+    """A book's published grades, made display-ready.
+
+    Books publish their grade snapshot, and a book whose book_status.py predates the win rate has counts but
+    no ratio and no sentence. with_line() fills those from the SAME module the books use, so one stale
+    publisher cannot turn the desk page into a page of dashes.
+    """
+    g = b.get("grades") or {}
+    if not g:
+        return {}
+    gs = _mod()
+    return gs.with_line(g) if gs is not None else dict(g, line=g.get("line") or "win rate —")
+
+
+MISSING = {"error": "grade_stats.py is not beside monitor.py — win rate NOT computed",
+           "graded": 0, "wins": 0, "losses": 0, "scratch": 0, "decisive": 0, "net_r": 0.0,
+           "win_rate": None, "hit_rate": None, "fired": 0, "by_skill": [],
+           "line": "win rate — (shared module missing)"}
+
+
+def _record(path):
+    """Win rate for a book that publishes no JSON of its own — the forex side, whose trade log is a sibling
+    file. Same module as the crypto cards use, so the two halves of one page cannot disagree."""
+    gs = _mod()
+    if gs is None:
+        return dict(MISSING)
+    return gs.stats(gs.rows_from(path))
 
 
 def _json(path, default=None):
@@ -113,7 +179,8 @@ def fx_section():
             "n_positions": items,
             "positions_label": "desk book items (the terminal's own position count is not read here)",
             "equity": None, "positions": [], "pendings": [],
-            "grades": {}, "events": [l[-160:] for l in jl[:5]],
+            "grades": _record(os.path.join(ROOT, "trades_log.jsonl")),
+            "events": [l[-160:] for l in jl[:5]],
             "last_scan": scan.split("**")[-1].strip()[-190:] if scan else "",
             "cycle_s": None, "blocked_on": [],
             "sizing": {"base_risk": 125, "live_max_risk": None}, "cost": {},
@@ -164,7 +231,7 @@ def to_markdown(books, fx, built):
         pill, _ = _money_pill(b)
         L.append(f"## {b['book']} — {pill}")
         L.append("")
-        g = b.get("grades") or {}
+        g = _grades(b)
         cost = b.get("cost") or {}
         sz = b.get("sizing") or {}
         L.append(f"- venue `{b.get('execution')}` · state {b.get('state')} · updated {b.get('updated')}"
@@ -185,9 +252,11 @@ def to_markdown(books, fx, built):
                  + f" · pendings **{b.get('n_pendings', len(b.get('pendings') or []))}** · "
                    f"risk on pendings ${_fmt(b.get('at_risk'))} · per-trade ${_fmt(sz.get('base_risk'), 0)}")
         if g:
-            L.append(f"- own record: {g.get('graded', 0)} graded "
-                     f"({g.get('wins', 0)}W/{g.get('losses', 0)}L/{g.get('scratch', 0)}S) · "
-                     f"net {g.get('net_r')}R · sizing reads {'this book' if g.get('graded') else 'the neutral prior (0 graded so far)'}")
+            L.append(f"- **{g.get('line') or 'win rate —'}**"
+                     + (f" · own record {g.get('graded', 0)} graded "
+                        f"({g.get('wins', 0)}W/{g.get('losses', 0)}L/{g.get('scratch', 0)}S voids)"
+                        f" · sizing reads {'this book' if g.get('graded') else 'the neutral prior'}"
+                        if not g.get("error") else f" · {g.get('error')}"))
         if cost.get("drag_r") is not None:
             L.append(f"- venue cost {cost.get('drag_r')}R/trade vs cap {cost.get('cap_r')}R → "
                      f"{cost.get('verdict')}")
@@ -257,7 +326,7 @@ def to_html(books, fx, built, md_path):
 
     def card(b):
         pill, cls = _money_pill(b)
-        g, cost, sz = b.get("grades") or {}, b.get("cost") or {}, b.get("sizing") or {}
+        g, cost, sz = _grades(b), b.get("cost") or {}, b.get("sizing") or {}
         h = [f'<div class="card"><h2>{esc(b["book"])} '
              f'<span class="pill {cls}">{esc(pill)}</span>'
              f'<span style="color:var(--dim);font-weight:400;font-size:11px">via <code>{esc(b.get("execution"))}</code></span></h2>']
@@ -276,10 +345,12 @@ def to_html(books, fx, built, md_path):
                      'read your wallet; these dollars are its paper ledger, and your real balance is only '
                      'on the venue\'s own page</p>')
         if g:
-            h.append(f'<p class="kv">own record <b>{esc(g.get("graded", 0))} graded</b> '
-                     f'({esc(g.get("wins", 0))}W / {esc(g.get("losses", 0))}L / {esc(g.get("scratch", 0))}S) · '
-                     f'net <b>{esc(g.get("net_r"))}R</b> · sizing from '
-                     f'<b>{"this book" if g.get("graded") else "neutral prior"}</b></p>')
+            h.append(f'<p class="kv"><b>{esc(g.get("line") or "win rate —")}</b></p>'
+                     + ('' if g.get("error") else
+                        f'<p class="kv">own record <b>{esc(g.get("graded", 0))} graded</b> '
+                        f'({esc(g.get("wins", 0))}W / {esc(g.get("losses", 0))}L / '
+                        f'{esc(g.get("scratch", 0))}S voids) · sizing from '
+                        f'<b>{"this book" if g.get("graded") else "neutral prior"}</b></p>'))
         if cost.get("drag_r") is not None:
             v = cost.get("verdict") or ""
             cls2 = "pos" if v.startswith("inside") else "warn"

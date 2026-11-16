@@ -1413,5 +1413,130 @@ if _fxg_path:
         os.remove(_sus)
 
 
+# ---------- 28: win rate — ONE number, three pages ----------
+# He asked for the win rate on the desk page and on the radar. The easy version computes it twice and
+# then spends the next month arguing about why the two pages disagree — especially here, where the SIZER
+# reads a weighted accuracy (fired fills count 2x, voids 0.5) that is deliberately NOT the same ratio.
+# So the maths lives in one module and both pages print the same line(), and these checks fail if either
+# page starts inventing its own.
+print("\n== 28: grade_stats — win rate shared by desk page, publisher and radar")
+_gs_path = _asset("tools/mac/grade_stats.py")
+check("grade_stats is shipped", bool(_gs_path))
+if _gs_path:
+    import importlib.util as _ilu28
+    _sp28 = _ilu28.spec_from_file_location("grade_stats", _gs_path)
+    _gs = _ilu28.module_from_spec(_sp28)
+    _sp28.loader.exec_module(_gs)                        # the shipped module, not a copy of its logic
+    _rows = [{"result": "win", "R": 1.4, "skill": "S16", "fired": True},
+             {"result": "win", "R": 2.1, "skill": "S16"},
+             {"result": "loss", "R": -1.0, "skill": "S18"},
+             {"result": "scratch", "R": 0.02, "skill": "S18"},
+             {"result": "loss", "R": -0.5, "skill": "S18", "fired": True},
+             {"note": "not graded at all, must not move any number"},
+             "{ broken json line"]
+    _st = _gs.stats(_rows)
+    check("2W / 2L / 1 void -> win rate 50.0 % over DECISIVE outcomes, voids excluded from that denominator",
+          _st["win_rate"] == 0.5 and _st["decisive"] == 4, str(_st))
+    check("...and the stricter hit rate (voids count against) is published beside it, not instead of it",
+          _st["hit_rate"] == 0.4 and _st["graded"] == 5, str(_st["hit_rate"]))
+    check("net R sums the graded rows only (the ungraded line and the broken line are ignored)",
+          _st["net_r"] == 2.02, str(_st["net_r"]))
+    check("the sentence both pages print is generated here, so they cannot drift",
+          _st["line"] == "win rate 50.0% (2 of 4 decisive) · hits 40.0% of 5 graded · net +2.02R", _st["line"])
+    check("an empty book prints an em-dash, never 0 % (a 0 % win rate on zero trades is a lie by formatting)",
+          _gs.stats([])["win_rate"] is None and "win rate —" in _gs.stats([])["line"])
+    # S18 holds a void (1.0), a fired loss (2.0) and a plain loss (1.0): the sizer's weighted accuracy is
+    # 1.0/6.0 = 0.167, while a flat count would say 1/3 = 0.333. Two different questions, two numbers.
+    check("per-skill accuracy is the SIZER's weighted number, not the headline win rate",
+          [k for k in _st["by_skill"] if k["skill"] == "S18"][0]["acc"] == 0.125, str(_st["by_skill"]))
+    check("...while the headline win rate over the same rows is 50 %: the page shows both, never conflates them",
+          _st["win_rate"] == 0.5, str(_st["win_rate"]))
+    check("a skill with two records is shown as data, not as a sizing input (the < 3 gate is the sizer's)",
+          "S13" not in [k["skill"] for k in _gs.stats(_rows)["by_skill"]])
+    check("...and the radar can still show its raw record, because by_skill lists what qualifies only",
+      _st["by_skill"][0]["skill"] == "S16" and len(_st["by_skill"]) == 2, str(_st["by_skill"]))
+    _a = {"wins": 1, "losses": 1, "scratch": 0, "graded": 2, "net_r": 0.4}
+    _b = {"wins": 4, "losses": 0, "scratch": 0, "graded": 4, "net_r": 5.0}
+    _m = _gs.merge(_a, _b)
+    check("pooling books adds COUNTS and recomputes the rate — 5/6 = 83.3 %, not the 75 % an average gives",
+          _m["win_rate"] == 0.8333 and _m["graded"] == 6 and _m["net_r"] == 5.4, str(_m))
+    check("NaN in an R field cannot poison net R (a single bad row used to blank the whole record)",
+          _gs.stats([{"result": "win", "R": float("nan")}])["net_r"] == 0.0)
+    _t28 = tempfile.mkdtemp(prefix="win-")
+    os.makedirs(os.path.join(_t28, "books"))
+    open(os.path.join(_t28, "config.json"), "w").write('{"venue": "bitget"}')
+    json.dump({"cash": 10.0, "realized": 0.0, "fees_paid": 0.0}, open(os.path.join(_t28, "ledger.json"), "w"))
+    with open(os.path.join(_t28, "trades_log.jsonl"), "w") as _f28:
+        for _r in _rows[:4]:          # the log the PUBLISHER reads: 4 graded rows, no extra loss
+            _f28.write(json.dumps(_r) + "\n")
+    _bs_path = _asset("tools/mac/book_status.py")
+    _bsp = _ilu28.spec_from_file_location("book_status_pub", _bs_path)
+    _bs = _ilu28.module_from_spec(_bsp)
+    _bsp.loader.exec_module(_bs)
+    _pub = _bs.book_status(_t28)
+    # A book that published BEFORE the win rate existed sends counts but no ratio and no sentence. The page
+    # must still be right — derived from ITS counts by the same module — and must not show a dash beside a
+    # log that plainly says 3 losses.
+    _stale = {"graded": 3, "wins": 0, "losses": 3, "scratch": 0, "net_r": -3.1, "log_rows": 187}
+    _fixed = _gs.with_line(_stale)
+    check("a STALE publisher JSON (counts, no win_rate/line) is completed from those counts, not blanked",
+          _fixed["win_rate"] == 0.0 and _fixed["line"].startswith("win rate 0.0% (0 of 3 decisive)")
+          and _fixed["graded"] == 3, str(_fixed["line"]))
+    check("...and 0.0 % there is honest, because 0 of 3 decisive really did win (unlike an empty log)",
+          _gs.with_line({"graded": 0, "wins": 0, "losses": 0})["line"].startswith("win rate — · no graded"))
+    check("...and a fresh publisher's own line is never overwritten",
+          _gs.with_line({"wins": 1, "losses": 1, "graded": 2, "line": "KEEP"})["line"] == "KEEP")
+
+    _own = _gs.stats(_gs.rows_from(os.path.join(_t28, "trades_log.jsonl")))
+    check("the PUBLISHER delegates: the JSON a book writes carries the same win_rate and the same line",
+          _pub["grades"]["win_rate"] == _own["win_rate"] == 0.6667 and _pub["grades"]["line"] == _own["line"],
+          str(_pub["grades"].get("line")))
+    _pub["updated"] = _pub["updated_ts"] = __import__("time").time()
+    _pub["state"], _pub["money"], _pub["cycle_s"] = "shadow", False, 300
+    json.dump(_pub, open(os.path.join(_t28, "books", "crypto-win.json"), "w"))
+    with open(os.path.join(_t28, "trades_log.jsonl"), "a") as _f28:
+        _f28.write(json.dumps({"result": "loss", "R": -1.0, "skill": "S13", "fired": False}) + "\n")
+    _mp = _asset("tools/mac/monitor.py")
+    _msp = _ilu28.spec_from_file_location("desk_monitor28", _mp)
+    _mon28 = _ilu28.module_from_spec(_msp)
+    _msp.loader.exec_module(_mon28)
+    _mon28.ROOT, _mon28.BOOKS = _t28, os.path.join(_t28, "books")
+    _bk28, _fx28 = _mon28.load_books(), _mon28.fx_section()
+    _md28 = _mon28.to_markdown(_bk28, _fx28, "test")
+    check("the DESK page prints that line on the crypto card", "win rate 50.0% (2 of 4 decisive)" in _md28,
+          [l for l in _md28.splitlines() if "win rate" in l][:1])
+    # the desk log now holds 6 lines: 4 from the crypto fixture + the appended loss + that scratch row.
+    # Expectations are DERIVED from that file, not hard-coded, so this check tests the plumbing not my sums.
+    _exp28 = _gs.stats(_gs.rows_from(os.path.join(_t28, "trades_log.jsonl")))
+    check("...and on the forex card, read off the DESK-ROOT log — the one file that build writes",
+          _fx28["grades"]["line"] in _md28 and _fx28["grades"] == _exp28,
+          str(_fx28["grades"].get("line")))
+    check("html twin carries it too, since that is the file he opens",
+          "win rate" in _mon28.to_html(_bk28, _fx28, "test", "TRADING.md"))
+    _rp = _asset("tools/mac/trade_radar.py")
+    if _rp:
+        _rsp = _ilu28.spec_from_file_location("trade_radar28", _rp)
+        _rad = _ilu28.module_from_spec(_rsp)
+        _rsp.loader.exec_module(_rad)                     # import only: the server starts under __main__
+        _rad.BASE = _t28
+        _rec = _rad.record_block()
+        check("the RADAR reports the same crypto number, because it PASSES THROUGH the book's JSON",
+              _rec["books"]["crypto-win"]["win_rate"] == 0.6667, str(_rec["books"].keys()))
+        # forex (5 graded rows: the log as it stands) pooled with the BOOK'S PUBLISHED snapshot (4 rows,
+        # written before the last loss was appended — a book publishes when it runs, so the desk headline is
+        # one cycle behind that book by design). 2+2 wins over 3+4 decisive = 57.1 %, not an average of 50 and 66.7.
+        check("...and pools forex + crypto from counts, so the headline cannot disagree with the cards",
+              _rec["overall"]["graded"] == 9 and _rec["overall"]["decisive"] == 7
+              and _rec["overall"]["win_rate"] == 0.5714 and _rec["overall"]["net_r"] == 4.04,
+              str(_rec["overall"].get("line")))
+        check("...and its own page and embed strip render the shared line",
+              "Win rate" in _rad.HTML and "win rate" in _rad.EMBED and 'id="record"' in _rad.HTML)
+    else:
+        check("trade_radar.py is in the release", False, "not found")
+    __import__("shutil").rmtree(_t28, ignore_errors=True)
+else:
+    check("grade_stats.py is shipped next to the pages that use it", False, str(_gs_path))
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

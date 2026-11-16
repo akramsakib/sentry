@@ -97,34 +97,31 @@ def _pendings(state):
     return rows
 
 
+import sys
+# The sibling module is found by the folder THIS file lives in: launchd runs these from the book folder and
+# the tests load them by path, so neither __file__-relative sys.path nor cwd can be trusted alone.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+
 def _grades(here):
-    rows = []
-    for ln in _lines(os.path.join(here, "trades_log.jsonl")):
-        try:
-            rows.append(json.loads(ln))
-        except Exception:
-            pass
-    g = [r for r in rows if r.get("result")]
-    wins = sum(1 for r in g if r["result"] == "win")
-    losses = sum(1 for r in g if r["result"] == "loss")
-    scratch = len(g) - wins - losses
-    rsum = sum(_num(r.get("R")) for r in g)
-    per = {}
-    for r in g:
-        k = r.get("skill") or "?"
-        w = 1.0 if r["result"] == "win" else (0.5 if r["result"] == "scratch" else 0.0)
-        a = per.setdefault(k, [0.0, 0.0])
-        a[0] += w
-        a[1] += 1
-    skills = sorted(({"skill": k, "acc": round(v[0] / v[1], 3), "n": v[1]}
-                     for k, v in per.items() if v[1] >= 3), key=lambda x: -x["acc"])
-    return {"log_rows": len(rows), "graded": len(g), "wins": wins, "losses": losses,
-            "scratch": scratch, "net_r": round(rsum, 2),
-            "hit_rate": round(wins / len(g), 3) if g else None,
-            "fired": sum(1 for r in rows if r.get("fired")),
-            "by_skill": skills[:6],
-            "note": ("no graded history yet — the sizer uses the neutral prior and grows from here"
-                     if not g else "sizer is reading this book's own outcomes")}
+    """The graded record, computed by the SHARED grade_stats module.
+
+    One definition on purpose: the desk page, the radar and the sizer all quote numbers off this log, and
+    two dashboards printing different win rates is worse than one printing nothing. If the module is
+    missing we say so inside the published JSON — never quietly re-derive it here with different rules.
+    """
+    try:
+        import grade_stats as _gs            # resolved from THIS folder: _HERE is on sys.path
+    except ImportError:
+        return {"error": "grade_stats.py is not beside book_status.py — win rate NOT computed",
+                "graded": 0, "wins": 0, "losses": 0, "scratch": 0, "decisive": 0, "net_r": 0.0,
+                "win_rate": None, "hit_rate": None, "fired": 0, "by_skill": [], "line": "win rate —",
+                "note": "publisher is missing its shared module; deploy writes it next to this file"}
+    rows = _gs.rows_from(os.path.join(here, "trades_log.jsonl"))
+    st = _gs.stats(rows)
+    st["log_rows"] = len(rows)
+    return st
 
 
 def book_status(here, extra=None):
