@@ -1387,6 +1387,30 @@ if _fxg_path:
             check("the fx-guards probe runs", False, repr(_e27)[:120])
     else:
         print("  [skipped here: check_fx_guards.py]")
+    # A third-party .ex5 is opaque, but the capability strings it carries are not. This analyzer is what
+    # stands between "a stranger sent me a file" and "it has order rights on a funded account" — so it has
+    # to be shipped, tested on a case that MUST alarm, and tested on our own source that must not.
+    _an27 = _asset("tools/checks/check_foreign_ea.py")
+    check("the foreign-binary analyzer ships alongside the EA", bool(_an27))
+    if _an27:
+        import subprocess as _sp27b
+        _sus = os.path.join(tempfile.gettempdir(), "sentry_suspect_fixture.ex5")
+        with open(_sus, "wb") as _f27:
+            _f27.write(b"MetaQuotes MQL5 EX5 OnTick\x00https://vendor.example/lic\x00wininet.dll\x00"
+                       b"InternetOpenUrl\x00SetWindowsHookEx\x00GetAsyncKeyState\x00accounts.dat\x00"
+                       b"RegSetValue\x00CreateProcess\x00")
+        _x27 = _sp27b.run([sys.executable, _an27, _sus], capture_output=True, text=True, timeout=120)
+        _o27 = (_x27.stdout or "") + (_x27.stderr or "")
+        check("a suspect binary is refused, with the dangerous capabilities named",
+              _x27.returncode == 1 and "CRITICAL" in _o27 and "keystrokes" in _o27,
+              " ".join(_o27.split())[-110:])
+        check("...and its sha256 is printed, so two copies can be compared before trusting either",
+              re.search(r"sha256\s+: [0-9a-f]{64}", _o27) is not None)
+        _x27b = _sp27b.run([sys.executable, _an27, _fxg_path], capture_output=True, text=True, timeout=120)
+        check("our own EA source passes it (readable code has nothing to hide, and that is the standard)",
+              _x27b.returncode == 0 and "mt5-ish   : yes" in (_x27b.stdout or ""),
+              " ".join((_x27b.stdout or "").split())[-90:])
+        os.remove(_sus)
 
 
 print("\n%d checks failed" % len(FAILS))
