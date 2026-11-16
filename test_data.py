@@ -1405,7 +1405,7 @@ if _fxg_path:
               _x27.returncode == 1 and "CRITICAL" in _o27 and "keystrokes" in _o27,
               " ".join(_o27.split())[-110:])
         check("...and its sha256 is printed, so two copies can be compared before trusting either",
-              re.search(r"sha256\s+: [0-9a-f]{64}", _o27) is not None)
+              _re.search(r"sha256\s+: [0-9a-f]{64}", _o27) is not None)
         _x27b = _sp27b.run([sys.executable, _an27, _fxg_path], capture_output=True, text=True, timeout=120)
         check("our own EA source passes it (readable code has nothing to hide, and that is the standard)",
               _x27b.returncode == 0 and "mt5-ish   : yes" in (_x27b.stdout or ""),
