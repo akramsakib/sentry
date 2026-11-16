@@ -299,3 +299,14 @@
 - **11-15 23:18 UTC** NOTE — BCH/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-15 23:18 UTC** NOTE — BCH/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-15 23:18 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $100019.94 · 11s · venue fees $68.88 to date @ 0.02/0.05%
+- **11-16 02:52 UTC** SKIP — BTC/USD C-H1-tweezer-top: already have pending/position in play
+- **11-16 02:52 UTC** SKIP — BTC/USD C-H1-three-inside-down: already have pending/position in play
+- **11-16 02:52 UTC** CANDIDATE(score 5/5) — ETH/USD C-H1-tweezer-top sell_stop 1803.303595 sl1843.41101251 tp1743.14246873 — paper-graded (spot can't short)
+- **11-16 02:52 UTC** CANDIDATE(score 5/5) — ETH/USD C-H1-three-inside-down sell_stop 1803.303595 sl1843.41101251 tp1743.14246873 — paper-graded (spot can't short)
+- **11-16 02:52 UTC** NOTE — DOGE/USD S1-pullback-long: soft cap on open items (6) — advisory, skipping
+- **11-16 02:52 UTC** CANDIDATE(score 5/5) — LINK/USD C-H1-three-inside-down sell_stop 9.1188705 sl9.33332375 tp8.79719062 — paper-graded (spot can't short)
+- **11-16 02:52 UTC** CANDIDATE(score 5/5) — LTC/USD C-H1-three-inside-down sell_stop 44.82454919 sl45.65862702 tp43.57343246 — paper-graded (spot can't short)
+- **11-16 02:52 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-tweezer-top sell_stop 208.14211629 sl211.51470928 tp203.08322679 — paper-graded (spot can't short)
+- **11-16 02:52 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-tweezer-top sell_stop 7.14590709 sl7.33773227 tp6.85816932 — paper-graded (spot can't short)
+- **11-16 02:52 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-three-outside-down sell_stop 7.14590709 sl7.33773227 tp6.85816932 — paper-graded (spot can't short)
+- **11-16 02:52 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $100006.48 · 11s · venue fees $68.88 to date @ 0.02/0.05%
