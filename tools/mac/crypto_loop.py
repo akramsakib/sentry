@@ -64,7 +64,11 @@ def kl_stamp():
 
 
 def alert(msg, urgent=False):
-    """Outbox first (same file shape the forex build writes), then the desk wake-wire."""
+    """Outbox first (same file shape the forex build writes), then an optional LOCAL webhook nudge.
+
+    Deliberately not a wake-wire into an agent session: these books must be able to run for a month with
+    nobody watching, and every fact must still survive that. The outbox is what the radar reads and what
+    the journal replays, so a notification that reaches nobody loses nothing."""
     tag = f"{kl_stamp()} | [CRYPTO/{os.path.basename(HERE)}] {msg}"
     try:
         with open(OUTBOX, "a") as f:
@@ -78,19 +82,23 @@ def alert(msg, urgent=False):
         pass
     if not urgent:
         return
+    # No wake-wire, by request: nothing in this build posts into an AI session, and nothing needs an agent
+    # to be awake. The outbox above is the durable record; this is the best-effort nudge onto a channel the
+    # user owns locally (his own n8n webhook, if he configures one) and a 4-second timeout means a dead
+    # automation can never stall a trading cycle.
     if time.time() - _last_wake[0] < 180:
         return
     _last_wake[0] = time.time()
-    import json
-    import subprocess
-    try:
-        payload = json.dumps({"prompt": "[DESK-WAKE] [CRYPTO] " + msg[:700]
-                                       + " | Arena desk: crypto-book event, handle per playbook."})
-        subprocess.run(["curl", "-sS", "--max-time", "20", "-X", "POST",
-                        "http://127.0.0.1:8768/ask", "-H", "Content-Type: application/json",
-                        "-d", payload], capture_output=True, timeout=30)
-    except Exception:
-        pass
+    url = os.environ.get("HERMES_ALERT_WEBHOOK", "").strip()
+    if url.startswith("http"):
+        try:
+            import json as _json
+            import urllib.request
+            body = _json.dumps({"text": "[CRYPTO/" + os.path.basename(HERE) + "] " + msg[:700]}).encode()
+            urllib.request.urlopen(urllib.request.Request(
+                url, data=body, headers={"Content-Type": "application/json"}, timeout=4), timeout=5).read()
+        except Exception:
+            pass
 
 
 def _journal_lines():

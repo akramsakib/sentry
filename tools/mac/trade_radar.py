@@ -7,10 +7,15 @@ Serves on 0.0.0.0:8790:
   /embed     compact strip for embedding in other Hermes UIs
 
 Alert pipeline (alerts.outbox written by sentry):
-  1. Gmail SMTP if ~/hermes_sentry/gmail_smtp.json exists (autonomous 24/7)
-  2. macOS Notification Center (instant, local)
-  3. Queue kept for session-time flush via Arena Gmail connector
-Digest email every DIGEST_H hours with positions + P&L + recent events.
+  1. Gmail SMTP if ~/hermes_sentry/gmail_smtp.json exists (chmod 600; fully autonomous)
+  2. POST to $HERMES_ALERT_WEBHOOK, i.e. the user's own local automation (n8n), if set
+  3. macOS Notification Center (instant, this laptop only)
+  Anything not accepted by (1) or (2) stays queued on disk and shows up as "Alerts queued" on the page,
+  so a missing channel is visible instead of quietly costing him an alert.
+Continuity is launchd's job, not an agent's: com.hermes.radar (KeepAlive) runs this file, and the books
+cycle on their own jobs. No Arena session, cookie feed or chat bridge is involved anywhere in this build,
+on request (2026-11-17) — the desk used to wake an agent on urgent lines and that coupling is removed.
+Digest email every DIGEST_H hours with positions + P&L + recent events + the graded record.
 """
 import json, os, re, smtplib, subprocess, sys, threading, time
 from datetime import datetime, timedelta
@@ -86,6 +91,14 @@ except Exception:
     _gs = None                           # a missing helper must degrade the panel, never kill the radar
 
 
+def _count_lines(path):
+    try:
+        with open(path) as f:
+            return sum(1 for l in f if l.strip())
+    except Exception:
+        return 0
+
+
 def record_block():
     """The graded record for every book on the desk, in one place.
 
@@ -143,11 +156,20 @@ def snapshot():
     snap["red_window"] = red_window()
     snap["float_pl"] = round(sum(p["profit"] for p in snap.get("positions", [])), 2)
     snap["record"] = record_block()
+    snap["channels"] = {"gmail_cfg": os.path.exists(SMTP_F),
+                        "notifier": os.path.exists(BASE + "/hermes-notifier"),
+                        "webhook": os.environ.get("HERMES_ALERT_WEBHOOK", "").strip()[:60] or None,
+                        "queued": _count_lines(OUTBOX_F), "sent": _count_lines(SENT_F)}
     _cache.update({"ts": now, "data": snap})
     return snap
 
 # ---------------- alert delivery ----------------
 def send_gmail(subject, body):
+    """Local SMTP only: ~/hermes_sentry/gmail_smtp.json ({"email","app_password","to"}), chmod 600.
+
+    There is no fallback that needs an agent session — if the file is absent, callers see False and the
+    dashboard reports "mail: not configured" rather than pretending the alert went out.
+    """
     try:
         cfg = json.load(open(SMTP_F))
     except Exception:
@@ -175,6 +197,25 @@ def mac_notify(title, text):
             subprocess.run(["osascript", "-e", f'display notification "{text[:120]} (open radar: http://127.0.0.1:8790)" with title "{title[:60]}"'], timeout=5)
         except Exception: pass
 
+def send_webhook(line):
+    """POST the alert to the user's own local automation (n8n on his machine, not a bridge).
+
+    Off unless HERMES_ALERT_WEBHOOK is set in this job's environment; a 4 s timeout means a dead
+    automation can never stall the alert loop, and a refused POST is simply reported on the page.
+    """
+    url = os.environ.get("HERMES_ALERT_WEBHOOK", "").strip()
+    if not url.startswith("http"):
+        return None                              # not configured: a fact to display, not an error
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, data=json.dumps({"text": line[:1000]}).encode(),
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        urllib.request.urlopen(req, timeout=4).read()
+        return True
+    except Exception:
+        return False
+
+
 def flush_outbox():
     if not os.path.exists(OUTBOX_F): return
     with open(OUTBOX_F) as f: lines = [l.rstrip("\n") for l in f if l.strip()]
@@ -182,10 +223,14 @@ def flush_outbox():
     remaining = []
     for line in lines:
         mac_notify("Hermes Trade Alert", line)
-        if send_gmail("Hermes Trade Alert — " + line[:60], line + "\n\n— Trade Radar / sentry"):
+        hooked = send_webhook(line)
+        # Delivered means SOMETHING OFF THE MAC GOT IT: mail, or his webhook. The notification is local to
+        # this laptop and is not counted as delivery, because a laptop is not a channel when he is away.
+        # Undelivered lines stay queued on disk — they are never dropped and never need a session.
+        if send_gmail("Hermes Trade Alert — " + line[:60], line + "\n\n— Trade Radar / sentry") or hooked is True:
             with open(SENT_F, "a") as f: f.write(line + "\n")
         else:
-            remaining.append(line)  # keep queued for session-time Arena flush
+            remaining.append(line)
     with open(OUTBOX_F, "w") as f: f.write("\n".join(remaining[-200:]) + ("\n" if remaining else ""))
 
 def digest_loop():
@@ -233,6 +278,7 @@ h2{font-size:14px;margin:14px 0 6px;color:#9fb2c8}
 <h2>Working orders</h2><table id="ord"><tr><th>Symbol</th><th>Type</th><th>Price</th><th>SL</th><th>TP</th><th>State</th></tr></table>
 <div class="cols"><div><h2>Sentry journal</h2><pre id="journal"></pre></div>
 <div><h2>Alert queue</h2><pre id="outbox"></pre></div></div>
+<h2>Delivery channels</h2><pre id="channels"></pre>
 <script>
 async function tick(){
   try{
@@ -251,7 +297,11 @@ async function tick(){
             ? (100*d.record.overall.win_rate).toFixed(1)+'%' : '—'),
            (d.record&&d.record.overall&&d.record.overall.win_rate>=0.5)?'up':'down')+
       card('Graded outcomes', (d.record&&d.record.overall?d.record.overall.graded:0)+' ('
-            +((d.record&&d.record.overall)?(d.record.overall.decisive||0):0)+' decisive)');
+            +((d.record&&d.record.overall)?(d.record.overall.decisive||0):0)+' decisive)')+
+      card('Alert delivery', d.channels&&!d.channels.gmail_cfg&&!d.channels.webhook
+            ? 'LOCAL ONLY' : (d.channels&&d.channels.webhook?'webhook':'mail'),
+           (d.channels&&(d.channels.gmail_cfg||d.channels.webhook))?'up':'flat')+
+      card('Alerts queued', d.channels?d.channels.queued:'-');
     const rec = d.record||{};
     const rrows = [];
     if(rec.fx) rrows.push(['forex (MT5)', rec.fx]);
@@ -266,6 +316,13 @@ async function tick(){
     tbl('ord', d.orders||[], o=>`<tr><td>${o.sym}</td><td>${o.type}</td><td>${o.price}</td><td>${o.sl}</td><td>${o.tp}</td><td>${o.state}</td></tr>`);
     document.getElementById('journal').textContent = d.journal_tail||'(empty)';
     document.getElementById('outbox').textContent = d.outbox_tail||'(queue empty)';
+    document.getElementById('channels').textContent = d.channels
+      ? ('gmail app-password file: '+(d.channels.gmail_cfg?'present':'MISSING — nothing leaves this Mac')+
+         '\nnotifier binary: '+(d.channels.notifier?'present':'missing')+
+         '\nlocal webhook: '+(d.channels.webhook||'not set (export HERMES_ALERT_WEBHOOK in the launchd plist to enable)')+
+         '\nqueued / delivered: '+d.channels.queued+' / '+d.channels.sent+
+         '\n\nNo Arena session is involved anywhere: alerts queue on disk and the radar drains them by itself.')
+      : '(no channel report)';
   }catch(e){ document.getElementById('badges').innerHTML='<span class="badge b-dead">RADAR REFRESH ERROR</span>'; }
 }
 function card(k,v,cls){return `<div class="card"><div class="k">${k}</div><div class="v ${cls||''}">${v}</div></div>`;}

@@ -7,9 +7,16 @@ and the MT5 forex build, executing straight against OKX REST. Files to deploy in
 config.json crypto_loop.py` — plus one key file per lane you want armed: `okx.env`, `coinbase.env`, `bitget.env`.
 The folder's config differs from the repo's in exactly one line: `auto_ack_on_key: true` (this
 is the armed book; the repo mirror is not). Keys: `okx.env` only, chmod 600, never committed.
-Desk alerts reuse the forex build's wiring: `alerts.outbox` + `[DESK-WAKE]` POST to the jarvis
-bridge on 127.0.0.1:8768. Kill switch: `launchctl bootout gui/$(id -u)/com.hermes.sentry.crypto`
-— open positions keep their venue-side TP/SL.
+Alerting is local and session-free (since 2026-11-17, on request): every book mirrors its urgent lines
+into `~/hermes_sentry/alerts.outbox`, and the radar (`trade_radar.py`, launchd `com.hermes.radar`, port 8790)
+turns that queue into a macOS notification, a Gmail if `~/hermes_sentry/gmail_smtp.json` exists, and a POST
+to `$HERMES_ALERT_WEBHOOK` if he wires his own n8n. There is no `[DESK-WAKE]` bridge any more — continuity is
+launchd's job, so nothing in this stack depends on an agent session being logged in. Kill switch:
+`launchctl bootout gui/$(id -u)/com.hermes.sentry.crypto` for a whole book, or `entries_enabled: false` in
+`crypto_desk_mode.json` to keep measuring while refusing new entries — open positions keep their
+venue-side TP/SL either way. The folder's config differs from the repo's in one line, `auto_ack_on_key: true`:
+this is the armed book, the repo mirror is not, and keys live only in `<venue>.env`, chmod 600, never
+committed.
 
 ## The Coinbase lane (v4.7.3) — same folder, different keys file
 

@@ -1538,5 +1538,68 @@ else:
     check("grade_stats.py is shipped next to the pages that use it", False, str(_gs_path))
 
 
+# ---------- 29: 24/7 must not mean "an agent is awake" ----------
+# He asked, plainly: do not use the hermes arena bridge for continuity. The build had grown exactly that
+# dependency — urgent lines were POSTed to a local chat bridge so an Arena session would react — and a
+# launchd job existed whose whole purpose was to re-feed Arena login cookies every 30 minutes. Both are
+# gone. These checks are the lock: a reintroduced wake-wire, or a docstring promising a session flush, fails.
+print("\n== 29: no AI session anywhere in the continuity path")
+_p_sentry_mac = _asset("tools/mac", "sentry_mac.py") or _asset("sentry_mac.py")
+_bridge_files = ["crypto_loop.py", "sentry_mac.py", "trade_radar.py", "monitor.py", "book_status.py",
+                 "run_cycle.py", "sentry_core.py", "broker.py", "watchdog.py"]
+_hits = []
+for _f in _bridge_files:
+    _p = _asset(_f) or _asset("tools/mac", _f)
+    if not _p:
+        _hits.append(_f + ": MISSING from the release")
+        continue
+    _t = open(_p).read()
+    # Wording that merely EXPLAINS the removal is fine; wiring is not. These patterns are the wire itself.
+    for _pat in ("127.0.0.1:8768", "8768/ask", "[DESK-WAKE]", "arena.ai", "session-time Arena flush"):
+        if _pat in _t:
+            _hits.append("%s: still contains %r" % (_f, _pat))
+check("no shipped runtime posts into an AI session, mentions a wake-wire, or names an Arena URL",
+      not _hits, "; ".join(_hits[:3]))
+check("...and the one local endpoint the FX build DOES use is the terminal's own, MetaQuotes' MCP on 22346",
+      "22346" in open(_p_sentry_mac).read() and "127.0.0.1:8768" not in open(_p_sentry_mac).read())
+# delivery must be local, best-effort and SELF-REPORTING: a queue nobody drains is worse than no queue
+_radar = open(_asset("tools/mac", "trade_radar.py")).read()
+check("the radar reports its own delivery channels instead of assuming someone is watching",
+      '"gmail_cfg"' in _radar and '"queued"' in _radar and "Alerts queued" in _radar
+      and "send_webhook" in _radar)
+check("...a missing webhook is `None` (a fact) not an exception, and the POST has a 4 s timeout",
+      "return None" in _radar.split("def send_webhook")[1][:900] and "timeout=4" in _radar)
+# The point of removing the bridge is that nobody is watching, so an unreachable channel must be invisible
+# to the trading loop: each send sits in its own try/except and cannot raise into a cycle.
+for _name in ("tools/mac/crypto_loop.py", "tools/mac/trade_radar.py"):
+    _src = open(_asset(_name)).read()
+    _bad = []
+    for _fn in ("send_webhook", "send_gmail", "mac_notify", "alert"):
+        if "def " + _fn not in _src:
+            continue
+        _body = _src.split("def " + _fn, 1)[1].split("\ndef ")[0]
+        if "urlopen" in _body or "subprocess" in _body or "smtplib" in _body:
+            if "try:" not in _body or "except" not in _body:
+                _bad.append(_fn)
+    check("%s: every alert send is wrapped, so a dead channel cannot break a cycle" % _name.split("/")[-1],
+          not _bad, ",".join(_bad))
+_check_loop = _asset("tools/mac/crypto_loop.py")
+_ls = open(_check_loop).read()
+_w = _ls[_ls.index("def alert("):_ls.index("def _journal_lines") if "def _journal_lines" in _ls else len(_ls)]
+check("the crypto book still writes BOTH its own outbox and the desk outbox (nothing lost with no bridge)",
+      "with open(OUTBOX" in _w and "DESK_OUTBOX" in _w)
+check("...and the local nudge is opt-in via env, so a dead n8n cannot slow a cycle",
+      'HERMES_ALERT_WEBHOOK' in _ls and 'os.environ.get("HERMES_ALERT_WEBHOOK"' in _ls)
+check("the desk monitor still calls the terminal bridge by its real name (MT5's MCP, not the chat one)",
+      "terminal bridge" in open(_asset("tools/mac", "monitor.py")).read())
+check("and the release keeps one copy of each desk file, not a root duplicate that can drift",
+      not any(os.path.isfile(os.path.join(_HERE, _n)) for _n in
+              ("trade_radar.py", "book_status.py", "crypto_loop.py", "grade_stats.py")))
+# and the feeder itself must be gone from the release, not merely unused
+check("wire_feeder is not part of the release",
+      not any(os.path.isfile(os.path.join(_HERE, _n))
+              for _n in ("wire_feeder.sh", "com.hermes.wire-feeder.plist")))
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
