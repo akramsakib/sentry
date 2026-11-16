@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-16 08:42 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $82,783.16 · equity $99,868.75
+**2026-11-16 08:47 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $82,783.16 · equity $99,876.72
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$68.88 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,11 +10,11 @@ _Venue cost: 0.02 % maker / 0.05 % taker per side · **$68.88 paid on this book 
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ETH/USD | buy_stop | 1820.1129 | 3.86894 | $7,042 | $75.00 | 1806.03 | +0.78% | 0 min |
-| LINK/USD | buy_stop | 9.1586365 | 601.31 | $5,507 | $75.00 | 9.098 | +0.67% | 0 min |
-| LTC/USD | buy_stop | 44.842914 | 118.073 | $5,295 | $75.00 | 44.5 | +0.77% | 0 min |
-| SOL/USD | buy_stop | 71.529055 | 75.2489 | $5,382 | $75.00 | 70.72 | +1.14% | 0 min |
-| XRP/USD | buy_stop | 0.95763808 | 6232.71 | $5,969 | $75.00 | 0.9527 | +0.52% | 0 min |
+| ETH/USD | buy_stop | 1820.1129 | 3.86894 | $7,042 | $75.00 | 1808.39 | +0.65% | 6 min |
+| LINK/USD | buy_stop | 9.1586365 | 601.31 | $5,507 | $75.00 | 9.125 | +0.37% | 6 min |
+| LTC/USD | buy_stop | 44.842914 | 118.073 | $5,295 | $75.00 | 44.57 | +0.61% | 6 min |
+| SOL/USD | buy_stop | 71.529055 | 75.2489 | $5,382 | $75.00 | 71.02 | +0.72% | 6 min |
+| XRP/USD | buy_stop | 0.95763808 | 6232.71 | $5,969 | $75.00 | 0.9557 | +0.20% | 6 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -22,12 +22,13 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BTC/USD | 0.069084 | 63278.87 | 64519.28 | $85.69 | 63069.244 | 66371.462 | +1.71R |
+| BTC/USD | 0.069084 | 63278.87 | 64535.48 | $86.81 | 63069.244 | 66371.462 | +1.74R |
 
-## Last 12 signals (177 ever logged)
+## Last 12 signals (178 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-16 08:47 | AVAX/USD | S18-rsi2-short | 4/5 | 7.166 | 7.2939908 | 7.0060115 | $100.00 | paper-graded (spot cannot short) |
 | 11-16 08:42 | AVAX/USD | C-M15-three-outside-down | 5/5 | 7.1083341 | 7.1956648 | 6.9773381 | $125.00 | paper-graded (spot cannot short) |
 | 11-16 08:42 | AVAX/USD | C-M15-marubozu | 5/5 | 7.1083341 | 7.1956648 | 6.9773381 | $125.00 | paper-graded (spot cannot short) |
 | 11-16 08:42 | AVAX/USD | S13-ichimoku-short | 4/5 | 7.1400011 | 7.2309977 | 6.9213502 | $100.00 | paper-graded (spot cannot short) |
@@ -39,7 +40,6 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 | 11-16 08:42 | LTC/USD | S13-ichimoku-short | 4/5 | 44.510629 | 45.188742 | 43.425891 | $100.00 | paper-graded (spot cannot short) |
 | 11-16 08:42 | LINK/USD | C-M15-three-inside-down | 5/5 | 9.1053635 | 9.1900913 | 8.9782719 | $125.00 | paper-graded (spot cannot short) |
 | 11-16 08:42 | LINK/USD | C-M15-marubozu | 5/5 | 9.1053635 | 9.1900913 | 8.9782719 | $125.00 | paper-graded (spot cannot short) |
-| 11-16 08:42 | LINK/USD | S23-spring-long | 3/5 | 9.1586365 | 9.0339087 | 9.3465644 | $75.00 | order placed |
 
 ## Accuracy so far
 
@@ -47,7 +47,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 5 new order(s), 10 symbols scanned
+## This cycle: 0 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
