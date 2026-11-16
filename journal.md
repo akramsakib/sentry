@@ -394,3 +394,12 @@
 - **11-16 17:01 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-tweezer-top sell_stop 7.10281114 sl7.18597216 tp6.9780696 — paper-graded (spot can't short)
 - **11-16 17:01 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-bear-harami sell_stop 7.10281114 sl7.18597216 tp6.9780696 — paper-graded (spot can't short)
 - **11-16 17:01 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $100074.68 · 11s · venue fees $87.49 to date @ 0.02/0.05%
+- **11-16 18:34 UTC** FILL — XRP/USD S16-inside-long 4643.614936589898@0.95972892 sl0.94357771 tp0.97833374
+- **11-16 18:34 UTC** FILL — SOL/USD S16-inside-long 54.34577394327491@71.39858632 sl70.01853421 tp72.91879475
+- **11-16 18:34 UTC** FILL — LINK/USD S16-inside-long 550.8619667711213@9.20561436 sl9.0694641 tp9.3822154
+- **11-16 18:34 UTC** SKIP — BTC/USD S18-rsi2-long: already have pending/position in play
+- **11-16 18:34 UTC** SKIP — XRP/USD C-M15-hammer/takuri: already have pending/position in play
+- **11-16 18:34 UTC** NOTE — DOGE/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-16 18:34 UTC** NOTE — ADA/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-16 18:34 UTC** NOTE — ADA/USD C-M15-bull-harami: soft cap on open items (6) — advisory, skipping
+- **11-16 18:34 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 2 pendings · 4 positions equity $99857.03 · 10s · venue fees $87.49 to date @ 0.02/0.05%
