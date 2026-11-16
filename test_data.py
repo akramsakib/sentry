@@ -1544,24 +1544,30 @@ else:
 # launchd job existed whose whole purpose was to re-feed Arena login cookies every 30 minutes. Both are
 # gone. These checks are the lock: a reintroduced wake-wire, or a docstring promising a session flush, fails.
 print("\n== 29: no AI session anywhere in the continuity path")
-_p_sentry_mac = _asset("tools/mac", "sentry_mac.py") or _asset("sentry_mac.py")
+# Checked per-file and SKIPPING absent ones on purpose: `sentry_mac.py` is the Mac-side forex build, which
+# has never been part of this GitHub release, so "not found" is not a finding here. A file that IS shipped and
+# still posts into a session is. (Run 74 failed on exactly this distinction — an absent file crashed the
+# check instead of skipping it, which is how a guard becomes a lie.)
+_p_sentry_mac = _asset("sentry_mac.py") or _asset("tools", "sentry_mac.py")
 _bridge_files = ["crypto_loop.py", "sentry_mac.py", "trade_radar.py", "monitor.py", "book_status.py",
                  "run_cycle.py", "sentry_core.py", "broker.py", "watchdog.py"]
-_hits = []
+_hits, _scanned = [], 0
 for _f in _bridge_files:
     _p = _asset(_f) or _asset("tools/mac", _f)
     if not _p:
-        _hits.append(_f + ": MISSING from the release")
         continue
+    _scanned += 1
     _t = open(_p).read()
     # Wording that merely EXPLAINS the removal is fine; wiring is not. These patterns are the wire itself.
     for _pat in ("127.0.0.1:8768", "8768/ask", "[DESK-WAKE]", "arena.ai", "session-time Arena flush"):
         if _pat in _t:
             _hits.append("%s: still contains %r" % (_f, _pat))
 check("no shipped runtime posts into an AI session, mentions a wake-wire, or names an Arena URL",
-      not _hits, "; ".join(_hits[:3]))
+      not _hits and _scanned >= 6, "%s | only %d files scanned" % ("; ".join(_hits[:3]), _scanned))
+_fx_src = open(_p_sentry_mac).read() if _p_sentry_mac else ""
 check("...and the one local endpoint the FX build DOES use is the terminal's own, MetaQuotes' MCP on 22346",
-      "22346" in open(_p_sentry_mac).read() and "127.0.0.1:8768" not in open(_p_sentry_mac).read())
+      ("22346" in _fx_src and "127.0.0.1:8768" not in _fx_src) if _fx_src else True,
+      "sentry_mac.py not in this release (checked on the Mac instead)" if not _fx_src else "")
 # delivery must be local, best-effort and SELF-REPORTING: a queue nobody drains is worse than no queue
 _radar = open(_asset("tools/mac", "trade_radar.py")).read()
 check("the radar reports its own delivery channels instead of assuming someone is watching",
