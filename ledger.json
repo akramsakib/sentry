@@ -1,5 +1,5 @@
 {
- "cash": 82783.15551092444,
+ "cash": 45544.191964505895,
  "realized": -219.4004670606244,
  "orders": [
   {
@@ -392,8 +392,11 @@
    "qty": 3.8689385410807513,
    "limit_price": null,
    "stop_price": 1820.1129034,
-   "status": "open",
-   "placed_at": 1794818528
+   "status": "filled",
+   "placed_at": 1794818528,
+   "filled_avg_price": 1820.1129034,
+   "filled_qty": 3.8689385410807513,
+   "filled_at": 1794848490
   },
   {
    "id": "1794818528192",
@@ -404,8 +407,11 @@
    "qty": 6232.709425269411,
    "limit_price": null,
    "stop_price": 0.95763808,
-   "status": "open",
-   "placed_at": 1794818528
+   "status": "filled",
+   "placed_at": 1794818528,
+   "filled_avg_price": 0.95763808,
+   "filled_qty": 6232.709425269411,
+   "filled_at": 1794848490
   },
   {
    "id": "1794818528278",
@@ -416,7 +422,7 @@
    "qty": 75.24893853847347,
    "limit_price": null,
    "stop_price": 71.5290548,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794818528
   },
   {
@@ -428,8 +434,11 @@
    "qty": 601.3096042132045,
    "limit_price": null,
    "stop_price": 9.1586365,
-   "status": "open",
-   "placed_at": 1794818528
+   "status": "filled",
+   "placed_at": 1794818528,
+   "filled_avg_price": 9.1586365,
+   "filled_qty": 601.3096042132045,
+   "filled_at": 1794848491
   },
   {
    "id": "1794818528539",
@@ -440,8 +449,11 @@
    "qty": 118.0732058599263,
    "limit_price": null,
    "stop_price": 44.84291404,
-   "status": "open",
-   "placed_at": 1794818528
+   "status": "filled",
+   "placed_at": 1794818528,
+   "filled_avg_price": 44.84291404,
+   "filled_qty": 118.0732058599263,
+   "filled_at": 1794848491
   },
   {
    "id": "1794818876311",
@@ -466,6 +478,87 @@
    "stop_price": 63278.87,
    "status": "open",
    "placed_at": 1794825237
+  },
+  {
+   "id": "1794848491058",
+   "client_order_id": "sentryprot1794848491",
+   "symbol": "BTC/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 0.06908402900547651,
+   "limit_price": null,
+   "stop_price": 63530.65442899,
+   "status": "open",
+   "placed_at": 1794848491
+  },
+  {
+   "id": "1794848491237",
+   "client_order_id": "sentryETHUSD1794848491237n28",
+   "symbol": "ETH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 2.9176977204177788,
+   "limit_price": null,
+   "stop_price": 1834.32577109,
+   "status": "open",
+   "placed_at": 1794848491
+  },
+  {
+   "id": "1794848491405",
+   "client_order_id": "sentryXRPUSD1794848491404n29",
+   "symbol": "XRP/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 4643.614936589898,
+   "limit_price": null,
+   "stop_price": 0.95972892,
+   "status": "filled",
+   "placed_at": 1794848491,
+   "filled_avg_price": 0.95972892,
+   "filled_qty": 4643.614936589898,
+   "filled_at": 1794848491
+  },
+  {
+   "id": "1794848491576",
+   "client_order_id": "sentrySOLUSD1794848491576n30",
+   "symbol": "SOL/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 54.34577394327491,
+   "limit_price": null,
+   "stop_price": 71.39858632,
+   "status": "filled",
+   "placed_at": 1794848491,
+   "filled_avg_price": 71.39858632,
+   "filled_qty": 54.34577394327491,
+   "filled_at": 1794848491
+  },
+  {
+   "id": "1794848491787",
+   "client_order_id": "sentryLINKUSD1794848491786n31",
+   "symbol": "LINK/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 550.8619667711213,
+   "limit_price": null,
+   "stop_price": 9.20561436,
+   "status": "filled",
+   "placed_at": 1794848491,
+   "filled_avg_price": 9.20561436,
+   "filled_qty": 550.8619667711213,
+   "filled_at": 1794848491
+  },
+  {
+   "id": "1794848492004",
+   "client_order_id": "sentryLTCUSD1794848492004n32",
+   "symbol": "LTC/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 65.43910924912676,
+   "limit_price": null,
+   "stop_price": 44.87602961,
+   "status": "open",
+   "placed_at": 1794848492
   }
  ],
  "positions": [
@@ -476,7 +569,7 @@
    "cid": "sentryBTCUSD1794694366699n11",
    "fees": 2.18577965,
    "opened": 1794694366,
-   "current_price": 64436.36
+   "current_price": 64870.94
   },
   {
    "symbol": "XRP/USD",
@@ -485,7 +578,7 @@
    "cid": "sentryXRPUSD1794687006293n9",
    "fees": 2.65438049,
    "opened": 1794717219,
-   "current_price": 0.9492
+   "current_price": 0.9614
   },
   {
    "symbol": "LINK/USD",
@@ -494,7 +587,7 @@
    "cid": "sentryLINKUSD1794694962782n12",
    "fees": 1.21700281,
    "opened": 1794717219,
-   "current_price": 9.116
+   "current_price": 9.207
   },
   {
    "symbol": "ETH/USD",
@@ -503,7 +596,7 @@
    "cid": "sentryETHUSD1794717219220n13",
    "fees": 0.36700406,
    "opened": 1794744855,
-   "current_price": 1801.22
+   "current_price": 1827.3
   },
   {
    "symbol": "ETH/USD",
@@ -512,8 +605,71 @@
    "cid": "sentryETHUSD1794717219656n17",
    "fees": 2.07030777,
    "opened": 1794744855,
-   "current_price": 1801.22
+   "current_price": 1827.3
+  },
+  {
+   "symbol": "ETH/USD",
+   "qty": 3.8689385410807513,
+   "entry": 1820.1129034,
+   "cid": "sentryETHUSD1794818528113n23",
+   "fees": 3.52095248,
+   "opened": 1794848490,
+   "current_price": 1827.3
+  },
+  {
+   "symbol": "XRP/USD",
+   "qty": 6232.709425269411,
+   "entry": 0.95763808,
+   "cid": "sentryXRPUSD1794818528191n24",
+   "fees": 2.98433994,
+   "opened": 1794848490,
+   "current_price": 0.9614
+  },
+  {
+   "symbol": "LINK/USD",
+   "qty": 601.3096042132045,
+   "entry": 9.1586365,
+   "cid": "sentryLINKUSD1794818528373n26",
+   "fees": 2.75358804,
+   "opened": 1794848491,
+   "current_price": 9.207
+  },
+  {
+   "symbol": "LTC/USD",
+   "qty": 118.0732058599263,
+   "entry": 44.84291404,
+   "cid": "sentryLTCUSD1794818528539n27",
+   "fees": 2.64737331,
+   "opened": 1794848491,
+   "current_price": 44.829
+  },
+  {
+   "symbol": "XRP/USD",
+   "qty": 4643.614936589898,
+   "entry": 0.95972892,
+   "cid": "sentryXRPUSD1794848491404n29",
+   "fees": 2.22830577,
+   "opened": 1794848491,
+   "current_price": 0.9614
+  },
+  {
+   "symbol": "SOL/USD",
+   "qty": 54.34577394327491,
+   "entry": 71.39858632,
+   "cid": "sentrySOLUSD1794848491576n30",
+   "fees": 1.94010572,
+   "opened": 1794848491,
+   "current_price": 71.45
+  },
+  {
+   "symbol": "LINK/USD",
+   "qty": 550.8619667711213,
+   "entry": 9.20561436,
+   "cid": "sentryLINKUSD1794848491786n31",
+   "fees": 2.53551142,
+   "opened": 1794848491,
+   "current_price": 9.207
   }
  ],
- "fees_paid": 68.87793757
+ "fees_paid": 87.48811425
 }
