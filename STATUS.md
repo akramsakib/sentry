@@ -2,19 +2,19 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-16 10:33 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $82,783.16 · equity $99,813.56
+**2026-11-16 17:01 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $58,958.74 · equity $100,074.68
 
-_Venue cost: 0.02 % maker / 0.05 % taker per side · **$68.88 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
+_Venue cost: 0.02 % maker / 0.05 % taker per side · **$87.49 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
 ## Orders resting on the book now (5)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ETH/USD | buy_stop | 1820.1129 | 3.86894 | $7,042 | $75.00 | 1804.31 | +0.88% | 112 min |
-| LINK/USD | buy_stop | 9.1586365 | 601.31 | $5,507 | $75.00 | 9.126 | +0.36% | 112 min |
-| LTC/USD | buy_stop | 44.842914 | 118.073 | $5,295 | $75.00 | 44.49 | +0.79% | 112 min |
-| SOL/USD | buy_stop | 71.529055 | 75.2489 | $5,382 | $75.00 | 71.25 | +0.39% | 112 min |
-| XRP/USD | buy_stop | 0.95763808 | 6232.71 | $5,969 | $75.00 | 0.9495 | +0.86% | 112 min |
+| ETH/USD | buy_stop | 1834.3258 | 2.9177 | $5,352 | $75.00 | 1827.84 | +0.35% | 0 min |
+| LINK/USD | buy_stop | 9.2056144 | 550.862 | $5,071 | $75.00 | 9.208 | -0.03% | 0 min |
+| LTC/USD | buy_stop | 44.87603 | 65.4391 | $2,937 | $75.00 | 44.82 | +0.13% | 0 min |
+| SOL/USD | buy_stop | 71.398586 | 54.3458 | $3,880 | $75.00 | 71.33 | +0.10% | 0 min |
+| XRP/USD | buy_stop | 0.95972892 | 4643.61 | $4,457 | $75.00 | 0.9599 | -0.02% | 0 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -22,24 +22,24 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BTC/USD | 0.069084 | 63278.87 | 64436.36 | $79.96 | 63069.244 | 66371.462 | +1.60R |
+| BTC/USD | 0.069084 | 63278.87 | 64870.94 | $109.99 | 63069.244 | 66371.462 | +2.20R |
 
-## Last 12 signals (188 ever logged)
+## Last 12 signals (213 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
-| 11-16 10:33 | BCH/USD | C-H1-evening-star | 5/5 | 205.59947 | 208.52632 | 201.2092 | $125.00 | paper-graded (spot cannot short) |
-| 11-16 10:33 | BCH/USD | C-H1-marubozu | 5/5 | 205.59947 | 208.52632 | 201.2092 | $125.00 | paper-graded (spot cannot short) |
-| 11-16 10:33 | ADA/USD | C-H1-three-outside-down | 5/5 | 0.15159368 | 0.15401581 | 0.14796047 | $125.00 | paper-graded (spot cannot short) |
-| 11-16 10:33 | ADA/USD | C-H1-bear-engulfing | 5/5 | 0.15159368 | 0.15401581 | 0.14796047 | $125.00 | paper-graded (spot cannot short) |
-| 11-16 10:33 | ADA/USD | C-H1-marubozu | 5/5 | 0.15159368 | 0.15401581 | 0.14796047 | $125.00 | paper-graded (spot cannot short) |
-| 11-16 10:33 | DOGE/USD | C-H1-evening-star | 5/5 | 0.05831676 | 0.05915309 | 0.05706228 | $125.00 | paper-graded (spot cannot short) |
-| 11-16 10:33 | BTC/USD | C-M15-three-outside-up | 3/5 | 64519.91 | 64127.724 | 65108.189 | $75.00 | not fired (guard/duplicate) |
-| 11-16 10:33 | BTC/USD | C-H1-bear-engulfing | 5/5 | 64324.39 | 65106.076 | 63151.861 | $125.00 | not fired (guard/duplicate) |
-| 11-16 10:33 | BTC/USD | C-H1-marubozu | 5/5 | 64324.39 | 65106.076 | 63151.861 | $125.00 | not fired (guard/duplicate) |
-| 11-16 10:33 | BTC/USD | S18-rsi2-short | 4/5 | 64526.1 | 65242.624 | 63630.445 | $100.00 | not fired (guard/duplicate) |
-| 11-16 08:47 | AVAX/USD | S18-rsi2-short | 4/5 | 7.166 | 7.2939908 | 7.0060115 | $100.00 | paper-graded (spot cannot short) |
-| 11-16 08:42 | AVAX/USD | C-M15-three-outside-down | 5/5 | 7.1083341 | 7.1956648 | 6.9773381 | $125.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | AVAX/USD | C-M15-bear-harami | 4/5 | 7.1028111 | 7.1859722 | 6.9780696 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | AVAX/USD | C-M15-tweezer-top | 4/5 | 7.1028111 | 7.1859722 | 6.9780696 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | AVAX/USD | C-H1-bear-engulfing | 5/5 | 7.0088111 | 7.2389722 | 6.6635696 | $125.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | AVAX/USD | S16-inside-short | 4/5 | 7.0538111 | 7.1889722 | 6.897167 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | BCH/USD | C-M15-bear-harami | 4/5 | 205.61064 | 207.37339 | 202.96652 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | BCH/USD | S16-inside-short | 4/5 | 204.85064 | 207.54339 | 201.07965 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | LTC/USD | C-M15-bear-harami | 4/5 | 44.43397 | 44.850074 | 43.809815 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | LTC/USD | C-M15-tweezer-top | 4/5 | 44.43397 | 44.850074 | 43.809815 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | LTC/USD | S23-spring-long | 3/5 | 44.87603 | 43.729926 | 46.653766 | $75.00 | order placed |
+| 11-16 17:01 | LINK/USD | C-M15-bear-harami | 4/5 | 9.1223856 | 9.2125359 | 8.9871603 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | LINK/USD | S16-inside-short | 4/5 | 9.0883856 | 9.2245359 | 8.9117846 | $100.00 | paper-graded (spot cannot short) |
+| 11-16 17:01 | LINK/USD | S16-inside-long | 3/5 | 9.2056144 | 9.0694641 | 9.3822154 | $75.00 | order placed |
 
 ## Accuracy so far
 
@@ -47,7 +47,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 0 new order(s), 10 symbols scanned
+## This cycle: 5 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
