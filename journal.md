@@ -349,3 +349,15 @@
 - **11-16 08:42 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $99868.75 · 10s · venue fees $68.88 to date @ 0.02/0.05%
 - **11-16 08:47 UTC** CANDIDATE(score 4/5) — AVAX/USD S18-rsi2-short sell_limit 7.166 sl7.29399083 tp7.00601147 — paper-graded (spot can't short)
 - **11-16 08:47 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99876.72 · 9s · venue fees $68.88 to date @ 0.02/0.05%
+- **11-16 10:33 UTC** SKIP — BTC/USD S18-rsi2-short: already have pending/position in play
+- **11-16 10:33 UTC** SKIP — BTC/USD C-H1-marubozu: already have pending/position in play
+- **11-16 10:33 UTC** SKIP — BTC/USD C-H1-bear-engulfing: already have pending/position in play
+- **11-16 10:33 UTC** SKIP — BTC/USD C-M15-three-outside-up: already have pending/position in play
+- **11-16 10:33 UTC** CANDIDATE(score 5/5) — DOGE/USD C-H1-evening-star sell_stop 0.05831676 sl0.05915309 tp0.05706228 — paper-graded (spot can't short)
+- **11-16 10:33 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-marubozu sell_stop 0.15159368 sl0.15401581 tp0.14796047 — paper-graded (spot can't short)
+- **11-16 10:33 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-bear-engulfing sell_stop 0.15159368 sl0.15401581 tp0.14796047 — paper-graded (spot can't short)
+- **11-16 10:33 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-three-outside-down sell_stop 0.15159368 sl0.15401581 tp0.14796047 — paper-graded (spot can't short)
+- **11-16 10:33 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-marubozu sell_stop 205.59947206 sl208.52631985 tp201.20920037 — paper-graded (spot can't short)
+- **11-16 10:33 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-evening-star sell_stop 205.59947206 sl208.52631985 tp201.20920037 — paper-graded (spot can't short)
+- **11-16 10:33 UTC** NOTE — BCH/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-16 10:33 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 5 pendings · 1 positions equity $99813.56 · 6s · venue fees $68.88 to date @ 0.02/0.05%
