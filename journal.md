@@ -604,3 +604,4 @@
 - **11-17 22:03 UTC** SKIP — BTC/USD C-H1-morning-star: already have pending/position in play
 - **11-17 22:03 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99547.72 · 7s · venue fees $129.07 to date @ 0.02/0.05%
 - **11-17 22:04 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99532.65 · 11s · venue fees $129.07 to date @ 0.02/0.05%
+- **11-17 22:27 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99697.76 · 10s · venue fees $129.07 to date @ 0.02/0.05%
