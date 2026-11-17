@@ -2,15 +2,15 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-17 17:54 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $35,604.34 · equity $99,449.74
+**2026-11-17 18:06 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $42,509.61 · equity $99,378.99
 
-_Venue cost: 0.02 % maker / 0.05 % taker per side · **$105.11 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
+_Venue cost: 0.02 % maker / 0.05 % taker per side · **$111.65 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
 ## Orders resting on the book now (1)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| BTC/USD | buy_stop | 64180 | 0.0909312 | $5,836 | $75.00 | 63779 | +0.63% | 0 min |
+| BTC/USD | buy_stop | 64180 | 0.0909312 | $5,836 | $75.00 | 63800.6 | +0.59% | 12 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -18,16 +18,19 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BCH/USD | 28.7168 | 209.26724 | 207.46 | $-51.90 | 206.65552 | 213.3295 | -0.69R |
-| ETH/USD | 7.31746 | 1793.72 | 1785.69 | $-58.76 | 1787.8905 | 1824.216 | -0.78R |
-| LINK/USD | 550.862 | 9.2056144 | 9.113 | $-51.02 | 9.0694641 | 9.3822154 | -0.68R |
-| SOL/USD | 54.3458 | 71.398586 | 72.35 | $51.71 | 70.018534 | 72.918795 | +0.69R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9591 | $-2.92 | 0.94357771 | 0.97833374 | -0.04R |
+| BCH/USD | 28.7168 | 209.26724 | 207.05 | $-63.67 | 206.65552 | 213.3295 | -0.85R |
+| ETH/USD | 7.31746 | 1793.72 | 1786.9 | $-49.91 | 1787.8905 | 1824.216 | -0.67R |
+| LINK/USD | 550.862 | 9.2056144 | 9.094 | $-61.48 | 9.0694641 | 9.3822154 | -0.82R |
+| SOL/USD | 54.3458 | 71.398586 | 72.36 | $52.25 | 70.018534 | 72.918795 | +0.70R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9572 | $-11.74 | 0.94357771 | 0.97833374 | -0.16R |
 
-## Last 12 signals (299 ever logged)
+## Last 12 signals (302 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-17 18:06 | LINK/USD | C-M15-bear-harami | 3/5 | 9.0783366 | 9.1651584 | 8.9481039 | $75.00 | not fired (guard/duplicate) |
+| 11-17 18:06 | SOL/USD | C-M15-hammer/takuri | 3/5 | 72.432794 | 71.733016 | 73.48246 | $75.00 | not fired (guard/duplicate) |
+| 11-17 18:06 | ETH/USD | C-M15-dragonfly | 3/5 | 1787.4873 | 1769.9917 | 1813.7308 | $75.00 | not fired (guard/duplicate) |
 | 11-17 17:54 | AVAX/USD | C-M15-shooting-star | 4/5 | 7.0606976 | 7.148756 | 6.92861 | $100.00 | paper-graded (spot cannot short) |
 | 11-17 17:54 | AVAX/USD | S13-ichimoku-short | 4/5 | 7.0945464 | 7.1554072 | 6.8833471 | $100.00 | paper-graded (spot cannot short) |
 | 11-17 17:54 | BCH/USD | C-M15-gravestone | 4/5 | 206.89481 | 209.07299 | 203.62754 | $100.00 | not fired (guard/duplicate) |
@@ -37,9 +40,6 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 | 11-17 17:54 | LTC/USD | S16-inside-short | 4/5 | 44.021462 | 44.601345 | 43.341928 | $100.00 | paper-graded (spot cannot short) |
 | 11-17 17:54 | LINK/USD | C-M15-shooting-star | 4/5 | 9.0983087 | 9.1992283 | 8.9469292 | $100.00 | not fired (guard/duplicate) |
 | 11-17 17:54 | ADA/USD | C-M15-gravestone | 4/5 | 0.15149047 | 0.15332383 | 0.14874042 | $100.00 | paper-graded (spot cannot short) |
-| 11-17 17:54 | DOGE/USD | C-M15-shooting-star | 4/5 | 0.05834924 | 0.0589569 | 0.05743775 | $100.00 | paper-graded (spot cannot short) |
-| 11-17 17:54 | DOGE/USD | S13-ichimoku-short | 4/5 | 0.05855386 | 0.05888728 | 0.05710327 | $100.00 | paper-graded (spot cannot short) |
-| 11-17 17:54 | SOL/USD | C-H1-three-inside-down | 5/5 | 70.897991 | 74.245021 | 65.877446 | $125.00 | not fired (guard/duplicate) |
 
 ## Accuracy so far
 
@@ -47,7 +47,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 1 new order(s), 10 symbols scanned
+## This cycle: 0 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
