@@ -599,3 +599,7 @@
 - **11-17 21:59 UTC** NOTE — BCH/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-17 21:59 UTC** NOTE — AVAX/USD S18-rsi2-long: soft cap on open items (6) — advisory, skipping
 - **11-17 21:59 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $99599.53 · 8s · venue fees $129.07 to date @ 0.02/0.05%
+- **11-17 22:03 UTC** FILL — ADA/USD S18-rsi2-long 20659.4496322617@0.15347 sl0.1510798 tp0.15652524
+- **11-17 22:03 UTC** SKIP — BTC/USD C-H1-tweezer-bottom: already have pending/position in play
+- **11-17 22:03 UTC** SKIP — BTC/USD C-H1-morning-star: already have pending/position in play
+- **11-17 22:03 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99547.72 · 7s · venue fees $129.07 to date @ 0.02/0.05%
