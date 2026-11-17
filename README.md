@@ -491,6 +491,19 @@ Three behaviours that are requirements, not preferences:
   `unreachable`), because a black square on a CCTV page reads as "nothing happened";
 - discovery reads the Mac's own ARP table and probes only those hosts. There is no port sweep of the office
   network — nothing in this project scans a LAN it does not live on;
+- the login the page asks for is the device's own requirement, and the desk proves it: with no credential in
+  `cctv.json` it sends one anonymous `GET /cgi-bin/snapshot.cgi?channel=1` and quotes the answer in the tile
+  (`401 Digest realm="Login to 8be7ed…", qop="auth"` on this XVR). RTSP answers 401 to `OPTIONS` on every
+  path, and ONVIF media needs a token — only ONVIF *discovery* is anonymous, which is how the model
+  (`DH-XVR1B08H-I`, 8 channels) was identified. So the two real options are a view-only user on the box, or
+  `"auth": "none"` the day guest view is enabled; the second needs no code change, because the desk asks the
+  device what it allows;
+- three auth methods are tried (privkey cookie, Digest, Basic) and the winner is remembered per host, because
+  this firmware offers only Digest and urllib's Basic handler *raises* rather than returning 401 when a
+  scheme is not advertised — so the 401 is reported and the library complaint is not;
+- if the HTTP snapshot path is not this model's, one frame is pulled over RTSP instead (`ffmpeg
+  -rtsp_transport tcp … /cam/realmonitor?channel=N&subtype=1`, substream, written to a 0700 temp dir), and a
+  port written next to `host` is understood as the *web* port only, never reused for RTSP;
 - the page derives its own token from `location.search` and puts it in every tile URL. Without that a phone
   passes the gate on the page load and then 403s on every frame, which renders as an empty grid; the cache
   buster in the same URL has to advance per render, or a phone shows the first frame it ever fetched and a
