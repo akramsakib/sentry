@@ -17,6 +17,7 @@ cycle on their own jobs. No Arena session, cookie feed or chat bridge is involve
 on request (2026-11-17) — the desk used to wake an agent on urgent lines and that coupling is removed.
 Digest email every DIGEST_H hours with positions + P&L + recent events + the graded record.
 """
+import http.client
 import json, os, re, smtplib, socket, subprocess, sys, threading, time
 import urllib.error
 import urllib.parse
@@ -254,6 +255,7 @@ def snapshot():
     snap["access"] = {"lan_ip": ip, "port": PORT,
                       "phone_url": ("http://%s:%d/?k=%s" % (ip, PORT, security_key())) if ip else None,
                       "cctv_url": ("http://%s:%d/cctv?k=%s" % (ip, PORT, security_key())) if ip else None,
+                      "lab_url": ("http://%s:%d/lab?k=%s" % (ip, PORT, security_key())) if ip else None,
                       "tailscale_ip": tailscale_hint(), "firewall": firewall_state(),
                       "token_len": len(security_key())}
     try:
@@ -263,6 +265,17 @@ def snapshot():
                         "discovery": _c["discovery"]}
     except Exception as e:
         snap["cctv"] = {"error": "%s: %s" % (type(e).__name__, str(e)[:120])}
+    # read, not derived: a research crash must not be able to take this page down, so a failed read is a field
+    # on the payload, never an exception out of snapshot()
+    try:
+        _l = lab_state()
+        _lab_keys = ("present", "age_s", "stale", "trials", "bar_to_clear", "sample_partial",
+                     "run_seconds", "base_line", "live_line", "fatal", "engine", "parity")
+        snap["lab"] = {k: _l.get(k) for k in _lab_keys}
+        snap["lab"]["verdicts"] = (_l.get("registry") or {}).get("verdicts") or {}
+        snap["lab"]["proposals"] = len(_l.get("proposals") or [])
+    except Exception as e2:
+        snap["lab"] = {"error": "%s: %s" % (type(e2).__name__, str(e2)[:80])}
     snap["channels"] = {"gmail_cfg": os.path.exists(SMTP_F),
                         "notifier": os.path.exists(BASE + "/hermes-notifier"),
                         "webhook": os.environ.get("HERMES_ALERT_WEBHOOK", "").strip()[:60] or None,
@@ -365,6 +378,9 @@ def digest_loop():
 #      (401 vs refused vs no config) instead of a fake black square, because a blank CCTV tile reads as
 #      "nothing happening" and that is the one lie a camera page is not allowed to tell.
 CCTV_F = BASE + "/cctv.json"
+LAB_DIR = BASE + "/lab"
+LAB_F = LAB_DIR + "/lab.json"
+REG_F = LAB_DIR + "/hypotheses.json"
 try:                       # a bad value must not take the desk down: clamp, never raise
     CCTV_TTL = max(1.0, float(os.environ.get("CCTV_TTL", "8")))
 except Exception:
@@ -526,11 +542,13 @@ def _cctv_privkey(host, user, pw, timeout=6.0, port=None):
     cands = [urllib.parse.quote(raw, safe=""),
              base64.b64encode(raw.encode()).decode()]
     for cand in cands:
+        # urlopen has no `headers=` keyword — a Request does. An earlier draft passed one, both candidates died
+        # with TypeError under a bare `except Exception: continue`, and the page blamed the password for a bug
+        # three lines away. Catch transport errors only: a fault in this file must not look like a dead camera.
         try:
-            ck = urllib.request.urlopen(base + "/privkey/" + cand, timeout=timeout,
-                                        headers={"User-Agent": "hermes-desk/1.0"}
-                                        ).read(400).decode("utf-8", "replace").strip()
-        except Exception:
+            rq = urllib.request.Request(base + "/privkey/" + cand, headers={"User-Agent": "hermes-desk/1.0"})
+            ck = urllib.request.urlopen(rq, timeout=timeout).read(400).decode("utf-8", "replace").strip()
+        except (urllib.error.URLError, OSError, http.client.HTTPException):
             continue
         if not ck or "<" in ck[:1] or len(ck) > 300:
             continue                                   # an HTML login page is not a cookie
@@ -538,24 +556,6 @@ def _cctv_privkey(host, user, pw, timeout=6.0, port=None):
     return None
 
 
-def _cctv_url(cfg, path, default_port=None):
-    h, port = _cctv_target(cfg, default_port)
-    return "http://%s%s%s" % (h, (":%d" % port) if port else "", path)
-
-
-def _cctv_privkey(host, user, pw, timeout=6.0, port=None):
-    """Dahua's own trick: GET /privkey/user:pw, get back `logincookie=...`, send it as a Cookie.
-
-    Its web UI does exactly this in JavaScript, so it is the one method every firmware generation accepts.
-    Harmless on other brands (they answer 404 and we move on).
-    """
-    try:
-        base = "http://%s%s" % (host, (":%s" % port) if port else "")
-        ck = urllib.request.urlopen(base + "/privkey/" + urllib.parse.quote("%s:%s" % (user, pw)),
-                                    timeout=timeout).read().decode("utf-8", "replace").strip()
-        return ck if "=" in ck and len(ck) < 300 else None
-    except Exception:
-        return None
 
 
 def _cctv_open(url, cfg, timeout=6.0):
@@ -808,6 +808,46 @@ def cctv_state():
             "auth": str(cfg.get("auth") or "auto").lower(), "mode": str(cfg.get("mode") or "auto").lower(),
             "ffmpeg": bool(_cctv_ffmpeg())}
 
+def lab_state():
+    """The research loop's own published report — read here, never recomputed here.
+
+    lab.py writes lab/lab.json on its own launchd schedule. Two rules:
+      - the radar must not import the lab. A research crash may not take the trading page down;
+      - a missing or stale report has to SAY so. An empty research page reads as "nothing is worth trying",
+        which is a different fact from "the lab has not run since the Mac slept".
+    """
+    out = {"present": os.path.exists(LAB_F)}
+    if not out["present"]:
+        out["note"] = ("no lab report yet — `com.hermes.sentry.research` writes %s every 30 min once it is "
+                       "loaded" % LAB_F)
+        return out
+    try:
+        d = json.load(open(LAB_F))
+    except Exception as e:
+        out["error"] = "lab.json unreadable: %s" % e
+        return out
+    age = int(time.time() - os.path.getmtime(LAB_F))
+    keys = ("asof", "trials", "bar_to_clear", "base_line", "live_line", "engine", "parity", "grading",
+            "fatal", "base_trades", "window", "lock", "data", "errors", "hypotheses", "proposals",
+            "ideas_proposed")
+    out.update({k: d.get(k) for k in keys})
+    out["age_s"] = age
+    out["stale"] = age > 3 * 3600
+    try:
+        reg = json.load(open(REG_F))
+        items = reg.get("items") or []
+        v = {}
+        for h in items:
+            k = h.get("verdict") or h.get("status")
+            v[k] = v.get(k, 0) + 1
+        out["registry"] = {"items": len(items), "trials": reg.get("trials", 0),
+                           "waiting": sum(1 for h in items if h.get("status") == "proposed"),
+                           "verdicts": v}
+    except Exception:
+        pass
+    return out
+
+
 # ---------------- dashboard ----------------
 HTML = r'''<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -880,6 +920,11 @@ async function tick(){
             ? 'LOCAL ONLY' : (d.channels&&d.channels.webhook?'webhook':'mail'),
            (d.channels&&(d.channels.gmail_cfg||d.channels.webhook))?'up':'flat')+
       card('Alerts queued', d.channels?d.channels.queued:'-');
+    const lb = d.lab||{};
+    document.getElementById('cards').insertAdjacentHTML('beforeend',
+      card('Lab', (lb.trials!=null? lb.trials+' trials' : (lb.present===false?'not running':'?'))
+           + ' <a href="lab'+(window.__K||'')+'" style="font-size:11px;font-weight:400">open →</a>',
+           lb.fatal ? 'down' : (lb.stale ? 'flat' : 'up')));
     const cc = d.cctv||{};
     document.getElementById('cards').insertAdjacentHTML('beforeend',
       card('CCTV', (cc.n_ok!==undefined? (cc.n_ok+'/'+(cc.n_total||0)) : '?')+
@@ -898,6 +943,7 @@ async function tick(){
       + ' · localhost needs no token, anything else does ('+(a.token_len||0)+' chars)</div>'
       + ' <button id="cmpb">compact</button>'
       + (a.cctv_url ? ' \u00b7 <a href="' + a.cctv_url + '">CCTV page</a>' : '')
+      + (a.lab_url ? ' \u00b7 <a href="' + a.lab_url + '">research lab</a>' : '')
       + (a.lan_ip ? ' <button id="cpb">copy link</button>' : '') + '</div>';
     const rec = d.record||{};
     const rrows = [];
@@ -936,6 +982,138 @@ EMBED = '''<!DOCTYPE html><html><body style="margin:0;background:#0b0f17;color:#
 <script>async function t(){try{const d=await(await fetch('data.json'+(location.search||''))).json();
 document.getElementById('s').textContent='float '+(d.float_pl||0)+' USD · '+(d.positions||[]).length+' pos · '+(d.orders||[]).length+' orders · '+((d.record&&d.record.overall&&d.record.overall.line)||'win rate —')+' · sentry '+(d.sentry_alive?'LIVE':'DOWN');}catch(e){}}
 t();setInterval(t,15000);</script></body></html>'''
+
+LAB_HTML = r"""<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Research Lab</title><style>
+body{background:#0b0f17;color:#d7e0ea;font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:14px}
+h1{font-size:18px;margin:0 0 4px}.sub{color:#7f8ea3;font-size:12px;margin-bottom:12px}
+a{color:#2ecc71}h2{font-size:14px;margin:16px 0 6px;color:#9fb2c8}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.card{background:#121a26;border:1px solid #1e2a3a;border-radius:10px;padding:11px}
+.k{color:#7f8ea3;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.v{font-size:19px;font-weight:700;margin-top:2px}.up{color:#2ecc71}.down{color:#e74c3c}.flat{color:#f1c40f}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:#7f8ea3;text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid #1e2a3a}
+td{padding:6px 8px;border-bottom:1px solid #151f2d;vertical-align:top}
+tr:hover{background:#16202e}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700}
+.p-s{background:#123b25;color:#2ecc71}.p-r{background:#3b1212;color:#e74c3c}.p-n{background:#1a2432;color:#9fb2c8}
+.p-w{background:#3b2f12;color:#f1c40f}
+.note{background:#101826;border:1px solid #1e2a3a;border-radius:10px;padding:12px;margin:12px 0;font-size:13px}
+code,pre{background:#0e1520;border-radius:4px;padding:1px 5px;font-size:11px}
+pre{padding:9px;white-space:pre-wrap;overflow:auto}
+button{background:#16202e;color:#d7e0ea;border:1px solid #1e2a3a;border-radius:8px;padding:5px 10px;font-size:12px}
+@media(max-width:760px){body{padding:9px}h1{font-size:16px}.grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px}
+.v{font-size:15px}table{font-size:11px}th,td{padding:5px 5px}}
+</style></head><body>
+<h1>🧪 Research lab <span class="sub" style="font-size:12px">— the part that argues with the playbook</span></h1>
+<div class="sub">same desk, same server, same token · written by <code>com.hermes.sentry.research</code>, not by
+  this page · <span id="age"></span> · <button onclick="go()">refresh</button> ·
+  <a href="./">← trading radar</a> <a href="cctv">CCTV →</a></div>
+<div id="top"></div>
+<h2>Verdicts this run</h2><div id="hyp"></div>
+<h2>Registry</h2><div id="reg"></div>
+<h2>Proposals — nothing here is applied</h2><div id="prop"></div>
+<div class="note">This page is <b>read-only by construction</b>. The lab has no broker import and no order
+  path; a surviving idea becomes a proposal in a file the desk never reads. Arming anything means editing a
+  book config deliberately — that boundary is the only reason its numbers can be trusted.</div>
+<script>
+function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function card(k,v,c){return '<div class="card"><div class="k">'+k+'</div><div class="v '+(c||'')+'">'+v+'</div></div>';}
+const P = new URLSearchParams(location.search);
+window.__K = P.get('k') ? ('?k=' + P.get('k')) : '';
+function pill(v){
+  if(v==='survives') return '<span class="pill p-s">SURVIVES</span>';
+  if(v==='rejected') return '<span class="pill p-r">REJECTED</span>';
+  if(v==='insufficient'||v==='too_narrow'||v==='no_op') return '<span class="pill p-w">'+v.toUpperCase()+'</span>';
+  if(v==='invalid'||v==='error') return '<span class="pill p-r">'+esc(v.toUpperCase())+'</span>';
+  return '<span class="pill p-n">'+esc(v||'proposed')+'</span>';
+}
+function go(){
+  fetch('lab.json'+(window.__K||''),{cache:'no-store'}).then(r=>r.json()).then(d=>{
+    const b=d.base_trades||{}, w=d.window||{}, lk=d.lock||{};
+    const age=document.getElementById('age');
+    age.textContent = d.present ? ('report '+(d.asof||'?')+' · '+(d.age_s!=null?d.age_s+'s ago':'?')
+                                  + (d.stale?' — STALE, the lab job has not written lately':''))
+                                : (d.note||'no report');
+    age.style.color = (!d.present||d.stale||d.fatal)?'#f1c40f':'#2ecc71';
+    let t='';
+    if(d.fatal) t += '<div class="note" style="border-color:#3b1212"><b class="down">Replay is inert:</b> '
+                    + esc(d.fatal)+' — searched '+esc((d.searched||[]).join(', '))+'. Every number below is void.</div>';
+    if(!d.present) t += '<div class="note"><b>Nothing to show yet.</b> The lab has not written a report. '
+                    + 'It needs <code>lab.py</code> beside the desk files and its launchd job loaded; '
+                    + 'it then archives history each run and grows its own sample.</div>';
+    if(d.parity==='FALLBACK thresholds (run_cycle not importable)')
+      t += '<div class="note" style="border-color:#3b2f12"><b class="flat">Grading by fallback constants</b> — '
+         +'run_cycle was not importable, so the win/void thresholds here are this file\'s own copy. '
+         +'Treat verdicts as provisional until parity reads <code>run_cycle</code>.</div>';
+    if(lk.pinned===false)
+      t += '<div class="note" style="border-color:#3b2f12"><b class="flat">Holdout not pinned yet</b> — the exam '
+         +'date is frozen only once the archive holds enough graded trades on both sides of it ('+esc(String(lk.waiting_for||'?'))
+         +' short). Until then every window rolls with the data, so no idea can be "tested" against a holdout '
+         +'that contains all the evidence.</div>';
+    if(d.sample_partial)
+      t += '<div class="note" style="border-color:#3b2f12"><b class="flat">Partial sample</b> — the run spent its '
+         +'time budget before replaying every symbol ('+esc(String(d.run_seconds||'?'))+'s), so the counts below '
+         +'cover part of the archive. A small n here is a budget, not a verdict on the playbook.</div>';
+    t += '<div class="grid">'
+       + card('Trials burned', d.trials!=null?d.trials:'?', d.trials>60?'down':'flat')
+       + card('Bar to clear', (d.bar_to_clear!=null?'+'+Number(d.bar_to_clear).toFixed(2)+'R':'—'), 'flat')
+       + card('Replay trades', (b.train||0)+' / '+(b.test||0), (b.test||0)>=20?'up':'down')
+       + card('Holdout (locked)', b.holdout_locked!=null?b.holdout_locked:'—', 'flat')
+       + card('Never filled', b.never_filled||0, 'flat')
+       + card('Censored / embargoed', (b.censored||0)+' / '+(b.embargoed_out||0), 'flat')
+       + card('Skipped: no fwd bars', b.no_forward_data||0, (b.no_forward_data||0)>0?'down':'flat')
+       + '</div>';
+    t += '<div class="grid" style="margin-top:8px">'
+       + card('Playbook, replayed', esc(d.base_line||'—'))
+       + card('Playbook, live ledger', esc(d.live_line||'—'))
+       + card('Engine', esc(d.engine||'?'), String(d.engine||'').indexOf('MISSING')>=0?'down':'up')
+       + card('Grading', esc(d.grading||'?'), String(d.grading||'').indexOf('MISSING')>=0?'down':'up')
+       + '</div>';
+    if(Object.keys(d.data||{}).length){
+      t += '<div class="sub" style="margin-top:8px">history archived: '
+         + Object.entries(d.data).map(([k,v])=>'<code>'+esc(k)+'</code> '+(v&&v['1h_bars'])+'×1h ('+esc((v||{}).from||'?')+' → '+esc((v||{}).to||'?')+')').join(' · ')
+         + ' · holdout pinned at '+esc(lk.hold_start_iso||'?')+' (fixed '+esc(lk.fixed_at||'?')+','
+         + ' looks used '+(lk.looks_consumed||0)+')'
+         + ' · split: train → embargo → test → embargo → locked holdout ('+(w.ttl_bars||0)+'+ bars, so no trade settles across a seam)'
+         + '</div>';
+    }
+    document.getElementById('top').innerHTML=t;
+    const H=(d.hypotheses||[]).slice().reverse();
+    document.getElementById('hyp').innerHTML = H.length ? ('<table><tr><th>Idea</th><th>Verdict</th>'
+      +'<th>Paired mean-R (95% CI)</th><th>n kept/dropped</th><th>Locked holdout</th></tr>'
+      + H.map(h=>{const p=h.paired||{};const ho=h.holdout||{};
+        return '<tr><td><b>'+esc(h.id)+'</b><div class="sub" style="margin:0">'+esc(h.claim||'')+'</div>'
+          +'<code>'+esc(JSON.stringify(h.filter||{}))+'</code></td>'
+          +'<td>'+pill(h.verdict)+'<div class="sub" style="margin:2px 0 0">'+esc(h.why||'')+'</div></td>'
+          +'<td>'+(p.point!=null?((p.point>=0?'+':'')+p.point.toFixed(3)+' ('+p.lo.toFixed(2)+'…'+p.hi.toFixed(2)+')'):'—')+'</td>'
+          +'<td>'+(p.n_kept!=null?p.n_kept+' / '+p.n_dropped:'—')+'<div class="sub" style="margin:0">'+esc((h.test_only||{}).line||'')+'</div></td>'
+          +'<td>'+(ho.not_consulted?'<span class="sub">not consulted — the test window answered</span>'
+                 :(ho.kept?esc(ho.kept.line||'consulted'):'<span class="sub">'+esc(ho.note||ho.why||'—')+'</span>'))+'</td></tr>';}).join('')
+      +'</table>') : '<div class="sub">no hypothesis was evaluated in this report — the run may have been '
+        + 'budgeted out, or the archive is still too thin to grade (needs '+ (w.min_n||20) +' paired trades)</div>';
+    const r=d.registry||{};
+    document.getElementById('reg').innerHTML = r.items!=null
+      ? '<div class="sub">'+r.items+' ideas on file · '+r.waiting+' waiting for a slot · '
+        + Object.entries(r.verdicts||{}).map(([k,v])=>pill(k)+' '+v).join('  ')+'</div>'
+      : '<div class="sub">no registry</div>';
+    const pr=d.proposals||[];
+    document.getElementById('prop').innerHTML = pr.length
+      ? pr.map(x=>'<div class="note"><b class="up">'+esc(x.id)+'</b> <code>'+esc(JSON.stringify(x.filter||{}))
+          +'</code><div>'+esc(x.claim||'')+'</div><div class="sub" style="margin-top:4px">evidence: '
+          +esc(x.evidence||'')+'</div><div class="sub">'+esc(x.how_to_apply||'')+'</div></div>').join('')
+      : '<div class="sub">nothing has survived yet. On 78 graded live trades netting -22.76R, that is the '
+        + 'expected answer — a lab that kept producing winners this fast would be lying about something.</div>';
+    if((d.errors||[]).length) document.getElementById('prop').insertAdjacentHTML('beforeend',
+      '<div class="note" style="border-color:#3b1212"><b class="down">lab errors</b><pre>'
+      +esc(d.errors.join('\n'))+'</pre></div>');
+  }).catch(()=>{const e=document.getElementById('age'); if(e){e.textContent='desk unreachable'; e.style.color='#e74c3c';}});
+}
+go(); setInterval(go, 30000);
+</script></body></html>"""
+
 
 CCTV_HTML = r"""<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1063,7 +1241,7 @@ class Handler(BaseHTTPRequestHandler):
         # is refused) because this server only ever serves three fixed routes.
         client = (self.client_address[0] if self.client_address else "") or ""
         path = self.path.split("?")[0]
-        if path not in ("/", "/index.html", "/data.json", "/embed", "/cctv", "/cctv.json", "/cctv.jpg"):
+        if path not in ("/", "/index.html", "/data.json", "/embed", "/cctv", "/cctv.json", "/cctv.jpg", "/lab", "/lab.json"):
             self.send_error(404)
             return
         if not is_local(client):
@@ -1072,6 +1250,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._denied()      # exact compare, and an absent token lands here too
         if path.startswith("/data.json"):
             self._send(json.dumps(snapshot()), "application/json")
+        elif path.startswith("/lab.json"):
+            self._send(json.dumps(lab_state()), "application/json")
+        elif path.startswith("/lab"):
+            self._send(LAB_HTML, "text/html")
         elif path.startswith("/cctv.json"):
             st = cctv_state()
             st.pop("imgs", None)

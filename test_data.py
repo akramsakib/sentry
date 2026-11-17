@@ -1623,8 +1623,10 @@ check("loopback needs no token (the Mac's own browser and the embed stay effortl
       "if not is_local(client)" in _rs and 'def is_local(ip)' in _rs)
 check("...and every other address must present the token, compared exactly (no prefix match, no bypass)",
       'qs.get("k", [""])[0] != security_key()' in _rs)
-check("only the fixed routes are served at all — the 3 desk ones plus the 4 camera ones (no path to walk)",
-      'if path not in ("/", "/index.html", "/data.json", "/embed", "/cctv", "/cctv.json", "/cctv.jpg")' in _rs)
+check("only the fixed routes are served at all — the desk page, the camera page and the lab page, and nothing else "
+      "(no path to walk)",
+      'if path not in ("/", "/index.html", "/data.json", "/embed", "/cctv", "/cctv.json", "/cctv.jpg", '
+      '"/lab", "/lab.json")' in _rs)
 check("the token file is written 600 and its path is overridable, so a test cannot touch the live desk",
       'os.chmod(KEY_F, 0o600)' in _rs and 'os.environ.get("RADAR_KEY_FILE")' in _rs)
 check("a key that cannot be stored fails CLOSED (in-memory token, logged) rather than opening the LAN",
@@ -1738,6 +1740,183 @@ if _sh.which("node"):
           _cn is not None and _sp.run(["node", "--check", _cj.name], capture_output=True).returncode == 0)
     _os.unlink(_cj.name)
 
+
+# ---------- 32: the research lab — the part that argues with the playbook ----------
+# The desk could execute and grade, and it was doing both non-stop while nothing asked why the numbers were
+# what they are. lab.py is that "why". The checks below are mostly about HONESTY rather than cleverness: a
+# research loop is easy to build and very easy to build wrong, and the wrong version (fit to the data, graded
+# on the data it tuned on, quietly promoting itself into orders) is worse than none.
+print("\n== 32: lab.py — falsification, not validation")
+_ls = open(_asset("tools/mac", "lab.py")).read()
+check("the lab has NO order path: no broker import, no order placement, nothing that can move money",
+      "_mod(\"broker_okx\")" in _ls and "import broker\n" not in _ls and "place_order" not in _ls
+      and "order(" not in _ls.replace("_okx_paged(", "").replace("make_filter(", ""))
+check("the lab reuses the REAL engine and the REAL grading instead of a research copy of them",
+      "core.evaluate_symbol" in _ls and "def stats(rows)" in _ls and "gs.stats(rows)" in _ls
+      and "grade_r" in _ls and "rc.grade" in _ls)
+check("no win-rate arithmetic of its own (one definition, in grade_stats)",
+      not _re.search(r"wins\s*/\s*(len|decisive|n)", _ls), "would be a second definition")
+_mf = _ls.split("def make_filter")[1].split("def deflated_bar")[0]
+check("a hypothesis filter is a closed vocabulary; an unknown key RAISES instead of silently testing nothing",
+      "raise FilterError" in _mf and "unknown filter" in _mf and "allowed: " in _mf
+      and "eval(" not in _mf and "exec(" not in _mf)
+check("the holdout is pinned once and never creeps (a moving exam date is the whole trick of a bad backtest)",
+      "hold_start" in _ls and "fresh_lock or not lk.get(\"hold_start\")" in _ls
+      and "the lab cannot creep the exam date" in _ls)
+check("each idea gets one look at the holdout, and only if the test window earned it",
+      "def consume_holdout" in _ls and "already spent its one look" in _ls
+      and "the test window answered first" in _ls and "not_consulted" in _ls)
+check("trades are embargoed out at both seams, not scored across them",
+      "def split_points" in _ls and "embargoed" in _ls and "_splits_after" not in _ls
+      and _ls.count("TTL_BARS + (MAX_HOLD // 6)") >= 1)
+check("the bar an idea must clear grows with the number of ideas tried (a winner from 400 combos is arithmetic)",
+      "def deflated_bar" in _ls and "math.log(1.0 + max(0, int(n_trials)))" in _ls
+      and "reg[\"trials\"]" in _ls)
+check("no bootstrap hand-waving: the paired kept-vs-dropped CI is computed, and a small n says insufficient",
+      "def bootstrap_delta" in _ls and "0.025 * len(diffs)" in _ls and "insufficient" in _ls)
+check("backtest flattery is refused in the three standard places: tie=loss, censored excluded, stop-entry slippage",
+      "tie goes to the loss" in _ls and "censored" in _ls and "SLIP_R" in _ls)
+check("a filter that changes nothing is reported as a no-op, not as a neutral result",
+      "that is not a change, it is a no-op" in _ls and "too_narrow" in _ls)
+check("a missing engine is fatal and loud — it must never read as 'the playbook generated no trades'",
+      '"fatal": "sentry_core is not importable"' in _ls and "replay inert" in _ls)
+check("the desk page only READS the lab's file; a research crash cannot take the trading page down",
+      "def lab_state" in open(_asset("tools/mac", "trade_radar.py")).read()
+      and "LAB_F = " in open(_asset("tools/mac", "trade_radar.py")).read()
+      and "import lab" not in open(_asset("tools/mac", "trade_radar.py")).read()
+      and "_mod(\"lab\")" not in open(_asset("tools/mac", "trade_radar.py")).read())
+# The books, the monitor and the ledger are the ONLY things that can turn an idea into a trade. If none of
+# them mention the lab at all, a research verdict cannot reach an order by construction — the radar reads the
+# lab (to display it), which is allowed, and is checked separately for not importing it.
+_exec = [f for f in ("monitor.py", "book_status.py", "crypto_loop.py", "grade_stats.py", "fx_guards.py")
+         if os.path.exists(_asset("tools/mac", f))]
+_runtime = "".join(open(_asset("tools/mac", f)).read() for f in _exec)
+check("no file on the execution path even knows the lab exists (so a verdict cannot reach an order by "
+      "accident): no 'lab', no 'proposals', no 'verdict'",
+      not _re.search(r"\b(lab\.py|proposals\.json|lab_state|hypotheses)\b", _runtime), str(_exec))
+_radar = open(_asset("tools/mac", "trade_radar.py")).read()
+check("…and the one file that DOES read it only serialises what it read (display, not decision)",
+      "def lab_state" in _radar and 'json.dumps(lab_state())' in _radar
+      and not _re.search(r"if[^\n]*lab[^\n]*(entries|min_score|armed)", _radar))
+check("an idea that errors, or that the sample is too small to answer, does not consume the multiple-testing "
+      "budget (my bug is not a trial, and 'not enough data yet' is not an attempt)",
+      'if _v not in ("error", "insufficient"):' in _ls)
+check("…and an insufficient idea stays PROPOSED so it is re-tested as the archive grows (retiring it would "
+      "leave the lab with an empty backlog and a permanently raised bar)",
+      '"status": ("proposed" if _v == "insufficient" else "tested")' in _ls
+      and 'if _v != "insufficient" or h.get("_last_win") != _win' in _ls)
+check("the lab archives history between runs so its power grows while it waits (not a fixed 200-bar window)",
+      'CACHE' in _ls and "merged into one archive per symbol" in _ls)
+check("a junk env value cannot divide by zero or negative-index (env_num clamps both ends)",
+      "def env_num" in _ls and _ls.count("max(lo") >= 1 and _ls.count("min(hi") >= 1)
+check("the lab journals its own verdicts to an append-only findings file (so a rewritten conclusion is visible)",
+      'open(FIND_F, "a")' in _ls and "HOLDOUT RESET" in _ls)
+check("the lab page fetches its own data with the desk token and escapes every string from the files",
+      "window.__K = P.get('k')" in _ls or "lab.json'+(window.__K" in open(_asset("tools/mac", "trade_radar.py")).read())
+
+
+check("a run is bounded in BOTH phases (fetch and replay), so a report is guaranteed on a 30-min cron",
+      'RUN_SEC = int(env_num("LAB_RUN_SEC", 780, 60, 3000))' in _ls
+      and 'RUN_GRACE = int(env_num("LAB_RUN_GRACE", 240, 5, 900))' in _ls
+      and "hard = deadline + RUN_GRACE" in _ls and "if deadline and time.time() > deadline" in _ls)
+check("a truncated sample is published as partial (a small n must never read as 'the playbook has no edge')",
+      "sample_partial" in _ls and "replay_partial" in _ls and '"skipped": "run budget spent' in _ls)
+check("…and the page actually shows it, in the same place it shows a fatal or a fallback parity",
+      "if(d.sample_partial)" in open(_asset("tools/mac", "trade_radar.py")).read()
+      and "A small n here is a budget, not a verdict" in open(_asset("tools/mac", "trade_radar.py")).read())
+check("the engine is pinned to a book by LAB_ENGINE, because a verdict on OKX fees is not a verdict on Bitget fees",
+      'pin = os.environ.get("LAB_ENGINE")' in _ls and "has no %s.py" in _ls
+      and "LAB_ENGINE" in open(_asset("tools/mac", "com.hermes.sentry.research.plist")).read())
+check("which files research used is published, not assumed (sources + cost_source.fees in lab.json)",
+      '"sources": dict(WHERE)' in _ls and '"cost_source"' in _ls and 'WHERE["run_cycle"]' in _ls)
+check("the desk root is DETECTED from what lives in it (books/ + trades_log.jsonl), not by dirname guessing",
+      "def _desk_root" in _ls and 'os.path.isdir(os.path.join(d, "books"))' in _ls
+      and "trades_log.jsonl" in _ls.split("def _desk_root")[1].split("def ")[0])
+check("the research job is the lowest-priority thing on the Mac (Nice 10, Background, LowPriorityIO)",
+      "<key>Nice</key><integer>10</integer>" in open(_asset("tools/mac", "com.hermes.sentry.research.plist")).read()
+      and "<key>ProcessType</key><string>Background</string>" in open(_asset("tools/mac", "com.hermes.sentry.research.plist")).read()
+      and "<key>LowPriorityIO</key><true/>" in open(_asset("tools/mac", "com.hermes.sentry.research.plist")).read())
+
+# ---- §32, behavioural: the gate itself, on rows, not on strings ----
+# The static checks above can only prove the code says the right words. This block calls evaluate() on
+# hand-built trade rows and demands the verdict, because the one time this mattered the prose was correct and
+# the arithmetic was not (an idea that kept 97 % of the stream was reported no_op AND had spent its holdout
+# look). Rows are plain dicts shaped like base_stream's output, so no engine and no network are involved.
+import importlib as _il
+import tempfile as _tf
+_labdir = os.path.dirname(os.path.abspath(_asset("tools/mac", "lab.py")))
+sys.path.insert(0, _labdir)
+os.environ["LAB_ROOT"] = _tf.mkdtemp(prefix="sentry_lab_")
+os.environ["LAB_MIN_N"] = "8"
+_lab = _il.import_module("lab")
+
+
+def _row(score, R, t_off=0, sym="BTC-USDT"):
+    return {"result": ("win" if R > 0 else "loss"), "R": R, "fee_r": 0.01, "skill": "S18-rsi2-short",
+            "score": score, "sym": sym, "t0": time.strftime("%Y-%m-%dT%H:%M:%S",
+                                                             time.gmtime(1700000000 + t_off * 3600)),
+            "otype_in": "buy_limit", "hold_bars": 3, "ctx": {"hour": 9, "atr_rel": 1.0, "atr": 250.0}}
+
+
+def _stream(kept_n, dropped_n, kept_R=1.5, drop_R=-1.0):
+    out = [_row(5, kept_R, i) for i in range(kept_n)]
+    out += [_row(3, drop_R, kept_n + i) for i in range(dropped_n)]
+    return out
+
+
+try:
+    _lk = {"consumed": {}, "hold_start": 0}
+    _v = _lab.evaluate({"id": "T-noop", "filter": {"min_score": 4}},
+                       _stream(20, 1), _stream(40, 1), _stream(15, 15), _lk, 1)
+    check("behaviour: an idea that leaves 97 % of the stream alone is a no_op, not a result",
+          _v.get("verdict") == "no_op", str(_v.get("verdict")))
+    check("behaviour: …and a no_op never spends a holdout look (this is the bug the wording did not catch)",
+          (_v.get("holdout") or {}).get("not_consulted") is True and not _lk["consumed"],
+          "holdout=%s consumed=%s" % (json.dumps(_v.get("holdout"))[:60], json.dumps(_lk["consumed"])))
+    _v2 = _lab.evaluate({"id": "T-narrow", "filter": {"min_score": 4}},
+                        _stream(30, 300), _stream(9, 90), _stream(20, 20), _lk, 1)
+    check("behaviour: a filter that keeps a tenth of the stream is too_narrow, and also cannot consult",
+          _v2.get("verdict") == "too_narrow" and (_v2.get("holdout") or {}).get("not_consulted") is True,
+          str(_v2.get("verdict")))
+    _v3 = _lab.evaluate({"id": "T-small", "filter": {"min_score": 4}},
+                        _stream(30, 30), _stream(3, 40), _stream(20, 20), _lk, 1)
+    check("behaviour: below LAB_MIN_N graded trades the answer is 'insufficient', with no verdict implied",
+          _v3.get("verdict") == "insufficient" and "needs" in (_v3.get("why") or ""), str(_v3.get("why"))[:70])
+    _lk2 = {"consumed": {}, "hold_start": 0}
+    _v4 = _lab.evaluate({"id": "T-real", "filter": {"min_score": 4}},
+                        _stream(60, 60), _stream(70, 70), _stream(40, 40, 1.2, -0.9), _lk2, 1)
+    check("behaviour: a real change — half the stream dropped, a wide positive CI, holdout agreeing — DOES survive",
+          _v4.get("verdict") == "survives" and _lk2.get("consumed"),
+          "%s / consumed=%s" % (_v4.get("verdict"), json.dumps(_lk2.get("consumed"))[:60]))
+    _v5 = _lab.evaluate({"id": "T-real", "filter": {"min_score": 4}},
+                        _stream(60, 60), _stream(70, 70), _stream(40, 40), _lk2, 2)
+    check("behaviour: the same idea cannot look at the holdout twice (one look per hypothesis, ever)",
+          (_v5.get("holdout") or {}).get("locked") is True, json.dumps(_v5.get("holdout"))[:80])
+    _v6 = None
+    try:
+        _lab.evaluate({"id": "T-typo", "filter": {"min_scor": 4}}, _stream(2, 2), _stream(2, 2), None, {}, 1)
+    except _lab.FilterError as _fe:
+        _v6 = str(_fe)
+    check("behaviour: a typo in a filter name raises FilterError instead of returning a verdict on nothing",
+          _v6 is not None and "unknown filter" in _v6, str(_v6)[:70])
+    _lk3 = {"consumed": {}, "hold_start": 0}
+    _v7 = _lab.evaluate({"id": "T-veto", "filter": {"min_score": 4}}, _stream(60, 60),
+                        _stream(70, 70, 1.5, -1.0), _stream(40, 20, -0.9, 0.2), _lk3, 1)
+    check("behaviour: when the test window passes and the pinned holdout vetoes it, the REASON says the holdout "
+          "vetoed it (the sentence next to 'rejected' must not be the winning number)",
+          _v7.get("verdict") in ("rejected", "survives") and not (_v7.get("verdict") == "rejected"
+          and "LOCKED holdout" not in (_v7.get("why") or "") and "deflated bar" in (_v7.get("why") or "")),
+          "%s | %s" % (_v7.get("verdict"), (_v7.get("why") or "")[:80]))
+    check("behaviour: deflated_bar actually rises with trials (0 → 0.20, 20 → higher, 200 → much higher)",
+          _lab.deflated_bar(0) < _lab.deflated_bar(20) < _lab.deflated_bar(200),
+          "%.3f %.3f %.3f" % (_lab.deflated_bar(0), _lab.deflated_bar(20), _lab.deflated_bar(200)))
+    _r0 = _lab.bootstrap_delta(_stream(6, 6), _stream(6, 6), seed="tiny")
+    check("behaviour: a bootstrap on 6 trades returns None (or a huge CI), never a confident answer",
+          _r0 is None or (_r0.get("hi", 0) - _r0.get("lo", 0)) > 1.0, json.dumps(_r0)[:70])
+except Exception as _e:
+    import traceback as _tb
+    _tb.print_exc()
+    check("the lab's gate could be exercised at all", False, "%s: %s" % (type(_e).__name__, str(_e)[:150]))
 
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The research loop. Deliberately the LOWEST priority job on this Mac: research that competes with the
+     trading cycle for CPU, or with a fill for the network, is research that costs money. Nice 10 + Background
+     + LowPriorityIO is the whole point, along with StartInterval 1800 — an idea every half hour is plenty,
+     and the archive grows on its own so its power increases without increasing its rate.
+     It calls no broker and no agent bridge: it writes files in ~/hermes_sentry/lab/ and nothing else. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.hermes.sentry.research</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/sakib/hermes_sentry/lab.py</string>
+    <string>--once</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/sakib/hermes_sentry</string>
+  <!-- Pin the engine to the Bitget book, not to whichever copy listdir finds first: the verdict is meant for
+       the only lane that can trade this account, and Bitget's fee schedule (0.02/0.06) is not OKX's. -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>LAB_ENGINE</key><string>crypto-bitget</string>
+    <key>LAB_SYM_MAX</key><integer>6</integer>
+    <key>LAB_MAX_HOLD</key><integer>72</integer>
+    <key>LAB_MIN_N</key><integer>25</integer>
+    <key>LAB_RUN_SEC</key><integer>600</integer>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>StartInterval</key><integer>1800</integer>
+  <key>StandardOutPath</key><string>/Users/sakib/hermes_sentry/lab.out.log</string>
+  <key>StandardErrorPath</key><string>/Users/sakib/hermes_sentry/lab.err.log</string>
+  <key>ProcessType</key><string>Background</string>
+  <key>Nice</key><integer>10</integer>
+  <key>LowPriorityIO</key><true/>
+  <key>ThrottleInterval</key><integer>120</integer>
+</dict>
+</plist>
