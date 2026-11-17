@@ -1617,13 +1617,14 @@ print("\n== 30: phone access — one page, token-gated off-localhost")
 _rp = _asset("tools/mac", "trade_radar.py")
 _rs = open(_rp).read() if _rp else ""
 check("the radar serves his phone with the SAME HTML (no second dashboard, no data fork)",
-      "@media(max-width:760px)" in _rs and 'id="phone"' in _rs and _rs.count("HTML = r") == 1, str(_rp))
+      "@media(max-width:760px)" in _rs and 'id="phone"' in _rs and "HTML = r" in _rs
+      and "CCTV_HTML" in _rs, str(_rp))
 check("loopback needs no token (the Mac's own browser and the embed stay effortless)",
       "if not is_local(client)" in _rs and 'def is_local(ip)' in _rs)
 check("...and every other address must present the token, compared exactly (no prefix match, no bypass)",
       'qs.get("k", [""])[0] != security_key()' in _rs)
-check("only the three fixed routes are served at all (no path list to walk)",
-      'if path not in ("/", "/index.html", "/data.json", "/embed")' in _rs)
+check("only the fixed routes are served at all — the 3 desk ones plus the 4 camera ones (no path to walk)",
+      'if path not in ("/", "/index.html", "/data.json", "/embed", "/cctv", "/cctv.json", "/cctv.jpg")' in _rs)
 check("the token file is written 600 and its path is overridable, so a test cannot touch the live desk",
       'os.chmod(KEY_F, 0o600)' in _rs and 'os.environ.get("RADAR_KEY_FILE")' in _rs)
 check("a key that cannot be stored fails CLOSED (in-memory token, logged) rather than opening the LAN",
@@ -1646,6 +1647,68 @@ check("no token, key or secret is ever printed into the HTML itself (only the co
       and not _re.search(r"print\(.*security_key\(\)", _rs))
 check("and the desk page (monitor) is untouched by any of this: one reader, one file",
       "8790" not in open(_asset("tools/mac", "monitor.py")).read())
+
+
+# ---------- 31: the camera page — a proxy, not a leak ----------
+# He asked for the NVR's channels on a second page of the same desk. The dangerous way to build this is an
+# iframe (his box sends X-Frame-Options: SAMEORIGIN, so it would not even work) or a page that puts the
+# camera password in the browser. These checks pin the safe shape: the secret stays in cctv.json on the Mac,
+# tiles are proxied through the desk, every cctv route is token-gated off loopback, and an unauthenticated or
+# dead camera reports WHY instead of rendering a black square that reads as "nothing happened".
+print("\n== 31: cctv page — proxied tiles, no secret in the browser")
+_cs = open(_asset("tools/mac", "trade_radar.py")).read()
+check("cctv credentials live ONLY in a local file the user owns (never in the repo, never in a URL)",
+      'CCTV_F = BASE + "/cctv.json"' in _cs and "cfg.get(\"password\")" in _cs
+      and "password" not in _cs.split("def cctv_state")[1][:700]
+      and not _re.search(r"rtsp://[^\"]*\$\{?\w*[Pp]ass", _cs))
+check("the state document publishes has_password (a boolean), never the password",
+      '"has_password": bool(cfg.get("password"))' in _cs and '"password": cfg' not in _cs)
+check("tiles are fetched by the desk and served from /cctv.jpg (so no auth header goes in the browser)",
+      "/cctv.jpg" in _cs and 'self.send_header("Content-Type", "image/jpeg")' in _cs)
+check("every cctv route is in the fixed allow-list, so the token gate cannot be bypassed by path tricks",
+      '"/cctv", "/cctv.json", "/cctv.jpg"' in _cs)
+check("a camera that needs a login is a distinct state (needs_auth) from a dead one",
+      'st["needs_auth"] = True' in _cs and "LOGIN" in _cs)
+check("a non-JPEG answer is refused, because an <img> of a login page would look like a working camera",
+      body_magic in _cs if (body_magic := 'body[:3] != b"\\xff\\xd8\\xff"') else False, "magic-byte check")
+check("a truncated write to a phone (mid-jpeg hangup) cannot kill the desk",
+      "must not kill the desk" in _cs)
+check("the tile cache bucket is computed from a clamped TTL (a 0 or junk env value used to raise ZeroDivisionError)",
+      _re.search(r"CCTV_TTL = max\(1\.0", _cs) is not None
+      and _cs.index("except Exception") < _cs.index("CCTV_TTL = 8.0"))
+check("discovery reads the Mac's own ARP table only — no port sweep of the office network",
+      'subprocess.run(["arp", "-a"]' in _cs and "probed" in _cs)
+check("urllib is imported once at module level (an in-function `import urllib.error` shadows the name and "
+      "crashed the route with UnboundLocalError)",
+      _cs.count("import urllib") >= 3 and "\n    import urllib" not in _cs,
+      str(_cs.count("    import urllib")))
+check("the desk page links to the camera page and reports how many channels answer",
+      "CCTV" in _cs and '"cctv_url"' in _cs and "n_ok" in _cs)
+check("the camera page links back to the trading radar (one desk, two pages, not two products)",
+      "trading radar" in _cs.lower())
+
+# These four were found by *rendering* the page headlessly, not by reading it — a page can contain every
+# right word and still show nothing. They stay here so the shape cannot regress silently.
+_cc = _cs.split("CCTV_HTML = r\"\"\"")[1].split("\"\"\"")[0] if "CCTV_HTML = r\"\"\"" in _cs else ""
+check("the camera page derives its own token from location.search (tiles are separate requests; without this "
+      "a phone that passed the gate once still gets 403 on every frame — the grid renders empty)",
+      "URLSearchParams" in _cc and "window.__K = P.get('k')" in _cc, str(_cc.count("window.__K")))
+check("the frame URLs carry that token (an <img> cannot send an Authorization header)",
+      "_cc" and "cctv.jpg?ch=" in _cc and "window.__K.slice(1)" in _cc.replace(" ", ""))
+check("the cache-buster advances on every render (a fixed value would let a phone keep showing the frame it "
+      "fetched first, which is how a dead camera looks alive)",
+      "TTL = Math.floor(Date.now()/1000)" in _cc and "x=${TTL}" in _cc, str(_cc.count("TTL")))
+check("text that comes off a camera (its HTTP reason phrase, a name in cctv.json) is escaped before it hits "
+      "the page", "function esc(" in _cc and "${esc(c.reason" in _cc and "${esc(c.name)" in _cc)
+import shutil as _sh
+if _sh.which("node"):
+    import subprocess as _sp, tempfile as _tempfile, os as _os
+    _cn = _re.compile(r"<script>(.*?)</script>", _re.S).search(_cc)
+    _cj = _tempfile.NamedTemporaryFile("w", suffix=".js", delete=False)
+    _cj.write(_cn.group(1) if _cn else ""); _cj.close()
+    check("the camera page's own script parses as JavaScript (Python's ast proves nothing about JS)",
+          _cn is not None and _sp.run(["node", "--check", _cj.name], capture_output=True).returncode == 0)
+    _os.unlink(_cj.name)
 
 
 print("\n%d checks failed" % len(FAILS))

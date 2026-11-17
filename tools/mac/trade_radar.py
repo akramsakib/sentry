@@ -17,7 +17,10 @@ cycle on their own jobs. No Arena session, cookie feed or chat bridge is involve
 on request (2026-11-17) — the desk used to wake an agent on urgent lines and that coupling is removed.
 Digest email every DIGEST_H hours with positions + P&L + recent events + the graded record.
 """
-import json, os, re, smtplib, subprocess, sys, threading, time
+import json, os, re, smtplib, socket, subprocess, sys, threading, time
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -107,13 +110,20 @@ def firewall_state():
 
 
 def tailscale_hint():
+    """{"ip":..., "up":bool}. The address belongs to a CONFIGURED tail; whether it can be used right now
+    depends on the daemon running, so both facts are reported and the page words them differently."""
+    up = None
+    try:
+        st = subprocess.run(["tailscale", "status"], capture_output=True, text=True, timeout=6)
+        up = "Tailscale is stopped" not in (st.stdout or "") and (st.returncode == 0)
+    except Exception:
+        up = None
     try:
         r = subprocess.run(["tailscale", "ip", "-4"], capture_output=True, text=True, timeout=6)
-        ip = (r.stdout or "").strip()
+        ip = ((r.stdout or "").strip().splitlines() or [""])[0].strip()
     except Exception:
         return None
-    ip = ip.splitlines()[0].strip() if ip else ""
-    return ip if ip.count(".") == 3 and ip.startswith("100.") else None
+    return {"ip": ip, "up": up} if ip.count(".") == 3 and ip.startswith("100.") else None
 
 
 
@@ -242,8 +252,16 @@ def snapshot():
     ip = lan_ip()
     snap["access"] = {"lan_ip": ip, "port": PORT,
                       "phone_url": ("http://%s:%d/?k=%s" % (ip, PORT, security_key())) if ip else None,
+                      "cctv_url": ("http://%s:%d/cctv?k=%s" % (ip, PORT, security_key())) if ip else None,
                       "tailscale_ip": tailscale_hint(), "firewall": firewall_state(),
                       "token_len": len(security_key())}
+    try:
+        _c = cctv_state()
+        snap["cctv"] = {"n_ok": _c["n_ok"], "n_total": _c["n_total"], "cfg": _c["cfg"],
+                        "tiles": [{k: v for k, v in t.items() if k != "img"} for t in _c["tiles"]],
+                        "discovery": _c["discovery"]}
+    except Exception as e:
+        snap["cctv"] = {"error": "%s: %s" % (type(e).__name__, str(e)[:120])}
     snap["channels"] = {"gmail_cfg": os.path.exists(SMTP_F),
                         "notifier": os.path.exists(BASE + "/hermes-notifier"),
                         "webhook": os.environ.get("HERMES_ALERT_WEBHOOK", "").strip()[:60] or None,
@@ -295,7 +313,6 @@ def send_webhook(line):
     if not url.startswith("http"):
         return None                              # not configured: a fact to display, not an error
     try:
-        import urllib.request
         req = urllib.request.Request(url, data=json.dumps({"text": line[:1000]}).encode(),
                                      headers={"Content-Type": "application/json"}, method="POST")
         urllib.request.urlopen(req, timeout=4).read()
@@ -337,6 +354,166 @@ def digest_loop():
                     f"POSITIONS:\n{pos}\n\nWORKING ORDERS:\n{ords}\n\n"
                     f"SENTRY JOURNAL (tail):\n{s.get('journal_tail','')}\n\n— Trade Radar")
             send_gmail(f"Hermes digest — float {s.get('float_pl', 0)} ({s['kl']} KL)", body)
+
+
+# ---------------------------------------------------------------- cctv: every channel, one tile each
+# He asked for the cameras on a second page of the same desk. Two rules here:
+#   1. the NVR password stays on this Mac (cctv.json, chmod 600) — the browser is given a proxied
+#      /cctv.jpg?ch=N, so the secret never travels to the phone and never appears in a URL;
+#   2. a tile is a fact, not a placeholder. An unreachable or unauthenticated camera shows WHY in the tile
+#      (401 vs refused vs no config) instead of a fake black square, because a blank CCTV tile reads as
+#      "nothing happening" and that is the one lie a camera page is not allowed to tell.
+CCTV_F = BASE + "/cctv.json"
+try:                       # a bad value must not take the desk down: clamp, never raise
+    CCTV_TTL = max(1.0, float(os.environ.get("CCTV_TTL", "8")))
+except Exception:
+    CCTV_TTL = 8.0
+_cctv_cache = {}
+
+
+def cctv_cfg():
+    """{"host":..., "user":..., "password":..., "channels":[{"name":..., "no":1}]} or {} if not configured.
+
+    Deliberately tolerant: a missing file is a normal state (the page explains it), a corrupt one is
+    reported with the parse error rather than silently treated as "no cameras".
+    """
+    out = {"present": os.path.exists(CCTV_F)}
+    if not out["present"]:
+        return out
+    try:
+        j = json.load(open(CCTV_F))
+    except Exception as e:
+        out["error"] = "cctv.json unreadable: %s" % e
+        return out
+    out.update(j)
+    return out
+
+
+def cctv_discover():
+    """Ask the LAN for the box that answers on 37777 (Dahua/NVR's private TCP port) or 554 (RTSP).
+
+    Discovery, not scanning: it reads the Mac's own ARP table and probes those hosts only, so it works on a
+    guest VLAN where a sweep would be blocked and it never touches a machine the desk is not already talking to.
+    """
+    try:
+        r = subprocess.run(["arp", "-a"], capture_output=True, text=True, timeout=8)
+        hosts = sorted({w.strip("()") for w in r.stdout.split()
+                        if re.fullmatch(r"10*\.\d+\.\d+\.\d+", w.strip("()"))})
+    except Exception:
+        return {"error": "arp not runnable here", "found": []}
+    found = []
+    for h in hosts:
+        if h.endswith(".1") or h == lan_ip():
+            continue
+        for port, why in ((37777, "NVR service"), (554, "RTSP"), (80, "web")):
+            try:
+                sk = socket.create_connection((h, port), timeout=0.35)
+                sk.close()
+                found.append({"ip": h, "port": port, "what": why})
+                break
+            except Exception:
+                continue
+    return {"found": found, "probed": len(hosts)}
+
+
+def _cctv_open(url, cfg, timeout=6.0):
+    """One GET with the auth method this NVR actually accepts.
+
+    Dahua firmware rejects HTTP Basic on the CGI endpoints and requires the cookie that /privkey/ sets, so
+    we do that dance once per process. Kept in one function because the page, the tile and the health probe
+    must all agree on what "reachable" means.
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": "hermes-desk/1.0"})
+    host, user, pw = cfg.get("host"), cfg.get("user") or "", cfg.get("password") or ""
+    if user:
+        # privkey cookie first (Dahua's own web UI does exactly this); harmless on other firmwares.
+        key = "%s:%s" % (user, pw)
+        jar_key = "_jar"
+        if jar_key not in _cctv_cache:
+            try:
+                ck = urllib.request.urlopen("http://%s/privkey/%s" % (host, urllib.parse.quote(key)),
+                                            timeout=timeout).read().decode().strip()
+                if "=" in ck:
+                    _cctv_cache[jar_key] = ck
+            except Exception:
+                pass
+        if jar_key in _cctv_cache:
+            req.add_header("Cookie", _cctv_cache[jar_key])
+        import base64
+        req.add_header("Authorization", "Basic " + base64.b64encode(key.encode()).decode())
+    return urllib.request.urlopen(req, timeout=timeout)
+
+
+def cctv_tile(ch, cfg=None):
+    """(jpeg_bytes, status_dict). Never raises: a camera that is down is a state to display."""
+    cfg = cfg or cctv_cfg()
+    st = {"name": ch.get("name") or ("channel %s" % ch.get("no")), "no": ch.get("no"),
+          "host": cfg.get("host"), "ok": False, "reason": None, "ts": int(time.time())}
+    if not cfg.get("present"):
+        st["reason"] = "no cctv.json yet — write the NVR's IP + login into ~/hermes_sentry/cctv.json"
+        return None, st
+    if cfg.get("error"):
+        st["reason"] = cfg["error"]
+        return None, st
+    if not cfg.get("host"):
+        st["reason"] = "cctv.json has no \"host\""
+        return None, st
+    path = ch.get("snapshot") or "/cgi-bin/snapshot.cgi?channel=%s" % (ch.get("no") or 1)
+    if not (cfg.get("user") and cfg.get("password")):
+        # Not a black square and not a guess: the box says 401, so we say the login is missing. Named
+        # separately from a REFUSED login, because those need different fixes (fill it in vs check it).
+        st["needs_auth"] = True
+        st["reason"] = ("cctv.json has no %s yet — put the NVR login in ~/hermes_sentry/cctv.json"
+                        % ("password" if cfg.get("user") else "user/password"))
+        return None, st
+    url = "http://%s%s" % (cfg.get("host", "") + (":%s" % cfg["port"] if cfg.get("port") else ""), path)
+    ck = (url, st["ts"] // CCTV_TTL)
+    if ck in _cctv_cache:
+        img, ist = _cctv_cache[ck]
+        st.update(ist); st["cached"] = True
+        return img, st
+    try:
+        r = _cctv_open(url, cfg)
+        body = r.read()
+        st["ok"] = True
+        st["bytes"] = len(body)
+        st["type"] = r.headers.get("Content-Type", "?")
+        if body[:3] != b"\xff\xd8\xff":          # not a JPEG: a login page, an error page, a redirect
+            st["ok"] = False
+            st["reason"] = ("answered %d B but not a JPEG (%s) — wrong snapshot path for this model"
+                            % (len(body), st["type"]))
+    except urllib.error.HTTPError as e:
+        st["reason"] = {401: "401 — the login in cctv.json was refused",
+                        403: "403 — the account cannot view this channel",
+                        404: "404 — this firmware serves snapshots at a different path"}.get(
+                            e.code, "HTTP %s" % e.code)
+    except Exception as e:
+        st["reason"] = "%s: %s" % (type(e).__name__, str(e)[:90])
+    if st["ok"]:
+        _cctv_cache[ck] = (body, dict(st))
+    return (body if st["ok"] else None), st
+
+
+def cctv_state():
+    cfg = cctv_cfg()
+    chans = cfg.get("channels") or []
+    if not chans and cfg.get("present") and not cfg.get("error"):
+        chans = [{"name": "ch %d" % i, "no": i} for i in range(1, int(cfg.get("count", 4)) + 1)]
+    tiles, imgs = [], {}
+    for ch in chans[:16]:
+        img, st = cctv_tile(ch, cfg)
+        tiles.append(st)
+        if img:
+            imgs[st["no"]] = img
+    if not cfg.get("present"):
+        tiles = [{"name": "not configured", "ok": False,
+                  "reason": "no cctv.json — write the NVR's IP + login into ~/hermes_sentry/cctv.json; "
+                            "the desk will then show every channel here"}]
+    return {"cfg": {"present": cfg.get("present", False), "error": cfg.get("error"),
+                    "host": cfg.get("host"), "user": cfg.get("user"),
+                    "has_password": bool(cfg.get("password")), "port": cfg.get("port")},
+            "tiles": tiles, "imgs": imgs, "n_ok": sum(1 for t in tiles if t.get("ok")),
+            "n_total": len(tiles), "discovery": (None if cfg.get("present") else cctv_discover())}
 
 # ---------------- dashboard ----------------
 HTML = r'''<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -410,6 +587,11 @@ async function tick(){
             ? 'LOCAL ONLY' : (d.channels&&d.channels.webhook?'webhook':'mail'),
            (d.channels&&(d.channels.gmail_cfg||d.channels.webhook))?'up':'flat')+
       card('Alerts queued', d.channels?d.channels.queued:'-');
+    const cc = d.cctv||{};
+    document.getElementById('cards').insertAdjacentHTML('beforeend',
+      card('CCTV', (cc.n_ok!==undefined? (cc.n_ok+'/'+(cc.n_total||0)) : '?')+
+           ' <a href="cctv'+(window.__K||'')+'" style="font-size:11px;font-weight:400">open →</a>',
+           cc.n_ok ? 'up' : 'flat'));
     const a = d.access||{};
     const fw = a.firewall||{};
     document.getElementById('phone').innerHTML =
@@ -418,9 +600,11 @@ async function tick(){
                      : 'no LAN address right now (WiFi off?) — localhost still works')
       + '</div><div style="color:#7f8ea3;margin-top:4px">'
       + (fw.probed ? (fw.enabled ? 'macOS firewall <b>ON</b> — if the phone cannot load it, allow /usr/bin/python3 in Firewall, or use Tailscale' : 'macOS firewall off') : 'firewall state unknown')
-      + (a.tailscale_ip ? ' · Tailscale <b>'+a.tailscale_ip+':'+a.port+'</b> (works away from home; tunnel currently stopped)' : '')
+      + (a.tailscale_ip ? ' · Tailscale <b>'+a.tailscale_ip.ip+':'+a.port+'</b> '
+        + (a.tailscale_ip.up ? '(up — works away from home)' : '(configured but stopped: sudo tailscaled && tailscale up)') : '')
       + ' · localhost needs no token, anything else does ('+(a.token_len||0)+' chars)</div>'
       + ' <button id="cmpb">compact</button>'
+      + (a.cctv_url ? ' \u00b7 <a href="' + a.cctv_url + '">CCTV page</a>' : '')
       + (a.lan_ip ? ' <button id="cpb">copy link</button>' : '') + '</div>';
     const rec = d.record||{};
     const rrows = [];
@@ -460,6 +644,86 @@ EMBED = '''<!DOCTYPE html><html><body style="margin:0;background:#0b0f17;color:#
 document.getElementById('s').textContent='float '+(d.float_pl||0)+' USD · '+(d.positions||[]).length+' pos · '+(d.orders||[]).length+' orders · '+((d.record&&d.record.overall&&d.record.overall.line)||'win rate —')+' · sentry '+(d.sentry_alive?'LIVE':'DOWN');}catch(e){}}
 t();setInterval(t,15000);</script></body></html>'''
 
+CCTV_HTML = r"""<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes CCTV</title><style>
+body{background:#0b0f17;color:#d7e0ea;font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:14px}
+h1{font-size:18px;margin:0 0 4px}.sub{color:#7f8ea3;font-size:12px;margin-bottom:12px}
+a{color:#2ecc71}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr;gap:7px}body{padding:9px}h1{font-size:16px}}
+.cam{background:#121a26;border:1px solid #1e2a3a;border-radius:10px;overflow:hidden}
+.cam h3{margin:0;padding:7px 9px;font-size:12px;font-weight:600;color:#9fb2c8;display:flex;justify-content:space-between}
+.cam .bd{position:relative;min-height:150px;background:#0e1520;display:flex;align-items:center;justify-content:center}
+.cam img{width:100%;display:block;image-rendering:auto}
+.err{padding:16px 12px;color:#e74c3c;font-size:12px;white-space:pre-wrap;text-align:left}
+.warn{color:#f1c40f}
+.k{color:#7f8ea3;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700}
+.p-ok{background:#123b25;color:#2ecc71}.p-bad{background:#3b1212;color:#e74c3c}.p-wait{background:#3b2f12;color:#f1c40f}
+.note{background:#101826;border:1px solid #1e2a3a;border-radius:10px;padding:12px;margin:12px 0;font-size:13px}
+code{background:#0e1520;border-radius:4px;padding:1px 5px;font-size:12px}
+button{background:#16202e;color:#d7e0ea;border:1px solid #1e2a3a;border-radius:8px;padding:5px 10px;font-size:12px}
+</style></head><body>
+<h1>🎥 CCTV — all channels</h1>
+<div class="sub">same desk, same server, same token · <span id="age"></span> ·
+  <button onclick="go()">refresh</button> <a href="./">← trading radar</a></div>
+<div id="hdr"></div>
+<div class="grid" id="grid"></div>
+<div id="foot"></div>
+<script>
+const P = new URLSearchParams(location.search);
+window.__K = P.get('k') ? ('?k=' + P.get('k')) : '';
+        // ^ the tiles are separate requests from the page: the <img> tags and the cctv.json poll have to
+        // carry the same token the page was opened with, or a phone that passed the gate once still gets
+        // 403 on every frame and the grid stays empty. (Caught by rendering the page headlessly, not by
+        // reading it.)
+let TTL = 0;
+function esc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+                       // a camera's own text (its HTTP reason phrase, a name typed into cctv.json) lands in
+                       // the page, so nothing from the wire goes in unescaped
+function go(){
+  fetch('cctv.json' + (window.__K || ''), {cache:'no-store'}).then(r=>r.json()).then(d=>{
+    TTL = Math.floor(Date.now()/1000);   // cache-buster: a fixed value would let a phone keep showing the
+                                         // frame it fetched first, which is how a dead camera looks alive
+    const t = d.tiles||[];
+    document.getElementById('grid').innerHTML = t.map((c,i)=>
+      `<div class="cam"><h3><span>${esc(c.name)||('ch '+(c.no||i+1))}</span>`
+      + (c.ok ? '<span class="pill p-ok">LIVE</span>' : (c.needs_auth ? '<span class="pill p-wait">LOGIN</span>'
+                                                                       : '<span class="pill p-bad">DOWN</span>'))
+      + `</h3><div class="bd">`
+      + (c.ok ? `<img alt="" src="cctv.jpg?ch=${c.no}${(window.__K?'&'+window.__K.slice(1):'')}&x=${TTL}"
+                 style="cursor:zoom-in" onclick="this.dataset.big=!this.dataset.big;this.style.width=this.dataset.big==='true'?'100%':''">`
+              : `<div class="err ${c.needs_auth?'warn':''}">${esc(c.reason||'no image')}</div>`)
+      + `</div></div>`).join('') || '<div class="note">no channels listed</div>';
+    const cfg = d.cfg||{};
+    document.getElementById('hdr').innerHTML =
+      `<div class="note">${cfg.present ? ('configured: <code>'+(cfg.host||'?')+'</code>'
+        + (cfg.user?(' user <code>'+cfg.user+'</code>'):' <b class="warn">no user/password yet</b>')
+        + ` · ${d.n_ok||0}/${d.n_total||0} channels answering`)
+        : 'CCTV is not wired yet.' + (d.cfg && d.cfg.error ? ' '+d.cfg.error : '')}
+      ${!cfg.present ? `<div style="margin-top:8px">Create <code>~/hermes_sentry/cctv.json</code> (mode 600):
+        <pre style="max-height:none">{ "host": "${((d.discovery&&d.discovery.found&&d.discovery.found[0])||{}).ip||'192.168.0.x'}",
+  "user": "admin", "password": "the NVR password", "count": 8,
+  "channels": [ {"name":"Front gate","no":1}, {"name":"Car park","no":2} ] }</pre>
+        The password never leaves this Mac: the tiles below are proxied by the desk, so no browser —
+        yours or a stranger's on the WiFi — ever sees it.</div>` : ''}
+      ${(d.discovery&&d.discovery.found&&d.discovery.found.length)
+        ? '<div style="margin-top:6px;color:#7f8ea3">found on the LAN: '
+          + d.discovery.found.map(f=>`<code>${f.ip}:${f.port}</code> (${f.what})`).join(', ') + '</div>' : ''}</div>`;
+    document.getElementById('foot').innerHTML =
+      '<div class="sub" style="margin-top:14px">Thumbnails are pulled every 20 s by the desk, not streamed '
+      + 'by the phone, so this page costs almost no battery or bandwidth. Tap a tile to enlarge it. '
+      + 'The NVR itself refuses to be embedded in another page (it sends <code>X-Frame-Options: SAMEORIGIN</code>), '
+      + 'which is why this is a proxy and not an iframe.</div>';
+    try{ const el=document.getElementById('age'); el.textContent='updated '+new Date().toLocaleTimeString(); }catch(e){}
+    TTL++;
+  }).catch(()=>{ const el=document.getElementById('age'); if(el) el.textContent='desk unreachable'; });
+}
+go(); setInterval(go, 20000);
+</script></body></html>"""
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def _send(self, body, ctype):
@@ -488,16 +752,45 @@ class Handler(BaseHTTPRequestHandler):
         # is refused) because this server only ever serves three fixed routes.
         client = (self.client_address[0] if self.client_address else "") or ""
         path = self.path.split("?")[0]
-        if path not in ("/", "/index.html", "/data.json", "/embed"):
+        if path not in ("/", "/index.html", "/data.json", "/embed", "/cctv", "/cctv.json", "/cctv.jpg"):
             self.send_error(404)
             return
         if not is_local(client):
-            import urllib.parse
             qs = urllib.parse.parse_qs(self.path.split("?", 1)[1] if "?" in self.path else "")
             if qs.get("k", [""])[0] != security_key():
                 return self._denied()      # exact compare, and an absent token lands here too
         if path.startswith("/data.json"):
             self._send(json.dumps(snapshot()), "application/json")
+        elif path.startswith("/cctv.json"):
+            st = cctv_state()
+            st.pop("imgs", None)
+            st["updated"] = time.strftime("%H:%M:%S")
+            self._send(json.dumps(st), "application/json")
+        elif path.startswith("/cctv.jpg"):
+            # Proxied so the NVR password stays on the Mac. One tile per image is a design choice, not a
+            # shortcut: an <img> tag cannot send an Authorization header, and putting the login in the src
+            # URL would leak it into the phone's history and into any proxy between them.
+            qs = urllib.parse.parse_qs(self.path.split("?", 1)[1] if "?" in self.path else "")
+            want = (qs.get("ch") or ["1"])[0]
+            body = None
+            for ch, img in (cctv_state().get("imgs") or {}).items():
+                if str(ch) == str(want):
+                    body = img
+                    break
+            if not body:
+                self.send_error(503)
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            try:
+                self.wfile.write(body)
+            except Exception:
+                pass                                  # a phone that hangs up mid-jpeg must not kill the desk
+        elif path.startswith("/cctv"):
+            self._send(CCTV_HTML, "text/html")
         elif path.startswith("/embed"):
             self._send(EMBED, "text/html")
         else:

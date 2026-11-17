@@ -463,3 +463,36 @@ On the Mac, each book publishes `~/hermes_sentry/books/<book>.json` after every 
 `~/hermes_sentry/TRADING.html`. Entries for all three crypto books can be paused with
 `~/hermes_sentry/crypto_desk_mode.json` (`{"entries_enabled": false}`), which stops new entries while
 stops, exits and the graded record keep running. See `tools/mac/README.md`.
+
+## The camera page (`/cctv` on the same desk server)
+
+Sakib asked for the office CCTV on "another page", including the phone. It is a second route on the same
+process as the trading radar (`tools/mac/trade_radar.py`), on the same port, behind the same token gate —
+not a second web server, not the NVR vendor's app, and not an `<iframe>`.
+
+Why a proxy: the recorder answers on `192.168.0.133` (80/554/37777, Dahua-family) and sends
+`X-Frame-Options: SAMEORIGIN`, so a browser embedded frame is impossible; and an `<img>` tag cannot carry an
+`Authorization` header, while a login embedded in a `src` URL would leak into the phone's history. So the
+**desk** fetches one snapshot per channel on a cadence and serves it at `/cctv.jpg?ch=N`. The password never
+travels to the browser, never appears in `data.json`, `cctv.json`'s served view, or the page source — the
+state document exposes `has_password: true|false` only.
+
+Config lives on the Mac, not in this repo: `~/hermes_sentry/cctv.json`, mode 600.
+
+```json
+{"host": "192.168.0.133", "user": "admin", "password": "<the NVR web login>",
+ "count": 8, "channels": [{"name": "Front gate", "no": 1}, {"name": "Car park", "no": 2}]}
+```
+
+Three behaviours that are requirements, not preferences:
+
+- a channel with no login, a refused login, a wrong snapshot path or a dead cable prints **the reason**
+  (`needs a login` / `401 — the login was refused` / `404 — this firmware serves snapshots elsewhere` /
+  `unreachable`), because a black square on a CCTV page reads as "nothing happened";
+- discovery reads the Mac's own ARP table and probes only those hosts. There is no port sweep of the office
+  network — nothing in this project scans a LAN it does not live on;
+- the page derives its own token from `location.search` and puts it in every tile URL. Without that a phone
+  passes the gate on the page load and then 403s on every frame, which renders as an empty grid; the cache
+  buster in the same URL has to advance per render, or a phone shows the first frame it ever fetched and a
+  dead camera looks alive. Both were found by rendering the page headlessly (`node`, stub DOM) against a fake
+  NVR that answers 401 without a login, a JPEG with one, and 404 on the paths this firmware does not serve.
