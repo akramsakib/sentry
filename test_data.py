@@ -2352,5 +2352,111 @@ if _mp32 and _rp32:
     check("...and it still adds no route: the radar's forex payload grows by keys inside fx_charts only",
           _rp32 and open(_rp32, encoding="utf-8").read().count('snap["fx_charts"]') == 1, "")
 
+# ---------- 33b: the MARGIN floor — what an account can POST, not just what it can LOSE ----------
+# Found by asking the broker's own calculator (trade_order_calc_margin) instead of assuming leverage: one
+# share of NVDA costs $185.00 of margin and $185.00 notional, while its stop risks $2.50. A guard that only
+# looks at risk says "ok, 2 shares" for a $50 account and the broker then refuses it — the exact silent
+# disappearance this release was meant to end. Margin does not scale with balance, so it is a second,
+# independent floor, and it is measured from the terminal because account_info publishes no leverage at all.
+print("\n== 33b: the margin floor (posted vs lost)")
+_PROD_SRC = open(_PROD33, encoding="utf-8").read() if _PROD33 else ""
+if _sm33:
+    check("the broker's answer is read from the reply AS IT ARRIVES: no symbol echo (there is none), ok must "
+          "be true, and a figure in another currency is refused rather than compared against USD",
+          _sm33.parse_margin('{"result":{"isError":false,"content":[{"text":"{ "ok": true, "margin": 10.9800,'
+                             ' "currency": "USD" }"}]}}', "EURUSD", "USD") == 10.98
+          and _sm33.parse_margin('"ok": true, "margin": 10.98, "currency": "JPY"', "EURUSD", "USD") is None
+          and _sm33.parse_margin('"ok": false, "margin": 10.98', "EURUSD") is None
+          and _sm33.parse_margin("", "EURUSD") is None, "")
+    check("a parse helper that can never pass is WORSE than none: the first version demanded the symbol appear "
+          "in a reply that does not echo it, which would have read as 'the broker refused' forever",
+          "margin" not in _sm33.parse_margin.__doc__.lower()[:0] and _sm33.parse_margin(
+              '{"ok": true, "margin": 26.6, "currency": "USD"}', "XAUUSD") == 26.6, "")
+
+    # measured from the live terminal on 2026-11-18 via trade_order_calc_margin (margin follows PRICE, not
+    # the account, so AMD is $510 here and not the $220 a hand-picked price suggested -- which is exactly
+    # why the resident measures it instead of computing it from an assumed leverage)
+    _M50 = {"EURUSD": 11.00, "GBPUSD": 13.21, "XAUUSD": 38.47, "NVDA": 158.71, "AMD": 510.63}
+    _eq50 = 50.0
+    _n_ok = _sm33.size_report("EURUSD", 0.0045, 78.0, _eq50, 0.10, margin=_M50["EURUSD"])
+    check("EURUSD on $50 clears BOTH floors: $10.98 of margin against $50 of equity, and the 0.01 lot risks "
+          "$4.50 once the risk cap bites -- so it trades at the minimum lot",
+          _n_ok["verdict"] == "ok" and abs(_n_ok["lots"] - 0.01) < 1e-9 and _n_ok["margin"] == 11.00, str(_n_ok))
+    _n_nv = _sm33.size_report("NVDA", 2.5, 78.0, _eq50, 0.10, margin=_M50["NVDA"])
+    check("NVDA is refused on MARGIN, not on risk: the risk figure is the smallest on the board ($2.50/stop) "
+          "and one whole share still costs $185 to post. The verdict is its own kind, so the desk can say "
+          "'cannot be opened' rather than 'too risky'",
+          _n_nv["verdict"] == "min_margin_too_big" and _n_nv["lots"] == 0.0 and _n_nv["margin_needed"] == 158.71
+          and "cannot be opened at any risk size" in _n_nv["why"], str(_n_nv))
+    check("...and the refusal names the unit it measured, so a reader sees this is about ONE SHARE, not a lot",
+          "$158.71 of margin" in _n_nv["why"] and "1.0" in _n_nv["why"], _n_nv["why"][:160])
+    check("gold is refused by the RISK floor (26.60 of margin fits, $33.40 of risk does not), which is how "
+          "we know the two checks are separate and neither one is standing in for the other",
+          _sm33.size_report("XAUUSD", 33.40, 78.0, _eq50, 0.10, margin=_M50["XAUUSD"])["verdict"]
+          == "min_lot_too_big", "")
+    check("the margin floor is a NO-OP on the account that is running: $185 of margin against $101k is not a "
+          "constraint, and the sizes do not move by a cent",
+          _sm33.size_report("NVDA", 2.5, 78.0, 101155.96, 0.10, margin=510.63)["verdict"] == "ok"
+          and abs(_sm33.size_report("EURUSD", 0.0045, 78.0, 101155.96, 0.10,
+                                    margin=10.98)["lots"] - 0.17) < 1e-9, "")
+    check("an UNMEASURED margin never blocks and never claims clearance: the risk floor alone decides, and "
+          "the report says the other check did not run",
+          _sm33.size_report("NVDA", 2.5, 78.0, _eq50, 0.10)["verdict"] == "ok"
+          and _sm33.size_report("NVDA", 2.5, 78.0, _eq50, 0.10)["margin"] is None, "")
+    check("free margin, not equity, is what the check is honest about - the why says the account would have "
+          "less once other positions are counted, so the number is never read as headroom",
+          "not free margin" in _n_nv["why"], _n_nv["why"][-120:])
+
+    _gl2 = _sm33.fmt_guard_line({"equity": 50.0, "max_frac": 0.10, "risk_cap": 5.0,
+                                 "min_lot": {"EURUSD": 0.01, "NVDA": 1.0},
+                                 "margin_floor": {"EURUSD": 10.98, "NVDA": 185.0}})
+    check("the desk line prints both floors, so 'why is there no NVDA trade' is answerable from the page",
+          "broker floor: EURUSD 0.01 lot, NVDA 1.0 lot" in _gl2
+          and "margin for one unit: EURUSD $10.98, NVDA $185.00" in _gl2, _gl2)
+    check("...and when the margin was never measured it says so on the same line, rather than letting the "
+          "risk ceiling look like the whole story",
+          "margin floor NOT measured" in _sm33.fmt_guard_line({"equity": 50.0, "max_frac": 0.10,
+                                                                "min_lot": {"EURUSD": 0.01}}), "")
+    check("no equity read prints no margin complaint either (there is nothing to compare against)",
+          "NOT measured" not in _sm33.fmt_guard_line({"equity": None, "max_frac": 0.10,
+                                                      "min_lot": {"EURUSD": 0.01}}), "")
+
+    # the cache round-trips through the published state, which is how a restart keeps the check
+    check("the floors the cycle used are published (min_lot AND margin_floor), so a restart re-measures "
+          "nothing it already knows and the desk shows what was actually applied",
+          '"margin_floor": {s: MARGIN[s] for s in (SYMS or []) if s in MARGIN}' in _PROD_SRC
+          and 'MARGIN.update({str(k): float(v) for k, v in (state.get("margin_floor") or {}).items()'
+          in _PROD_SRC, "")
+    check("the measurement is capped and cached: at most 10 new symbols per cycle, only symbols not already "
+          "known, through the same bridge as everything else (no new network path)",
+          "for _s in _todo[:10]" in _PROD_SRC and "_todo = [s for s in SYMS if s not in MARGIN]" in _PROD_SRC
+          and "trade_order_calc_margin" in _PROD_SRC, "")
+    check("a symbol the terminal would not answer for is journalled as unchecked, so silence is not read as "
+          "clearance",
+          "margin floor NOT measured for" in _PROD_SRC
+          and "same as being clear to trade" in _PROD_SRC, "")
+
+    # and the pages must show the new verdict kind without knowing it exists
+    if _mp32:
+        _m33b = _load32("desk_monitor33b", _mp32)
+        _d33e = _desk32(_fx_state(
+            sizing={"equity": 50.0, "max_frac": 0.1, "risk_cap": 5.0, "capped_today": 0,
+                    "min_lot": {"EURUSD": 0.01, "NVDA": 1.0}, "margin_floor": {"EURUSD": 10.98, "NVDA": 185.0},
+                    "refused_today": {"min_margin_too_big": 6, "min_lot_too_big": 11}},
+            guard_line=_sm33.fmt_guard_line({"equity": 50.0, "max_frac": 0.1, "risk_cap": 5.0,
+                                             "min_lot": {"EURUSD": 0.01, "NVDA": 1.0},
+                                             "margin_floor": {"EURUSD": 10.98, "NVDA": 185.0},
+                                             "refused_today": {"min_margin_too_big": 6, "min_lot_too_big": 11}})))
+        _m33b.ROOT, _m33b.BOOKS = _d33e, os.path.join(_d33e, "books")
+        _c33e = _m33b.fx_section()
+        _md33e = _m33b.to_markdown([], _c33e, "t")
+        check("the desk renders the new verdict counts verbatim (it is a passthrough, so a verdict this page "
+              "has never heard of still shows up)",
+              "min_margin_too_big x6" in _md33e and "$185.00" in _md33e and "min_lot_too_big x11" in _md33e,
+              [l[:100] for l in _md33e.splitlines() if "sizing floor" in l])
+        check("...and the radar gets the same string, unedited",
+              _load32("desk_radar33b", _rp32).fx_charts_block(_fx_state(guard_line=_c33e["guard_line"]))
+              ["guard_line"] == _c33e["guard_line"], "")
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

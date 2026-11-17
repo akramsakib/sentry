@@ -41,6 +41,7 @@ CRYPTO_BASES = [("BTC", "BTCUSD|BTCUSDT|XBTUSD"), ("ETH", "ETHUSD|ETHUSDT"), ("X
                 ("AVAX", "AVAXUSD"), ("DOT", "DOTUSD")]
 MAX_CRYPTO = 10
 MULT, THEME, DIGITS, VSPEC = {}, {}, {}, {}      # sym -> contract $/unit, theme, digits, (vmin, vstep, vmax)
+MARGIN = {}          # sym -> margin the broker requires for ONE minimum-size position
 FX, CRYPTO_SET, EQUITY_SET, SYMS = set(), set(), set(), []
 
 # Fallback used when catalog discovery is unavailable (classic Arena Trader set)
@@ -793,7 +794,54 @@ def risk_max_frac():
     except Exception:
         return MAX_RISK_FRAC
 
-def size_report(sym, stop_dist, risk, equity=None, max_frac=None):
+def parse_margin(out, sym, ccy=None):
+    """The margin the broker asked for the size we asked about, or None.
+
+    It does NOT try to confirm the symbol: trade_order_calc_margin answers with the figure and its currency
+    and does not echo the symbol back (proved against the live reply), and a check that can never pass is
+    worse than no check — it reads as 'the broker refused' when it means 'we could not read'. What it does
+    insist on: ok is true, the number is a number, and the currency is the account's own. A reply denominated
+    in something else is refused as unknown rather than compared against a USD balance.
+    """
+    # Two transports, two shapes: FETCH pipes the bridge through tr -d of the backslash, mcp_call does not,
+    # so the same field arrives escaped from one and clean from the other. Drop every backslash before
+    # matching: no figure parsed below can contain one, and a regex that only fits the clean form returns
+    # None -- which the caller would report as "the terminal would not answer", a true
+    # statement about this parser and an unfair one about the terminal.
+    t = (out or "")[:4000].replace(chr(92), "")
+    t = re.sub(r"^data: *", "", t)
+    if re.search(r'.?"ok".?.?:[^0-9]*(false|False|0)', t): return None
+
+    m = re.search(r'"margin":\s*([0-9.]+)', t)
+    if not m: return None
+    c = re.search(r'"currency"\s*:\s*"([A-Za-z]{3})"', t)
+    if ccy and c and c.group(1).upper() != str(ccy).upper(): return None
+    v = float(m.group(1))
+    return round(v, 4) if v > 0 else None
+
+def measure_margin(sym, quotes, ccy=None):
+    """Ask the broker what ONE minimum-size position costs in margin. Never guessed from leverage.
+
+    Margin is a second floor and it is independent of the balance, so it is the only thing that can make a
+    trade impossible on a small account while the R it risks looks tiny: one share of a $185 stock risks
+    $2.50 to the stop and still cannot be posted on $50. Returns None when the terminal will not say, and
+    the caller must then size without this check and say so -- absence of a number is not a licence.
+    """
+    vmin = VSPEC.get(sym, (0.01, 0.01, 1e6))[0]
+    q = quotes.get(sym) if isinstance(quotes, dict) else None
+    px = _num((q or {}).get("bid")) or _num((q or {}).get("ask")) or 0.0
+    for price in (px, 0.0):
+        if price <= 0: price = 1.0          # the terminal re-prices at market when it has no tick
+        try:
+            r = mcp_call("trade_order_calc_margin", json.dumps(
+                {"symbol": sym, "type": "buy", "volume": vmin, "price": price}))
+            m = parse_margin(r, sym, ccy)
+            if m and m > 0: return round(m, 4)
+        except Exception:
+            continue
+    return None
+
+def size_report(sym, stop_dist, risk, equity=None, max_frac=None, margin=None, margin_frac=0.95):
     """Decide a volume the way the broker will, and say why when it cannot be done.
 
     verdicts: ok | round_up_to_min_lot (the intent is smaller than the floor, so the floor is traded and
@@ -809,7 +857,7 @@ def size_report(sym, stop_dist, risk, equity=None, max_frac=None):
     out = {"sym": sym, "risk_asked": round(risk, 2), "risk": round(risk, 2), "capped": False,
            "stop_dist": stop_dist, "vmin": vmin, "vstep": vstep,
            "vmax": vmax, "contract": mult, "lots_wanted": 0.0, "lots": 0.0, "min_lot_risk": None,
-           "risk_actual": None, "frac_of_equity": None, "equity": equity, "max_frac": max_frac,
+           "risk_actual": None, "frac_of_equity": None, "equity": equity, "max_frac": max_frac, "margin": margin, "margin_frac": margin_frac,
            "equity_known": bool(equity and equity > 0), "verdict": "ok", "why": ""}
     stop_dist = _num(stop_dist)
     if not stop_dist or stop_dist <= 0 or not mult:
@@ -817,6 +865,14 @@ def size_report(sym, stop_dist, risk, equity=None, max_frac=None):
         return out
     per_lot = stop_dist * mult
     out["min_lot_risk"] = round(vmin * per_lot, 2)
+    # The margin floor FIRST, because it is not a risk question: a $185 notional cannot be posted on $50
+    # however small its stop is. Measured, never derived -- leverage is not even published by account_info.
+    if margin and isinstance(equity, (int, float)) and equity > 0 and margin > margin_frac * float(equity):
+        out.update(lots=0.0, verdict="min_margin_too_big",
+                   why="the broker needs $%.2f of margin for one %s unit and the account holds $%.2f, so "                       % (float(margin), vmin, float(equity))
+                       + "the trade cannot be opened at any risk size (equity is not free margin: other "                         "positions would reduce what is available here)",
+                   margin_needed=float(margin))
+        return out
     # The band is a wish; the account is the fact. Without this line a $50 base keeps asking for the same
     # $50-$200 the $101k demo asks for, which is 100-400% of it, and every order dies at the broker with
     # "not enough money" instead of being sized to what the account can actually lose.
@@ -909,6 +965,12 @@ def fmt_guard_line(s):
     fl = ", ".join("%s %s lot" % (k, ml[k]) for k in sorted(ml)[:6] if ml.get(k))
     if fl:
         bits.append("broker floor: " + fl)
+    mfl = s.get("margin_floor") or {}
+    if mfl:
+        bits.append("margin for one unit: " + ", ".join("%s $%s" % (k, format(mfl[k], ",.2f"))
+                                                         for k in sorted(mfl)[:6]))
+    elif ml and isinstance(eq, (int, float)) and eq > 0:
+        bits.append("margin floor NOT measured, so a size this account cannot post would not be caught here")
     if s.get("risk_cap") is not None:
         bits.append("so one trade risks at most $%s here" % format(s["risk_cap"], ",.2f"))
     if s.get("capped_today"):
@@ -1075,6 +1137,8 @@ def main():
             open_orders = re.findall(r'"order_id": "(\d+)".*?"symbol": "([A-Za-z0-9._\-]+)".*?"type": "([\w ]+)".*?"state": "(\w+)".*?"price_order": ([0-9.]+)', positions, re.S)
             bridge = "up" if str(bridge).strip().lower().startswith("up") else "down"
             state["bridge"] = bridge
+            MARGIN.update({str(k): float(v) for k, v in (state.get("margin_floor") or {}).items()
+                       if isinstance(v, (int, float))})
             acc = parse_account(acct_raw)
             if acc.get("equity") is not None:
                 acc["asof"] = kl_now().strftime("%Y-%m-%d %H:%M:%S KL")
@@ -1106,7 +1170,28 @@ def main():
                         f"{len(open_orders)} (prices may be from the last cycle that reached the terminal)")
             else:
                 journal(f"scan ok — quotes {list(quotes)} · book items {len(open_orders)}")
-            chart_thin = {}             # which symbol was skipped this cycle, and for want of what
+            # One broker round-trip per symbol never yet measured. Cached in state.json because the answer
+            # moves with price by cents while a wrong or missing answer changes what the account can trade,
+            # and because a restart should not have to ask again to stay safe.
+            if quotes:
+                _todo = [s for s in SYMS if s not in MARGIN]
+                if _todo:
+                    _mc = {}
+                    for _s in _todo[:10]:
+                        _m = measure_margin(_s, quotes, (state.get("account") or {}).get("currency"))
+                        if _m:
+                            MARGIN[_s] = _m
+                            _mc[_s] = _m
+                    if _mc:
+                        journal("margin floor measured (broker's own calc): "
+                                + ", ".join("%s $%.2f" % (k, _mc[k]) for k in sorted(_mc)))
+                    _miss = [s for s in _todo if s not in MARGIN]
+                    if _miss:
+                        journal("NOTE — margin floor NOT measured for " + ", ".join(_miss)
+                                + ": the terminal would not answer trade_order_calc_margin, so the only size"
+                                  " check on those symbols is the risk one. On a small account that is not the"
+                                  " same as being clear to trade.")
+                state["margin_floor"] = dict(MARGIN)
             for sym in quotes:
                 tf = tf_map.get(sym, {})
                 m5 = tf.get("M5", []); m15 = tf.get("M15", []); h1 = tf.get("H1", [])
@@ -1157,7 +1242,8 @@ def main():
                     if len(state["orders"]) >= MAX_SENTRY_ORDERS_DAY:
                         journal_alert(f"NOTE — {sym} {skill}: entry #{len(state['orders'])+1} today over soft cap — advisory only, FULL FREEDOM mode")
                     if dup(otype, entry): return
-                    rep = size_report(sym, abs(sl - entry), risk, state.get("_equity"), risk_max_frac())
+                    rep = size_report(sym, abs(sl - entry), risk, state.get("_equity"), risk_max_frac(),
+                                        margin=MARGIN.get(sym))
                     if rep["verdict"] not in ("ok", "round_up_to_min_lot"):
                         # This used to be the build's loudest silence: sz() returned 0 when the size the risk
                         # implied was under the broker's minimum lot, and the candidate simply vanished.
@@ -1396,6 +1482,7 @@ def main():
                                "guard_on": bool(state.get("_equity")) and risk_max_frac() > 0,
                                "refused_today": refus, "min_lot": {s: VSPEC.get(s, (0.01, 0.01, 1e6))[0]
                                                                    for s in (SYMS or [])[:10]},
+                               "margin_floor": {s: MARGIN[s] for s in (SYMS or []) if s in MARGIN},
                                "contract": {s: MULT.get(s) for s in (SYMS or [])[:10]}}
             state["account_line"] = fmt_account_line(state.get("account") or {})
             state["guard_line"] = fmt_guard_line(state.get("sizing") or {})
