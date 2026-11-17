@@ -53,7 +53,11 @@
   "FIRE|DOGE/USD|C-M15-bear-engulfing|2026-11-17",
   "FIRE|ADA/USD|C-M15-tweezer-top|2026-11-17",
   "FIRE|LINK/USD|C-M15-bear-engulfing|2026-11-17",
-  "FIRE|AVAX/USD|C-M15-tweezer-top|2026-11-17"
+  "FIRE|AVAX/USD|C-M15-tweezer-top|2026-11-17",
+  "FIRE|SOL/USD|S18-rsi2-long|2026-11-17",
+  "FIRE|LINK/USD|C-M15-tweezer-bottom|2026-11-17",
+  "FIRE|LTC/USD|C-M15-tweezer-bottom|2026-11-17",
+  "FIRE|AVAX/USD|C-M15-evening-star|2026-11-17"
  ],
  "open_cids": {
   "sentryBCHUSD1794910860071n36": {
@@ -80,7 +84,7 @@
    "skill": "S18-ma-revert-long",
    "be": 63278.87,
    "sent_sl": 63278.87,
-   "last_price": 64211.62
+   "last_price": 64004.94
   },
   "XRP/USD": {
    "side": "long",
@@ -92,7 +96,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 0.94357771,
-   "last_price": 0.9578
+   "last_price": 0.9549
   },
   "SOL/USD": {
    "side": "long",
@@ -104,7 +108,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 70.01853421,
-   "last_price": 72.41
+   "last_price": 72.02
   },
   "LINK/USD": {
    "side": "long",
@@ -116,7 +120,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 9.0694641,
-   "last_price": 9.128
+   "last_price": 9.09
   },
   "ETH/USD": {
    "side": "long",
@@ -128,11 +132,11 @@
    "skill": "S4-band-fade-long",
    "be": null,
    "sent_sl": null,
-   "last_price": null
+   "last_price": 1786.11
   }
  },
  "cid_seq": 36,
- "last_cycle": 1794912066.7049437,
+ "last_cycle": 1794913156.8206232,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
@@ -414,6 +418,9 @@
   "ADA/USD|M15|tweezer-top|2026-11-17T10:00:00Z",
   "LINK/USD|M15|bear-engulfing|2026-11-17T10:00:00Z",
   "BCH/USD|M15|bear-engulfing|2026-11-17T10:00:00Z",
-  "AVAX/USD|M15|tweezer-top|2026-11-17T10:00:00Z"
+  "AVAX/USD|M15|tweezer-top|2026-11-17T10:00:00Z",
+  "LINK/USD|M15|tweezer-bottom|2026-11-17T10:15:00Z",
+  "LTC/USD|M15|tweezer-bottom|2026-11-17T10:15:00Z",
+  "AVAX/USD|M15|evening-star|2026-11-17T10:15:00Z"
  ]
 }
