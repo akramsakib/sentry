@@ -2179,6 +2179,9 @@ if _sm33:
           "say nothing rather than guess",
           _sm33.match_closes([{"rid": "F", "sym": "GBPUSD", "skill": "S2-breakout-long", "fired": True,
                                "risk": 80.0, "ts": "2026-11-18 04:00"}], _cls) == [], "")
+    check("the profit figure carries the currency it is denominated in, so a demo USD can never be read as "
+          "a wallet balance and a non-USD account cannot be silently printed as dollars",
+          _sm33.live_record([], "EUR")["currency"] == "EUR" and _sm33.live_record([])["currency"] == "USD", "")
     _lr = _sm33.live_record([dict(r, **_by.get(r["rid"], {})) for r in _rows]
                             + [{"rid": "G", "sym": "GBPUSD", "skill": "S2", "fired": True, "risk": 80.0}])
     check("live_record counts sent / graded / ungraded separately, and takes net R only over graded rows "

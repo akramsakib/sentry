@@ -755,7 +755,7 @@ def tl_grade_terminal(upd):
     except Exception:
         return False
 
-def live_record(rows):
+def live_record(rows, ccy=None):
     """What we can say about the trades that were ACTUALLY SENT — kept apart from the paper track, because
     the paper track grades the candidates the gate rejected and uses a fixed +/-1R."""
     sent = [r for r in rows if r.get("fired")]
@@ -768,7 +768,10 @@ def live_record(rows):
             "scratch": sum(1 for r in g if r["result"] == "scratch"),
             "ungraded": len(sent) - len(g), "net_r": round(sum(rs), 2),
             "net_usd": round(sum(r.get("profit") or 0 for r in term), 2),
-            "win_rate": (round(100.0 * sum(1 for r in g if r["result"] == "win") / len(g), 1) if g else None)}
+            "win_rate": (round(100.0 * sum(1 for r in g if r["result"] == "win") / len(g), 1) if g else None),
+            # carried so a reader knows what the profit figure is DENOMINATED in: a demo account's USD is not
+            # a wallet balance, and a cent- or non-USD account's numbers are not dollars at all.
+            "currency": ccy or "USD"}
 
 def tl_rows(limit=600):
     try:
@@ -1378,7 +1381,7 @@ def main():
                                           "at": kl_now().strftime("%Y-%m-%d %H:%M:%S KL")}
                 state["closed_tracked"] = [c["ticket"] for c in closed_now][-150:]
             state["closed_seen"] = len(closed_now) or None
-            state["live_record"] = live_record(rows_now)
+            state["live_record"] = live_record(rows_now, (state.get("account") or {}).get("currency"))
             refus = {}
             for r in rows_now:
                 if r.get("refuse") and str(r.get("ts", "")).startswith(str(state.get("day") or "")):
