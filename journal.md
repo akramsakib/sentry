@@ -569,3 +569,9 @@
 - **11-17 18:56 UTC** NOTE — AVAX/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
 - **11-17 18:56 UTC** NOTE — AVAX/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-17 18:56 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 3 pendings · 3 positions equity $99316.43 · 11s · venue fees $121.08 to date @ 0.02/0.05%
+- **11-17 20:20 UTC** CLOSED LINK/USD — graded loss (-1.13R net of 0.07R in venue fees) from exit 9.061
+- **11-17 20:20 UTC** CANDIDATE(score 4/5) — ADA/USD C-H1-tweezer-top sell_stop 0.15089665 sl0.15340838 tp0.14712906 — paper-graded (spot can't short)
+- **11-17 20:20 UTC** CANDIDATE(score 4/5) — ADA/USD C-H1-bear-harami sell_stop 0.15089665 sl0.15340838 tp0.14712906 — paper-graded (spot can't short)
+- **11-17 20:20 UTC** CANDIDATE(score 4/5) — LINK/USD S18-rsi2-short sell_limit 9.125 sl9.26020881 tp8.95598898 — paper-graded (spot can't short)
+- **11-17 20:20 UTC** CANDIDATE(score 4/5) — AVAX/USD C-H1-tweezer-top sell_stop 7.04100788 sl7.16298029 tp6.85804927 — paper-graded (spot can't short)
+- **11-17 20:20 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 3 pendings · 2 positions equity $99461.13 · 11s · venue fees $121.08 to date @ 0.02/0.05%
