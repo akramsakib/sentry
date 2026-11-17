@@ -2,27 +2,25 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-17 18:06 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $42,509.61 · equity $99,378.99
+**2026-11-17 18:13 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $63,996.42 · equity $99,218.29
 
-_Venue cost: 0.02 % maker / 0.05 % taker per side · **$111.65 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
+_Venue cost: 0.02 % maker / 0.05 % taker per side · **$118.58 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
 ## Orders resting on the book now (1)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| BTC/USD | buy_stop | 64180 | 0.0909312 | $5,836 | $75.00 | 63800.6 | +0.59% | 12 min |
+| BTC/USD | buy_stop | 64180 | 0.0909312 | $5,836 | $75.00 | 63800.6 | +0.59% | 19 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
-## Positions (5)
+## Positions (3)
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BCH/USD | 28.7168 | 209.26724 | 207.05 | $-63.67 | 206.65552 | 213.3295 | -0.85R |
-| ETH/USD | 7.31746 | 1793.72 | 1786.9 | $-49.91 | 1787.8905 | 1824.216 | -0.67R |
-| LINK/USD | 550.862 | 9.2056144 | 9.094 | $-61.48 | 9.0694641 | 9.3822154 | -0.82R |
-| SOL/USD | 54.3458 | 71.398586 | 72.36 | $52.25 | 70.018534 | 72.918795 | +0.70R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9572 | $-11.74 | 0.94357771 | 0.97833374 | -0.16R |
+| LINK/USD | 550.862 | 9.2056144 | 9.049 | $-86.27 | 9.0694641 | 9.3822154 | -1.15R |
+| SOL/USD | 54.3458 | 71.398586 | 72.12 | $39.21 | 70.018534 | 72.918795 | +0.52R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9543 | $-25.21 | 0.94357771 | 0.97833374 | -0.34R |
 
 ## Last 12 signals (302 ever logged)
 
@@ -43,7 +41,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 ## Accuracy so far
 
-2 graded outcomes (1 win / 1 loss) · win rate 50% · avg +0.79R · sizing today: score 3 -> $75.00 · score 4 -> $100.00 · score 5 -> $125.00
+4 graded outcomes (1 win / 3 loss) · win rate 25% · avg -0.05R · sizing today: score 3 -> $50.00 · score 4 -> $50.00 · score 5 -> $62.00
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
