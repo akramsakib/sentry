@@ -543,3 +543,13 @@
 - **11-17 18:13 UTC** CLOSED BCH/USD — graded loss (-0.93R net of 0.08R in venue fees) from exit 207.05
 - **11-17 18:13 UTC** EXIT LINK/USD: price crossed stop 9.0694641 (cur 9.049) — market close
 - **11-17 18:13 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 3 positions equity $99218.29 · 7s · venue fees $118.58 to date @ 0.02/0.05%
+- **11-17 18:28 UTC** CANDIDATE(score 4/5) — ETH/USD S18-rsi2-short sell_limit 1800.05 sl1827.49791288 tp1765.7401089 — paper-graded (spot can't short)
+- **11-17 18:28 UTC** RE-ANCHORED — ETH/USD C-M15-bull-engulfing: trigger 1791.137326 is already through the tape 1800.05 — entering at market, R recomputed (stop must sit beyond the tape (breakout trigger), not under it)
+- **11-17 18:28 UTC** ORDER BOOKED — ETH/USD C-M15-bull-engulfing (score 3/5) stop buy_stop qty 2.074834 @ 1800.05 sl1775.95168482 tp1813.91578796 · risk $50.00 · fees ~$3.71 (0.07R)
+- **11-17 18:28 UTC** CANDIDATE(score 4/5) — DOGE/USD S18-rsi2-short sell_limit 0.05888 sl0.0597379 tp0.05780762 — paper-graded (spot can't short)
+- **11-17 18:28 UTC** CANDIDATE(score 4/5) — ADA/USD S18-rsi2-short sell_limit 0.1526 sl0.1551148 tp0.1494565 — paper-graded (spot can't short)
+- **11-17 18:28 UTC** SKIP — LINK/USD C-M15-evening-star: already have pending/position in play
+- **11-17 18:28 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-bear-engulfing sell_stop 206.56396244 sl208.3050939 tp203.95226526 — paper-graded (spot can't short)
+- **11-17 18:28 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-tweezer-top sell_stop 206.56396244 sl208.3050939 tp203.95226526 — paper-graded (spot can't short)
+- **11-17 18:28 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-three-outside-down sell_stop 206.56396244 sl208.3050939 tp203.95226526 — paper-graded (spot can't short)
+- **11-17 18:28 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 2 pendings · 3 positions equity $99457.03 · 7s · venue fees $118.58 to date @ 0.02/0.05%
