@@ -817,6 +817,18 @@
    "filled_avg_price": 9.049,
    "filled_qty": 601.3096042132045,
    "filled_at": 1794939230
+  },
+  {
+   "id": "1794940119294",
+   "client_order_id": "sentryETHUSD1794940119294n38",
+   "symbol": "ETH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 2.074833847367759,
+   "limit_price": null,
+   "stop_price": 1800.05,
+   "status": "open",
+   "placed_at": 1794940119
   }
  ],
  "positions": [
@@ -827,7 +839,7 @@
    "cid": "sentryXRPUSD1794687006293n9",
    "fees": 2.65438049,
    "opened": 1794717219,
-   "current_price": 0.9543
+   "current_price": 0.9616
   },
   {
    "symbol": "XRP/USD",
@@ -836,7 +848,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9543
+   "current_price": 0.9616
   },
   {
    "symbol": "LTC/USD",
@@ -845,7 +857,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 44.06
+   "current_price": 44.417
   },
   {
    "symbol": "XRP/USD",
@@ -854,7 +866,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9543
+   "current_price": 0.9616
   },
   {
    "symbol": "SOL/USD",
@@ -863,7 +875,7 @@
    "cid": "sentrySOLUSD1794848491576n30",
    "fees": 1.94010572,
    "opened": 1794848491,
-   "current_price": 72.12
+   "current_price": 72.75
   },
   {
    "symbol": "LINK/USD",
@@ -872,7 +884,7 @@
    "cid": "sentryLINKUSD1794848491786n31",
    "fees": 2.53551142,
    "opened": 1794848491,
-   "current_price": 9.049
+   "current_price": 9.13
   }
  ],
  "fees_paid": 118.58399478
