@@ -575,3 +575,7 @@
 - **11-17 20:20 UTC** CANDIDATE(score 4/5) — LINK/USD S18-rsi2-short sell_limit 9.125 sl9.26020881 tp8.95598898 — paper-graded (spot can't short)
 - **11-17 20:20 UTC** CANDIDATE(score 4/5) — AVAX/USD C-H1-tweezer-top sell_stop 7.04100788 sl7.16298029 tp6.85804927 — paper-graded (spot can't short)
 - **11-17 20:20 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 3 pendings · 2 positions equity $99461.13 · 11s · venue fees $121.08 to date @ 0.02/0.05%
+- **11-17 20:44 UTC** FILL — DOGE/USD C-M15-bull-engulfing 54931.774735777966@0.05911149 sl0.05820127 tp0.06047682
+- **11-17 20:44 UTC** SKIP — DOGE/USD C-M15-tweezer-top: already have pending/position in play
+- **11-17 20:44 UTC** CANDIDATE(score 4/5) — LINK/USD C-M15-tweezer-top sell_stop 9.0677326 sl9.1451685 tp8.95157874 — paper-graded (spot can't short)
+- **11-17 20:44 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 2 pendings · 3 positions equity $99563.61 · 10s · venue fees $122.70 to date @ 0.02/0.05%
