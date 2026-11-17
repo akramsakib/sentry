@@ -1918,5 +1918,15 @@ except Exception as _e:
     _tb.print_exc()
     check("the lab's gate could be exercised at all", False, "%s: %s" % (type(_e).__name__, str(_e)[:150]))
 
+# The instruction block on /cctv literally contains the word "password" ("...the NVR password..."), so a
+# "no password on the page" claim must be about the PAYLOAD STRUCTURE, not about a grep count. This is the
+# check that stays true when the hint text changes and false the day a value is added.
+_rad = open(_asset("tools/mac", "trade_radar.py")).read()
+_c0 = _rad.index("def cctv_state")
+_cst = _rad[_c0:_rad.index("def ", _c0 + 20):]     # just that function, so the greps are about what it returns
+check("the state the browser receives reports has_password (a boolean) and never the password itself",
+      '"has_password": bool(cfg.get("password"))' in _cst
+      and not _re.search(r'"password":\s*cfg\.get', _cst) and "channels" not in _cst.split("return", 1)[1],
+      _cst.split("return", 1)[1][:90] if "return" in _cst else "no return")
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
