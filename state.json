@@ -154,7 +154,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 0.94357771,
-   "last_price": 0.9668
+   "last_price": 0.9664
   },
   "SOL/USD": {
    "side": "long",
@@ -166,7 +166,7 @@
    "skill": "S16-inside-long",
    "be": 71.39858632,
    "sent_sl": 71.39858632,
-   "last_price": 73.32
+   "last_price": 73.28
   },
   "DOGE/USD": {
    "side": "long",
@@ -178,7 +178,7 @@
    "skill": "C-M15-bull-engulfing",
    "be": null,
    "sent_sl": 0.05820127,
-   "last_price": 0.05915
+   "last_price": 0.0591
   },
   "BTC/USD": {
    "side": "long",
@@ -190,7 +190,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 63355.20048602,
-   "last_price": 64186.36
+   "last_price": 64167.29
   },
   "ETH/USD": {
    "side": "long",
@@ -202,7 +202,7 @@
    "skill": "C-M15-bull-engulfing",
    "be": null,
    "sent_sl": 1775.95168482,
-   "last_price": 1799.15
+   "last_price": 1798.6
   },
   "ADA/USD": {
    "side": "long",
@@ -213,12 +213,12 @@
    "qty": 20659.4496322617,
    "skill": "S18-rsi2-long",
    "be": null,
-   "sent_sl": null,
-   "last_price": null
+   "sent_sl": 0.1510798,
+   "last_price": 0.15312
   }
  },
  "cid_seq": 40,
- "last_cycle": 1794953038.2376251,
+ "last_cycle": 1794953095.5801175,
  "seen_candles": [
   "AVAX/USD|M15|three-outside-up|2026-11-14T23:45:00Z",
   "BTC/USD|H1|marubozu|2026-11-15T02:00:00Z",
