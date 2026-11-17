@@ -101,7 +101,21 @@
   "FIRE|LINK/USD|C-M15-evening-star|2026-11-17",
   "FIRE|BCH/USD|C-M15-bear-engulfing|2026-11-17",
   "FIRE|BCH/USD|C-M15-tweezer-top|2026-11-17",
-  "FIRE|BCH/USD|C-M15-three-outside-down|2026-11-17"
+  "FIRE|BCH/USD|C-M15-three-outside-down|2026-11-17",
+  "FIRE|XRP/USD|C-M15-bull-engulfing|2026-11-17",
+  "FIRE|XRP/USD|C-M15-three-inside-up|2026-11-17",
+  "FIRE|SOL/USD|C-M15-tweezer-bottom|2026-11-17",
+  "FIRE|SOL/USD|C-M15-three-inside-up|2026-11-17",
+  "FIRE|DOGE/USD|C-M15-bull-engulfing|2026-11-17",
+  "FIRE|DOGE/USD|C-M15-tweezer-bottom|2026-11-17",
+  "FIRE|DOGE/USD|C-M15-three-inside-up|2026-11-17",
+  "FIRE|ADA/USD|C-M15-three-inside-up|2026-11-17",
+  "FIRE|LTC/USD|C-M15-three-inside-up|2026-11-17",
+  "FIRE|BCH/USD|C-M15-bull-engulfing|2026-11-17",
+  "FIRE|BCH/USD|C-M15-tweezer-bottom|2026-11-17",
+  "FIRE|BCH/USD|C-M15-three-inside-up|2026-11-17",
+  "FIRE|AVAX/USD|C-M15-bull-engulfing|2026-11-17",
+  "FIRE|AVAX/USD|C-M15-tweezer-bottom|2026-11-17"
  ],
  "open_cids": {
   "sentryBTCUSD1794938063037n37": {
@@ -127,6 +141,18 @@
    "r_dist": 24.098315179999872,
    "score": 3,
    "risk": 50.0
+  },
+  "sentryDOGEUSD1794941818530n39": {
+   "sym": "DOGE/USD",
+   "skill": "C-M15-bull-engulfing",
+   "otype": "buy_stop",
+   "entry": 0.05911149,
+   "sl": 0.05820127,
+   "tp": 0.06047682,
+   "qty": 54931.77473578,
+   "r_dist": 0.0009102200000000032,
+   "score": 4,
+   "risk": 50.0
   }
  },
  "pos_state": {
@@ -140,7 +166,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 0.94357771,
-   "last_price": 0.9616
+   "last_price": 0.9577
   },
   "SOL/USD": {
    "side": "long",
@@ -152,7 +178,7 @@
    "skill": "S16-inside-long",
    "be": 71.39858632,
    "sent_sl": 71.39858632,
-   "last_price": 72.76
+   "last_price": 72.39
   },
   "LINK/USD": {
    "side": "long",
@@ -164,32 +190,12 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 9.0694641,
-   "last_price": 9.13
+   "last_price": 9.061
   }
  },
- "cid_seq": 38,
- "last_cycle": 1794940119.7664886,
+ "cid_seq": 39,
+ "last_cycle": 1794941818.8777595,
  "seen_candles": [
-  "ETH/USD|H1|tweezer-top|2026-11-14T20:00:00Z",
-  "ETH/USD|H1|three-outside-down|2026-11-14T20:00:00Z",
-  "XRP/USD|M15|bull-harami|2026-11-14T21:30:00Z",
-  "BCH/USD|H1|bear-engulfing|2026-11-14T20:00:00Z",
-  "BCH/USD|H1|tweezer-top|2026-11-14T20:00:00Z",
-  "BCH/USD|H1|three-outside-down|2026-11-14T20:00:00Z",
-  "BTC/USD|M15|tweezer-top|2026-11-14T21:45:00Z",
-  "SOL/USD|M15|tweezer-top|2026-11-14T21:45:00Z",
-  "DOGE/USD|M15|bear-engulfing|2026-11-14T21:45:00Z",
-  "DOGE/USD|M15|tweezer-top|2026-11-14T21:45:00Z",
-  "LINK/USD|M15|bear-engulfing|2026-11-14T21:45:00Z",
-  "BCH/USD|M15|hammer/takuri|2026-11-14T21:45:00Z",
-  "BCH/USD|M15|bear-engulfing|2026-11-14T21:45:00Z",
-  "AVAX/USD|M15|bear-engulfing|2026-11-14T21:45:00Z",
-  "AVAX/USD|M15|evening-star|2026-11-14T21:45:00Z",
-  "ETH/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
-  "XRP/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
-  "SOL/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
-  "DOGE/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
-  "ADA/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
   "LINK/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
   "LTC/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
   "BCH/USD|M15|hammer/takuri|2026-11-14T22:00:00Z",
@@ -469,6 +475,26 @@
   "LINK/USD|M15|evening-star|2026-11-17T17:45:00Z",
   "BCH/USD|M15|bear-engulfing|2026-11-17T17:45:00Z",
   "BCH/USD|M15|tweezer-top|2026-11-17T17:45:00Z",
-  "BCH/USD|M15|three-outside-down|2026-11-17T17:45:00Z"
+  "BCH/USD|M15|three-outside-down|2026-11-17T17:45:00Z",
+  "BTC/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z",
+  "BTC/USD|M15|three-outside-up|2026-11-17T18:15:00Z",
+  "ETH/USD|M15|three-outside-up|2026-11-17T18:15:00Z",
+  "XRP/USD|M15|bull-engulfing|2026-11-17T18:15:00Z",
+  "XRP/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z",
+  "XRP/USD|M15|three-inside-up|2026-11-17T18:15:00Z",
+  "SOL/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z",
+  "SOL/USD|M15|three-inside-up|2026-11-17T18:15:00Z",
+  "DOGE/USD|M15|bull-engulfing|2026-11-17T18:15:00Z",
+  "DOGE/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z",
+  "DOGE/USD|M15|three-inside-up|2026-11-17T18:15:00Z",
+  "ADA/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z",
+  "ADA/USD|M15|three-inside-up|2026-11-17T18:15:00Z",
+  "LINK/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z",
+  "LTC/USD|M15|three-inside-up|2026-11-17T18:15:00Z",
+  "BCH/USD|M15|bull-engulfing|2026-11-17T18:15:00Z",
+  "BCH/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z",
+  "BCH/USD|M15|three-inside-up|2026-11-17T18:15:00Z",
+  "AVAX/USD|M15|bull-engulfing|2026-11-17T18:15:00Z",
+  "AVAX/USD|M15|tweezer-bottom|2026-11-17T18:15:00Z"
  ]
 }
