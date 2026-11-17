@@ -120,7 +120,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 0.94357771,
-   "last_price": 0.9572
+   "last_price": 0.9543
   },
   "SOL/USD": {
    "side": "long",
@@ -132,7 +132,7 @@
    "skill": "S16-inside-long",
    "be": 71.39858632,
    "sent_sl": 71.39858632,
-   "last_price": 72.36
+   "last_price": 72.12
   },
   "LINK/USD": {
    "side": "long",
@@ -144,35 +144,11 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 9.0694641,
-   "last_price": 9.094
-  },
-  "ETH/USD": {
-   "side": "long",
-   "entry": 1793.72,
-   "sl": 1787.89054228,
-   "tp": 1824.216,
-   "r_dist": 10.24945772000001,
-   "qty": 7.317460303646184,
-   "skill": "S4-band-fade-long",
-   "be": 1793.72,
-   "sent_sl": 1793.72,
-   "last_price": 1786.9
-  },
-  "BCH/USD": {
-   "side": "long",
-   "entry": 209.2672383,
-   "sl": 206.65552339,
-   "tp": 213.32949512,
-   "r_dist": 2.6117149099999892,
-   "qty": 28.716763729774897,
-   "skill": "S13-ichimoku-long",
-   "be": null,
-   "sent_sl": 206.65552339,
-   "last_price": 207.05
+   "last_price": 9.049
   }
  },
  "cid_seq": 37,
- "last_cycle": 1794938787.7826662,
+ "last_cycle": 1794939230.9206538,
  "seen_candles": [
   "BCH/USD|M15|three-outside-down|2026-11-14T20:30:00Z",
   "ETH/USD|M15|bull-harami|2026-11-14T21:15:00Z",
