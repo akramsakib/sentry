@@ -2051,5 +2051,303 @@ else:
           "on the Mac (not a finding)", True, "skipped here by design")
 
 
+# ---------- 33: a $50 book — sizing against the broker's floor, and grading off the terminal ----------
+# The question that produced this section was "how much is left of my $50". Answering it exposed two things
+# the build could not see: it never read its own account (so a $50 base was sized like the $101k demo it was
+# actually running on), and it could not tell "too small to trade" from "no signal" (a size under 0.01 lot
+# returned 0 and nothing was journalled). Both are fixed in the producer; the join is what makes the answer
+# measurable — before it, 94 of 94 SENT trades had no result while the paper track of REJECTED candidates
+# carried the win rate. These checks are mostly about the numbers a card is not allowed to invent.
+print("\n== 33: small-account sizing + the order-id join")
+_HERE33 = os.path.dirname(os.path.abspath(__file__))
+_PROD33 = next((p for p in (os.path.join(_HERE33, "..", "sentry_mac.py"),
+                            os.path.join(_HERE33, "tools", "mac", "sentry_mac.py"),
+                            "/home/user/sentry_mac.py") if os.path.exists(p)), None)
+if _PROD33 is None:
+    check("the forex producer is not in this release (it is Mac-side, by design) — its own checks run on the "
+          "Mac via tools/mac/fx_watch_test.py (skipped here)", True, "skipped: no sentry_mac.py next to the repo")
+    _sm33 = None
+else:
+    _sm33 = _load32("fx_prod33", _PROD33)
+    _sm33.use_fallback()          # the classic five, so the specs below are fixed and not broker-dependent
+
+
+def _sr(sym, dist, risk, eq, frac=0.10):
+    return _sm33.size_report(sym, dist, risk, eq, frac)
+
+
+if _sm33:
+    _big = _sr("EURUSD", 0.0045, 78.0, 101155.96)
+    check("the guard is a NO-OP on the account that is actually running: $101k equity sizes EURUSD at the "
+          "same 0.17 lot / $76.50 risk it did before this change, uncapped",
+          _big["verdict"] == "ok" and abs(_big["lots"] - 0.17) < 1e-9 and abs(_big["risk"] - 76.5) < 0.01
+          and _big["capped"] is False, str(_big))
+    _small = _sr("EURUSD", 0.0045, 78.0, 50.0)
+    check("on a $50 base the SAME signal cannot risk $78 (156% of it), so the ceiling cuts it to $5.00 and "
+          "the size lands on the broker's 0.01 minimum",
+          _small["verdict"] == "ok" and _small["capped"] is True and abs(_small["lots"] - 0.01) < 1e-9
+          and abs(_small["risk"] - 4.5) < 0.01 and _small["risk_capped_from"] == 78.0, str(_small))
+    _gold = _sr("XAUUSD", 33.40, 78.0, 50.0)
+    check("...and XAUUSD on that same $50 base is REFUSED, not resized: the broker's 0.01 lot of gold already "
+          "risks $33.40 = 66.8% of the account, which no ceiling of ours should permit",
+          _gold["verdict"] == "min_lot_too_big" and _gold["lots"] == 0.0 and _gold["min_lot_risk"] == 33.4
+          and "66.8%" in _gold["why"] and "cannot be traded on this base" in _gold["why"], str(_gold))
+    check("an unread equity never becomes an unlimited licence: the clamp is skipped and the reason is stated",
+          _sr("EURUSD", 0.0045, 78.0, None)["capped"] is False
+          and "not checked" in _sr("EURUSD", 0.0045, 78.0, None)["why"], "")
+    check("max_frac 0 (the desk can switch the guard off) clamps nothing and refuses nothing",
+          _sr("EURUSD", 0.0045, 78.0, 50.0, 0.0)["capped"] is False
+          and _sr("XAUUSD", 33.40, 78.0, 50.0, 0.0)["verdict"] == "ok", "")
+    check("a zero stop distance is its own verdict, and sizes nothing (a stop ON the entry is not a free trade)",
+          _sr("EURUSD", 0.0, 78.0, 50.0)["verdict"] == "no_stop"
+          and _sr("EURUSD", 0.0, 78.0, 50.0)["lots"] == 0.0, "")
+    check("a size above the broker's own maximum is refused rather than clamped down in silence",
+          _sr("EURUSD", 0.0045, 1e9, None)["verdict"] == "over_max_lot", "")
+    _nv = _sr("NVDA", 2.5, 78.0, 50.0)
+    check("the floor is what the TERMINAL published per symbol (volume_min), not a guessed 0.01 — a share "
+          "cannot be bought in hundredths, so the equity cap sizes 2 shares here and 0.01 lots there",
+          _sm33.VSPEC["EURUSD"][0] == 0.01 and _sm33.VSPEC["NVDA"][0] == 1.0
+          and _nv["verdict"] == "ok" and abs(_nv["lots"] - 2.0) < 1e-9 and _nv["min_lot_risk"] == 2.5, str(_nv))
+
+    # ---- the send reply, read properly for the first time ----
+    _ref = ('{"jsonrpc":"2.0","id":4,"result":{"isError":false,"content":[{"type":"text","text":"{\\n'
+            '\\"retcode\\": 10015, \\"retcode_details\\": \\"Invalid price\\" \\n}\\"}]}}')
+    _d = _sm33.parse_send_result(_ref)
+    check("the refusal this build has been logging 121 times parses into its actual reason now "
+          "(retcode 10015 / Invalid price), instead of a 200-char raw dump",
+          _d["retcode"] == 10015 and _d["details"] == "Invalid price" and _d["ok"] is False, str(_d)[:200])
+    _ok1 = _sm33.parse_send_result(r'text":"{\n\"retcode\": 10009, \"order\": \"59381656536\" }')
+    _ok2 = _sm33.parse_send_result('{"retcode": 10009, "order_id": 59381656537, "deal": 59381656538}')
+    check("an accepted send yields the order id whether the field is quoted, bare, called order or order_id — "
+          "the alias hunt is the whole reason six days of fills went unattributed",
+          _ok1["ok"] and _ok1["ticket"] == "59381656536" and _ok2["ticket"] == "59381656537"
+          and _ok2["ticket_key"] in ("order_id", "order"), "%s / %s" % (_ok1, _ok2))
+    check("accepted-but-unnamed is still accepted: ok True, ticket None (the trade is real, the key is missing)",
+          _sm33.parse_send_result(r'"retcode": 10009, "retcode_details": "Request accepted"')["ok"] is True
+          and _sm33.parse_send_result('"retcode": 10009')["ticket"] is None, "")
+    check("an MCP-level error is a rejection, not a mystery retcode",
+          _sm33.parse_send_result('{"result":{"isError\\":true,"content":[{"text":"not permitted"}]}}')["rejected"],
+          "")
+
+    # ---- the join: our sent rows to the terminal's closed positions ----
+    _cmt = _sm33.comment_for("S21-pivot-S1-short")
+    check("the comment is matched at the terminal's own 31-char limit, because that is what arrives on the wire",
+          _cmt == ("Sentry S21-pivot-S1-short") and len(_sm33.comment_for("C" * 60)) == 31, _cmt)
+    _rows = [
+        {"rid": "A", "sym": "EURUSD", "skill": "S1-pullback-long", "fired": True, "risk": 50.0,
+         "ts": "2026-11-18 04:34"},
+        {"rid": "B", "sym": "EURUSD", "skill": "S1-pullback-long", "fired": True, "risk": 50.0,
+         "ts": "2026-11-16 12:00"},
+        {"rid": "C", "sym": "XAUUSD", "skill": "S13-ichimoku-short", "fired": True, "risk": 100.0,
+         "ts": "2026-11-18 02:00", "ticket": "9002"},
+        {"rid": "D", "sym": "AMD", "skill": "S16-inside-long", "fired": True, "risk": 60.0,
+         "ts": "2026-11-18 05:00"},
+        {"rid": "E", "sym": "AMD", "skill": "S16-inside-long", "fired": False, "result": "win", "R": 1.0}]
+    _cls = [{"ticket": "9001", "sym": "EURUSD", "comment": _sm33.comment_for("S1-pullback-long"),
+             "profit": 74.0, "open_time": "2026-11-17T20:40:00", "close_time": "2026-11-17T22:00:00"},
+            {"ticket": "9002", "sym": "XAUUSD", "comment": "someone else's order", "profit": -100.0,
+             "open_time": "2026-11-17T18:10:00", "close_time": "2026-11-17T19:00:00"},
+            {"ticket": "9003", "sym": "AMD", "comment": _sm33.comment_for("S16-inside-long"),
+             "profit": 12.0, "open_time": "2026-11-17T21:05:00", "close_time": "2026-11-17T22:13:11"},
+            {"ticket": "9004", "sym": "EURUSD", "comment": _sm33.comment_for("S1-pullback-long"),
+             "profit": -50.0, "open_time": "2026-11-16T04:00:00", "close_time": "2026-11-16T06:00:00"}]
+    _upd = _sm33.match_closes(_rows, _cls)
+    _by = {u["rid"]: u for u in _upd}
+    check("a sent row is graded from the close whose ORDER COMMENT names the skill that sent it "
+          "(+74.00 on a $50 stop = +1.48R, not a rounded ±1)",
+          "A" in _by and _by["A"]["result"] == "win" and _by["A"]["R"] == 1.48
+          and _by["A"]["via"] == "comment", str(sorted(_by)))
+    check("two closes for the same skill+symbol cannot both land on one row, and the row already graded by "
+          "ticket is graded by TICKET even when its comment belongs to someone else",
+          "B" in _by and _by["B"]["ticket"] == "9004" and _by["B"]["result"] == "loss"
+          and _by["C"]["ticket"] == "9002", str(sorted(_by)))
+    check("the COMMENT window is 6 hours: a close that opened 47 days before the row was sent is not a "
+          "result for it (this exact hole is what the first version of this join fell into)",
+          _by["D"]["ticket"] == "9003" and _by["D"]["via"] == "comment"
+          and _sm33.match_closes([dict(_rows[3], ts="2026-11-18 05:00")],
+                                 [dict(_cls[2], open_time="2026-10-01T21:05:00")]) == [], str(sorted(_by)))
+    check("a TICKET gets 10 days instead of 6 hours (a limit order rests before it fills, and tl_log's ts is "
+          "stamped at send), but even a ticket is not trusted past that; a comment-only row with an "
+          "unreadable ts matches nothing at all",
+          len(_sm33.match_closes([dict(_rows[3], ticket="9003", ts="2026-11-14 21:00")], [_cls[2]])) == 1
+          and _sm33.match_closes([dict(_rows[3], ts="whenever")], [_cls[2]]) == []
+          and _sm33.match_closes([dict(_rows[3], ticket="9003")],
+                                 [dict(_cls[2], open_time="2026-10-01T21:05:00")]) == [], "")
+    check("the paper track is never re-graded by the join: a row that already has a result is skipped",
+          "E" not in _by, str(sorted(_by)))
+    check("a sent trade with no close yet stays ungraded — an open position is not a result and the row must "
+          "say nothing rather than guess",
+          _sm33.match_closes([{"rid": "F", "sym": "GBPUSD", "skill": "S2-breakout-long", "fired": True,
+                               "risk": 80.0, "ts": "2026-11-18 04:00"}], _cls) == [], "")
+    _lr = _sm33.live_record([dict(r, **_by.get(r["rid"], {})) for r in _rows]
+                            + [{"rid": "G", "sym": "GBPUSD", "skill": "S2", "fired": True, "risk": 80.0}])
+    check("live_record counts sent / graded / ungraded separately, and takes net R only over graded rows "
+          "(+1.48 -1.0 -1.0 +0.2 = -0.32, with E excluded because it was never sent)",
+          _lr["sent"] == 5 and _lr["graded"] == 4 and _lr["ungraded"] == 1
+          and abs(_lr["net_r"] + 0.32) < 0.01 and _lr["wins"] == 2 and _lr["losses"] == 2
+          and _lr["win_rate"] == 50.0, str(_lr))
+    check("...and win_rate is None (not 0%) when there is nothing to divide by",
+          _sm33.live_record([])["win_rate"] is None and _sm33.live_record([])["sent"] == 0, "")
+
+    # ---- grading writes through to the log, and only once ----
+    _d33 = tempfile.mkdtemp(prefix="tl33-")
+    _tl33 = os.path.join(_d33, "trades_log.jsonl")
+    open(_tl33, "w").write(json.dumps(_rows[0]) + "\n" + json.dumps(_rows[3]) + "\n")
+    _old_tl, _old_state = _sm33.TL_PATH, _sm33.STATE_F
+    _sm33.TL_PATH = _tl33
+    try:
+        check("tl_grade_terminal writes result, real R, the profit, the ticket and WHERE it came from",
+              _sm33.tl_grade_terminal({"rid": "A", "ticket": "9001", "profit": 74.0, "R": 1.48,
+                                       "result": "win"}) is True
+              and json.loads(open(_tl33).read().split("\n")[0])["grade_source"] == "terminal",
+              open(_tl33).read().strip())
+        _before = open(_tl33).read()
+        check("...and will not overwrite a row that already has a result (a re-run cannot double-count)",
+              _sm33.tl_grade_terminal({"rid": "A", "ticket": "9001", "profit": -999.0, "R": -9.9,
+                                       "result": "loss"}) is True
+              and json.loads(open(_tl33).read().split("\n")[0])["R"] == 1.48
+              and json.loads(open(_tl33).read().split("\n")[0])["result"] == "win", _before[:80])
+        check("has_ungraded_sent is the only thing that decides whether to pay for the close history: True "
+              "while row D still waits, False when every sent row has an outcome",
+              _sm33.has_ungraded_sent(_sm33.tl_rows()) is True
+              and _sm33.has_ungraded_sent([{"fired": True, "result": "win"}, {"fired": False}]) is False
+              and _sm33.has_ungraded_sent([]) is False, str(_sm33.tl_rows())[:90])
+    finally:
+        _sm33.TL_PATH, _sm33.STATE_F = _old_tl, _old_state
+
+    # ---- the fetch, and the sentences both pages print ----
+    check("the close history is fetched only when something is outstanding; the account is fetched always "
+          "(the guard is meaningless without it)",
+          "@@HISTORY" in _sm33.build_fetch(need_hist=True) and "@@HISTORY" not in _sm33.build_fetch(False)
+          and "@@ACCOUNT" in _sm33.build_fetch(False), "")
+    check("the account line says what kind of money it is — a demo base may not read like a wallet figure",
+          "DEMO account" in _sm33.fmt_account_line({"login": "5058788329", "server": "MetaQuotes-Demo",
+                                                     "type": "demo", "equity": 101155.96})
+          and "real money" in _sm33.fmt_account_line({"type": "real", "equity": 50.0}), "")
+    check("...an unrecognised type is reported as unrecognised, and a missing type claims neither",
+          "will not guess" in _sm33.fmt_account_line({"type": "centum"})
+          and "reported no account type" in _sm33.fmt_account_line({"login": "1"}), "")
+    _gl = _sm33.fmt_guard_line({"equity": 50.0, "max_frac": 0.10, "risk_cap": 5.0, "capped_today": 2,
+                                "min_lot": {"EURUSD": 0.01}, "refused_today": {"min_lot_too_big": 3}})
+    check("the sizing line answers the question the desk gets asked: what one trade may risk, on WHICH floor, "
+          "and what that floor refused today",
+          "10% of equity ($5.00 of $50.00)" in _gl and "EURUSD 0.01 lot" in _gl
+          and "min_lot_too_big x3" in _gl and "2 trade(s) today had their risk cut" in _gl, _gl)
+    check("no equity read says 'NOT applied' out loud — silence here would read as 'nothing to worry about'",
+          "NOT applied" in _sm33.fmt_guard_line({"equity": None, "max_frac": 0.10}), "")
+    check("a live record with no grades says a sent order is not a result, and does not print a win rate",
+          "not a result" in _sm33.fmt_live_line({"sent": 94, "graded": 0}),
+          _sm33.fmt_live_line({"sent": 94, "graded": 0}))
+    check("...with grades it quotes net R and the dollars, all of them read from the terminal",
+          "+8.56R" in _sm33.fmt_live_line({"sent": 79, "graded": 76, "wins": 47, "losses": 29,
+                                           "net_r": 8.56, "net_usd": 1229.83, "win_rate": 61.8,
+                                           "from_terminal": 76, "ungraded": 3}),
+          _sm33.fmt_live_line({"sent": 79, "graded": 76, "wins": 47, "losses": 29, "net_r": 8.56,
+                               "net_usd": 1229.83, "win_rate": 61.8, "from_terminal": 76, "ungraded": 3}))
+
+# ---- the pages: pass it through, and print a gap when the build is older ----
+if _mp32 and _rp32:
+    _m33 = _load32("desk_monitor33", _mp32)
+    _st33 = _fx_state(account={"login": "5058788329", "server": "MetaQuotes-Demo", "type": "demo",
+                               "equity": 50.0, "balance": 50.0, "currency": "USD", "margin_mode": "hedging",
+                               "asof": "2026-11-18 05:30:00 KL"},
+                      live_record={"sent": 3, "graded": 2, "wins": 2, "losses": 0, "ungraded": 1,
+                                   "net_r": 1.9, "net_usd": 9.4, "win_rate": 100.0, "from_terminal": 2},
+                      sizing={"equity": 50.0, "max_frac": 0.1, "risk_cap": 5.0, "capped_today": 1,
+                              "min_lot": {"EURUSD": 0.01}, "refused_today": {"min_lot_too_big": 4}},
+                      account_line="login 5058788329 · account demo — a DEMO account: the orders really do go "
+                                   "to the terminal, the money does not come from you",
+                      guard_line="one minimum-size position may not risk over 10% of equity ($5.00 of $50.00)",
+                      live_line="of the 3 trades SENT, 2 graded from the terminal's own closes: 2W/0L")
+    _d33b = _desk32(_st33)
+    _m33.ROOT, _m33.BOOKS = _d33b, os.path.join(_d33b, "books")
+    _c33 = _m33.fx_section()
+    _md33 = _m33.to_markdown([], _c33, "t")
+    _htm33 = _m33.to_html([], _c33, "t", "TRADING.md")
+    check("the card shows WHICH account and what kind of money it is, in both renderers",
+          "5058788329" in _md33 and "DEMO account" in _md33 and "5058788329" in _htm33
+          and _c33["account"]["equity"] == 50.0, "")
+    check("...the sizing floor and the live record are on the card too, and they are the build's own strings "
+          "(the monitor adds no arithmetic of its own)",
+          "minimum-size position may not risk over 10%" in _md33 and "2W/0L" in _md33
+          and "sizing floor" in _htm33 and "live record" in _htm33, "")
+    _d33c = _desk32(_fx_state())          # a resident from before this change
+    _m33.ROOT = _d33c
+    _c33b = _m33.fx_section()
+    _md33b = _m33.to_markdown([], _c33b, "t")
+    check("an older resident that publishes no account gets 'account type not published', never a guessed one",
+          _c33b["account_line"] == "" and "account type not published" in _md33b, "")
+    check("...and none of the three lines is rendered at all — an absent figure prints as nothing, not as $0 "
+          "or 0 trades, and no equity line replaces the account line",
+          not any(l.strip().startswith(("- equity ", "- sizing floor:", "- live record · ", "- login "))
+                  for l in _md33b.splitlines())
+          and _c33b["guard_line"] == "" and _c33b["live_line"] == ""
+          and _c33b["account"] == {} and _c33b["live_record"] == {} and _c33b["equity"] is None,
+          "\n".join(l[:70] for l in _md33b.splitlines()
+                     if l.strip().startswith(("- equity ", "- sizing", "- live", "- login")))[:200])
+    check("the playbook band the OLD build did publish is still shown, labelled as published and not quietly "
+          "relabelled as the guard (the guard is the new, separate set of figures)",
+          _c33b["sizing"].get("base_risk") == 100.0 and _c33b["sizing"].get("band") == [50.0, 200.0]
+          and _c33b["sizing"].get("source") == "published by the build this cycle", str(_c33b["sizing"]))
+    check("the money the terminal reported still reads as a distance in the table, not as the account: the "
+          "card's own $ figures are TP/SL distances unless the line says equity",
+          any(l.strip().startswith("| XAUUSD") for l in _md33b.splitlines()), "")
+    # the pill's claim about WHICH KIND of money, and where the card learned it
+    _m33.ROOT, _m33.BOOKS = _d33b, os.path.join(_d33b, "books")
+    _c_kind = _m33.fx_section()
+    check("with an account published, the pill's kind is the TERMINAL's answer, and the card says so",
+          _c_kind["account_kind"] == "demo" and "reported by the terminal" in _c_kind["account_kind_src"],
+          str(_c_kind["account_kind_src"]))
+    check("...and that sentence is on the page in both renderers, so the claim carries its own source",
+          "reported by the terminal" in _m33.to_markdown([], _c_kind, "t")
+          and "reported by the terminal" in _m33.to_html([], _c_kind, "t", "TRADING.md"), "")
+    _m33.ROOT, _m33.BOOKS = _d33c, os.path.join(_d33c, "books")
+    open(os.path.join(_d33c, "sentry_mac.py"), "w").write(
+        '#!/usr/bin/env python3\n"""Trade Sentry — executor (demo account).\n"""\n')
+    _c_head = _m33.fx_section()
+    check("an OLD build that publishes no account still falls back to the header comment, but the card labels "
+          "that as an inference and not as a reading (this is the claim that was quietly overstated)",
+          _c_head["account_kind"] == "demo" and "NOT from the terminal" in _c_head["account_kind_src"]
+          and "NOT from the terminal" in _m33.to_markdown([], _c_head, "t"), str(_c_head["account_kind_src"]))
+    _d33d = _desk32(_fx_state(account={"login": "77", "type": "text", "equity": 50.0}, account_line="x"))
+    _m33.ROOT, _m33.BOOKS = _d33d, os.path.join(_d33d, "books")
+    _c_odd = _m33.fx_section()
+    check("a kind the card cannot map is NOT rounded to demo or real: the pill goes to 'account kind unknown' "
+          "and the page quotes what the terminal actually said (this is exactly the reply that first arrived)",
+          _c_odd["account_kind"] == "unknown" and "text" in _c_odd["account_kind_src"]
+          and "account kind unknown" in _m33.to_markdown([], _c_odd, "t"), str(_c_odd["account_kind_src"]))
+    _r33 = _load32("desk_radar33", _rp32)
+    _fxr = _r33.fx_charts_block(_st33)
+    # --- the account record, off the payload SHAPE the Mac actually sends (v4.7.9's first live cycle) ---
+    # The inner JSON arrives escaped inside an MCP text part, and FETCH pipes it through `tr -d "\\"`. That
+    # leaves the ENVELOPE's own {"type":"text"} in the same string as the account's "type":"demo" — and the
+    # first version read the envelope, so the desk printed `account text`. Pinned here against the real reply.
+    _acct_raw = (r'{"jsonrpc":"2.0","id":6,"result":{"isError":false,"content":[{"type":"text","text":"{n'
+                 r'\"account\": {n\"server\": \"MetaQuotes-Demo\", \"broker\": \"MetaQuotes Ltd.\", '
+                 r'\"login\": \"5058788329\", \"name\": \"Arena Trader\", \"type\": \"demo\", '
+                 r'\"read_only\": false, \"margin_mode\": \"hedging\", \"balance\": 101155.96, '
+                 r'\"equity\": 101155.96, \"currency\": \"USD\" },n\"terminal\": {n\"timestamp\":'
+                 r'\"2026-11-17T21:49:52Z\"}}"}]}}')
+    _ar = _acct_raw.replace("\\", "")            # what `tr -d "\\"` leaves on the wire
+    _pa = _sm33.parse_account(_ar)
+    check("the account type read from a live reply is the ACCOUNT's, not the MCP envelope's — the object is "
+          "scoped before any field is read, so 'text' can never answer for 'demo'",
+          _pa.get("type") == "demo" and _pa.get("login") == "5058788329"
+          and _pa.get("equity") == 101155.96 and _pa.get("currency") == "USD"
+          and _pa.get("read_only") is None, json.dumps(_pa))
+    check("...and the desk sentence that comes out of it says what kind of money this is",
+          "a DEMO account" in _sm33.fmt_account_line(_pa) and "101,155.96" in _sm33.fmt_account_line(_pa),
+          _sm33.fmt_account_line(_pa))
+    check("a reply naming no account object still parses its scalars, and an empty one yields {} (no "
+          "half-built record claiming a balance)",
+          _sm33.parse_account('{"type": demo, "equity": 50.0}')["type"] == "demo"
+          and _sm33.parse_account("") == {} and _sm33.parse_account(None) == {}, "")
+
+    check("the radar gets the same three sentences from the same state file (one truth, two pages)",
+          _fxr["account_line"] == _st33["account_line"] and _fxr["guard_line"] == _st33["guard_line"]
+          and _fxr["live_line"] == _st33["live_line"] and _fxr["live"]["graded"] == 2, "")
+    check("...and it still adds no route: the radar's forex payload grows by keys inside fx_charts only",
+          _rp32 and open(_rp32, encoding="utf-8").read().count('snap["fx_charts"]') == 1, "")
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

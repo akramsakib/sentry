@@ -196,19 +196,32 @@ def fx_section():
             items = int(m.group(1))
             break
     scan = next((l for l in reversed(jl) if "scan ok" in l), "")
-    # What the terminal actually is, from the build's own file rather than from my assumption: its
-    # header says "(demo account)". A dashboard that printed LIVE off `entries_enabled` alone was
-    # claiming money moves when it only claims the code is ALLOWED to send — so read the header, and
-    # read the age of the build's own log, and let the card say all three.
+    # Two sources, and they are NOT equally good. `account.type` is what the TERMINAL answers about the
+    # account it is logged into, and from v4.7.9 the build publishes it every cycle. The header of
+    # sentry_mac.py is a comment a human wrote, true only until somebody repoints the build at another
+    # login — and this card printed "DEMO account" off that comment while the account line beside it
+    # reported something else. Read the account first; fall back to the header only when the build has
+    # published no account, and name which of the two the pill came from.
     kind = "unknown"
-    try:
-        head = open(os.path.join(ROOT, "sentry_mac.py")).read(1500).lower()
-        if "demo account" in head or "(demo)" in head:
-            kind = "demo"
-        elif "real account" in head or "live account" in head:
-            kind = "live"
-    except Exception:
-        pass
+    kind_src = ""
+    _akind = str((st.get("account") or {}).get("type") or "").strip().lower()
+    if _akind in ("demo", "contest"):
+        kind, kind_src = "demo", "reported by the terminal this cycle"
+    elif _akind in ("real", "live"):
+        kind, kind_src = "live", "reported by the terminal this cycle"
+    elif _akind:
+        kind_src = "the terminal answered %r, which is not a kind this card knows" % _akind
+    else:
+        try:
+            head = open(os.path.join(ROOT, "sentry_mac.py")).read(1500).lower()
+            if "demo account" in head or "(demo)" in head:
+                kind = "demo"
+                kind_src = "inferred from sentry_mac.py header comment, NOT from the terminal"
+            elif "real account" in head or "live account" in head:
+                kind = "live"
+                kind_src = "inferred from sentry_mac.py header comment, NOT from the terminal"
+        except Exception:
+            pass
     out_f = os.path.join(ROOT, "sentry.out.log")
     try:
         feed_age_min = round((time.time() - os.path.getmtime(out_f)) / 60.0, 1)
@@ -220,6 +233,16 @@ def fx_section():
     # publishes it, and its absence is shown as "not reported", never as "up". A dashboard that invents
     # an ok is the exact failure this card exists to prevent.
     bridge = st.get("bridge") or "not reported by the build"
+    # v4.7.9: the build reads its own account, sizes against the broker's minimum lot and joins its sent
+    # trades to the terminal's closes — and it composes the three sentences below by itself, so this page and
+    # the radar page cannot word the same fact differently. Nothing is derived here: a key the build does not
+    # publish prints as nothing, not as a zero.
+    acct = st.get("account") or {}
+    live = st.get("live_record") or {}
+    sg = st.get("sizing") or {}
+    account_line = st.get("account_line") or ""
+    guard_line = st.get("guard_line") or ""
+    live_line = st.get("live_line") or ""
     # ---- current trades + the playbook, chart by chart, as the resident itself publishes them ----
     # state.json used to carry only day-counters (orders/known_positions), so this card could honestly say
     # "book items 12" and nothing else. The build now also writes positions_now / book / charts / playbook
@@ -243,9 +266,12 @@ def fx_section():
     # build with real money: an order it cannot look up is an order it cannot prove it placed.
     advisory = [l for l in tail400 if "advisory only" in l]
     hits = [l for l in tail400 if "HIT —" in l]
-    no_ticket = sum(1 for l in hits if "ticket ?" in l)
-    skill_note = ("no order id ever came back from the terminal, so a position cannot be tied to the skill "
-                  f"that opened it ({no_ticket} of {len(hits)} sends the build journalled this way)") \
+    no_ticket = sum(1 for l in hits if "ticket ?" in l or "returned no id" in l)
+    skill_note = (f"{no_ticket} of {len(hits)} sends the build journalled carry no order id back from the "
+                  "terminal. v4.7.9 reads the id out of the send reply (order / order_id / deal / ticket, "
+                  "bare or quoted) and grades sent trades from the terminal's own closed positions, so a "
+                  "non-zero count means the order was accepted without being named — those trades are still "
+                  "matched, by their Sentry order comment") \
         if hits else ""
     poss = []
     for p in (st.get("positions_now") or []):
@@ -291,7 +317,14 @@ def fx_section():
             "watch_asof": watch_asof, "book_age_min": book_age_min,
             "watch_stale": (book_age_min is not None and book_age_min > 15),
             "watch_error": st.get("watch_error") or "", "n_book": len(book), "n_book_pending": len(pens),
-            "equity": None, "positions": poss, "pendings": pens,
+            # `equity` feeds a whole LEDGER line (equity · cash · realized · fees · exposure) that only a
+            # keyed crypto book can fill. The terminal publishes an equity and a balance but no cash/fees
+            # ledger, so the line stays unrendered here and the figures ride in on account_line instead —
+            # half a ledger line, all dashes, would read like an account with nothing in it.
+            "equity": None, "account": acct, "live_record": live,
+            "account_line": account_line, "guard_line": guard_line, "live_line": live_line,
+            "sizing_live": sg,
+            "positions": poss, "pendings": pens,
             "grades": _record(os.path.join(ROOT, "trades_log.jsonl")),
             "events": [l[-160:] for l in jl[:5]],
             "last_scan": scan.split("**")[-1].strip()[-190:] if scan else "",
@@ -306,7 +339,7 @@ def fx_section():
                        {"base_risk": None, "band": None,
                         "source": "not published by the build running on the Mac"}),
             "cost": {},
-            "fx_only": True, "account_kind": kind, "feed_age_min": feed_age_min,
+            "fx_only": True, "account_kind": kind, "account_kind_src": kind_src, "feed_age_min": feed_age_min,
             "feed_stale": (feed_age_min is not None and feed_age_min > 15),
             "send_fail_last": (fails[0][:150] if fails else ""),
             "send_fail_n": len(fails), "bridge": bridge}
@@ -382,7 +415,9 @@ def to_markdown(books, fx, built):
         cost = b.get("cost") or {}
         sz = b.get("sizing") or {}
         L.append(f"- venue `{b.get('execution')}` · state {b.get('state')} · updated {b.get('updated')}"
-                 + (f" · cycle {b['cycle_s']}s" if b.get("cycle_s") else ""))
+                 + (f" · cycle {b['cycle_s']}s" if b.get("cycle_s") else "")
+                 + (f" · {b['account']['type']} account"
+                    if (b.get("account") or {}).get("type") else " · account type not published"))
         if b.get("equity") is not None:
             L.append(f"- equity **${_fmt(b.get('equity'))}** · cash ${_fmt(b.get('cash'))} · "
                      f"realized ${_fmt(b.get('realized'))} · fees ${_fmt(b.get('fees_paid'))} · "
@@ -400,6 +435,12 @@ def to_markdown(books, fx, built):
                  + f" · {b.get('pendings_word') or 'pendings'} **{b.get('n_pendings', len(b.get('pendings') or []))}**" 
                  + _money_or_dash(" · risk on pendings", b.get("at_risk"))
                  + _money_or_dash(" · per-trade", sz.get("base_risk"), 0))
+        if b.get("account_line"):
+            L.append("- " + b["account_line"])
+        if b.get("guard_line"):
+            L.append("- sizing floor: " + b["guard_line"])
+        if b.get("live_line"):
+            L.append("- live record · " + b["live_line"])
         if g:
             L.append(f"- **{g.get('line') or 'win rate —'}**"
                      + (f" · own record {g.get('graded', 0)} graded "
@@ -428,9 +469,10 @@ def to_markdown(books, fx, built):
                 L.append(f"- **STALE: the forex feed last wrote {b.get('book_age_min')} min ago** — the "
                          "positions and charts below are whatever the build saw then, not now")
             L.append(f"- terminal bridge, per the build itself: **{b.get('bridge')}**")
-            L.append(f"- feed last written {b.get('feed_age_min')} min ago · account kind read from "
-                     f"`sentry_mac.py`: **{b.get('account_kind')}** · send failures in the last 400 "
-                     f"journal lines: {b.get('send_fail_n') or 0}")
+            L.append(f"- feed last written {b.get('feed_age_min')} min ago · account kind "
+                     + (f"**{b.get('account_kind')}**, {b['account_kind_src']}" if b.get("account_kind_src")
+                        else "not established by anything on this page")
+                     + f" · send failures in the last 400 journal lines: {b.get('send_fail_n') or 0}")
             if b.get("send_fail_last"):
                 L.append(f"- last send failure: `{b['send_fail_last']}`")
             L.append("- this page never calls the terminal, so it makes no claim that the bridge is "
@@ -583,6 +625,13 @@ def to_html(books, fx, built, md_path):
                    + (f' <span style="font-size:10px">({esc(_open_count(b)[1])})</span>'
                       if _open_count(b)[1] else "")
                    + f' · {esc(b.get("pendings_word") or "pendings")} <b>{esc(b.get("n_pendings", len(b.get("pendings") or [])))}</b></p>')
+        if b.get("account_line"):
+            h.append(f'<p class="kv">{esc(b["account_line"])}</p>')
+        if b.get("guard_line"):
+            h.append(f'<p class="kv"><span style="color:var(--dim)">sizing floor:</span> '
+                     f'{esc(b["guard_line"])}</p>')
+        if b.get("live_line"):
+            h.append(f'<p class="kv">live record · {esc(b["live_line"])}</p>')
         if b.get("equity") is not None:
             h.append(f'<p class="big">${esc(_fmt(b.get("equity")))} <span style="font-size:11px;'
                      f'color:var(--dim);font-weight:400">equity · cash ${esc(_fmt(b.get("cash")))} · '
@@ -611,8 +660,13 @@ def to_html(books, fx, built, md_path):
             h.append(f'<p class="kv warn">STALE — last cycle {esc(b.get("age_min"))} min ago '
                      f'(expected every {esc(b.get("cycle_s"))}s). The job is not finishing.</p>')
         if b.get("fx_only"):
+            src_note = ""
+            if b.get("account_kind_src"):
+                src_note = " (" + b["account_kind_src"] + ")"
+            else:
+                src_note = " (account kind not established by anything on this page)"
             h.append(f'<p class="kv">feed last written <b>{esc(b.get("feed_age_min"))} min ago</b> · '
-                     f'account kind, read from <code>sentry_mac.py</code>: <b>{esc(b.get("account_kind"))}</b>'
+                     f'account kind <b>{esc(b.get("account_kind"))}</b>{esc(src_note)}'
                      f' · send failures in the last 400 journal lines: <b>{esc(b.get("send_fail_n") or 0)}</b></p>'
                      + (f'<p class="kv warn">last send failure: {esc(b.get("send_fail_last"))}</p>'
                         if b.get("send_fail_last") else "")

@@ -277,6 +277,11 @@ def fx_charts_block(st, now=None):
             "rows": rows, "thin": thin[:12], "error": st.get("watch_error") or "",
             "age_min": age_min, "stale": (age_min is not None and age_min > 15),
             "positions_open": st.get("positions_open"), "book_n": (st.get("book") or {}).get("n"),
+            "account": st.get("account") or {}, "live": st.get("live_record") or {},
+            "sizing": st.get("sizing") or {},
+            "account_line": st.get("account_line") or "",
+            "guard_line": st.get("guard_line") or "",
+            "live_line": st.get("live_line") or "",
             "rules": {k: pb.get(k) for k in ("cycle_s", "risk_base", "risk_band", "max_orders_day",
                                              "theme_cap", "orders", "red_window", "candle_library") if k in pb}}
 
@@ -977,6 +982,9 @@ async function tick(){
         +(fx.positions_open!=null?' · '+fx.positions_open+' open forex position(s) in its own read':'')
         +(fx.book_n!=null?' · book it read: '+fx.book_n+' item(s)':'')
         +((fx.thin&&fx.thin.length)?' · <span style="color:#f1c40f">too few bars to scan: '+fx.thin.join(', ')+'</span>':'')
+        +(fx.account_line?'<br>'+fx.account_line:'')
+        +(fx.guard_line?'<br><span style="color:#7f8ea3">sizing floor:</span> '+fx.guard_line:'')
+        +(fx.live_line?'<br><b>live record</b> · '+fx.live_line:'')
         +(fx.error?' · <b style="color:#e74c3c">its watch block raised: '+fx.error+'</b>':'')
         +'<br>rules as the build publishes them: cycle '+rl.cycle_s+'s · $'+(rl.risk_base||'?')+' self-scaled '
         +'inside $'+(band[0]||'?')+'–$'+(band[1]||'?')+' · max '+(rl.max_orders_day||'?')+'/day · '
