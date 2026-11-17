@@ -481,3 +481,15 @@
 - **11-17 10:59 UTC** NOTE — LTC/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-17 10:59 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-evening-star sell_stop 7.13365344 sl7.2028664 tp7.02983401 — paper-graded (spot can't short)
 - **11-17 10:59 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99384.59 · 10s · venue fees $94.41 to date @ 0.02/0.05%
+- **11-17 11:59 UTC** BE +1R: ETH/USD stop -> entry 1793.72
+- **11-17 11:59 UTC** BE +1R: SOL/USD stop -> entry 71.39858632
+- **11-17 11:59 UTC** FILL — BCH/USD S13-ichimoku-long 28.716763729774897@209.2672383 sl206.65552339 tp213.32949512
+- **11-17 11:59 UTC** SKIP — BTC/USD C-H1-bull-harami: already have pending/position in play
+- **11-17 11:59 UTC** SKIP — ETH/USD S13-ichimoku-short: already have pending/position in play
+- **11-17 11:59 UTC** SKIP — XRP/USD S13-ichimoku-long: already have pending/position in play
+- **11-17 11:59 UTC** NOTE — DOGE/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-17 11:59 UTC** NOTE — ADA/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-17 11:59 UTC** SKIP — LINK/USD C-H1-hammer/takuri: already have pending/position in play
+- **11-17 11:59 UTC** SKIP — BCH/USD S4-band-fade-short: already have pending/position in play
+- **11-17 11:59 UTC** SKIP — BCH/USD C-H1-tweezer-top: already have pending/position in play
+- **11-17 11:59 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $100600.92 · 7s · venue fees $97.41 to date @ 0.02/0.05%
