@@ -916,6 +916,18 @@
    "stop_price": 1775.95168482,
    "status": "open",
    "placed_at": 1794953037
+  },
+  {
+   "id": "1794953095072",
+   "client_order_id": "sentryprot1794953095",
+   "symbol": "ADA/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 20659.4496322617,
+   "limit_price": null,
+   "stop_price": 0.1510798,
+   "status": "open",
+   "placed_at": 1794953095
   }
  ],
  "positions": [
@@ -926,7 +938,7 @@
    "cid": "sentryXRPUSD1794687006293n9",
    "fees": 2.65438049,
    "opened": 1794717219,
-   "current_price": 0.9668
+   "current_price": 0.9663
   },
   {
    "symbol": "XRP/USD",
@@ -935,7 +947,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9668
+   "current_price": 0.9663
   },
   {
    "symbol": "LTC/USD",
@@ -944,7 +956,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 44.669
+   "current_price": 44.663
   },
   {
    "symbol": "XRP/USD",
@@ -953,7 +965,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9668
+   "current_price": 0.9663
   },
   {
    "symbol": "SOL/USD",
@@ -962,7 +974,7 @@
    "cid": "sentrySOLUSD1794848491576n30",
    "fees": 1.94010572,
    "opened": 1794848491,
-   "current_price": 73.32
+   "current_price": 73.28
   },
   {
    "symbol": "DOGE/USD",
@@ -971,7 +983,7 @@
    "cid": "sentryDOGEUSD1794941818530n39",
    "fees": 1.62354953,
    "opened": 1794948298,
-   "current_price": 0.05915
+   "current_price": 0.0591
   },
   {
    "symbol": "BTC/USD",
@@ -980,7 +992,7 @@
    "cid": "sentryBTCUSD1794938063037n37",
    "fees": 2.91798251,
    "opened": 1794952739,
-   "current_price": 64186.68
+   "current_price": 64161.6
   },
   {
    "symbol": "ETH/USD",
@@ -989,7 +1001,7 @@
    "cid": "sentryETHUSD1794940119294n38",
    "fees": 1.86740233,
    "opened": 1794952739,
-   "current_price": 1799.15
+   "current_price": 1798.59
   },
   {
    "symbol": "ADA/USD",
