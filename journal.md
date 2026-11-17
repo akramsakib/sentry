@@ -579,3 +579,23 @@
 - **11-17 20:44 UTC** SKIP — DOGE/USD C-M15-tweezer-top: already have pending/position in play
 - **11-17 20:44 UTC** CANDIDATE(score 4/5) — LINK/USD C-M15-tweezer-top sell_stop 9.0677326 sl9.1451685 tp8.95157874 — paper-graded (spot can't short)
 - **11-17 20:44 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 2 pendings · 3 positions equity $99563.61 · 10s · venue fees $122.70 to date @ 0.02/0.05%
+- **11-17 21:59 UTC** FILL — BTC/USD S16-inside-long 0.09093120983550368@64179.99980559 sl63355.20048602 tp65042.39708385
+- **11-17 21:59 UTC** FILL — ETH/USD C-M15-bull-engulfing 2.074833847367759@1800.05 sl1775.95168482 tp1813.91578796
+- **11-17 21:59 UTC** SKIP — ETH/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-17 21:59 UTC** SKIP — ETH/USD C-M15-three-outside-up: already have pending/position in play
+- **11-17 21:59 UTC** SKIP — XRP/USD S18-rsi2-long: already have pending/position in play
+- **11-17 21:59 UTC** SKIP — XRP/USD C-H1-three-outside-up: already have pending/position in play
+- **11-17 21:59 UTC** SKIP — DOGE/USD S18-rsi2-long: already have pending/position in play
+- **11-17 21:59 UTC** SKIP — DOGE/USD C-M15-three-outside-up: already have pending/position in play
+- **11-17 21:59 UTC** ORDER BOOKED — ADA/USD S18-rsi2-long (score 4/5) limit buy_limit qty 20659.449632 @ 0.1535 sl0.1510798 tp0.15652524 · risk $50.00 · fees ~$3.15 (0.06R)
+- **11-17 21:59 UTC** NOTE — ADA/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — ADA/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — LINK/USD S18-rsi2-long: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — LINK/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — LINK/USD C-H1-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — LINK/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — BCH/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — BCH/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — BCH/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** NOTE — AVAX/USD S18-rsi2-long: soft cap on open items (6) — advisory, skipping
+- **11-17 21:59 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $99599.53 · 8s · venue fees $129.07 to date @ 0.02/0.05%
