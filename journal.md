@@ -493,3 +493,42 @@
 - **11-17 11:59 UTC** SKIP — BCH/USD S4-band-fade-short: already have pending/position in play
 - **11-17 11:59 UTC** SKIP — BCH/USD C-H1-tweezer-top: already have pending/position in play
 - **11-17 11:59 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $100600.92 · 7s · venue fees $97.41 to date @ 0.02/0.05%
+- **11-17 17:54 UTC** CLOSED BTC/USD — graded win (+2.18R net of 0.09R in venue fees) from exit 64922.33
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794695096 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794744855 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794768937 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794784731 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794797528 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794818528 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794818876 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794825237 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794848491 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794854048 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794861594 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794885025 after close
+- **11-17 17:54 UTC** CANCEL leftover BTC/USD order sentryprot1794910859 after close
+- **11-17 17:54 UTC** EXIT ETH/USD: price crossed stop 1793.72 (cur 1785.69) — market close
+- **11-17 17:54 UTC** ORDER BOOKED — BTC/USD S16-inside-long (score 3/5) stop buy_stop qty 0.090931 @ 64179.99980559 sl63355.20048602 tp65042.39708385 · risk $75.00 · fees ~$5.80 (0.08R)
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — BTC/USD S16-inside-short sell_stop 63447.60019441 sl64272.39951398 tp62585.20291615 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** SKIP — ETH/USD S22-rsi-bear-div: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — ETH/USD S23-spring-long: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — XRP/USD S10-ma-cross-short: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — XRP/USD S23-spring-long: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — XRP/USD C-M15-shooting-star: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — SOL/USD S22-rsi-bear-div: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — SOL/USD C-H1-bear-engulfing: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — SOL/USD C-H1-evening-star: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — SOL/USD C-H1-three-inside-down: already have pending/position in play
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — DOGE/USD S13-ichimoku-short sell_stop 0.05855386 sl0.05888728 tp0.05710327 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — DOGE/USD C-M15-shooting-star sell_stop 0.05834924 sl0.0589569 tp0.05743775 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — ADA/USD C-M15-gravestone sell_stop 0.15149047 sl0.15332383 tp0.14874042 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** SKIP — LINK/USD C-M15-shooting-star: already have pending/position in play
+- **11-17 17:54 UTC** NOTE — LTC/USD S16-inside-long: soft cap on open items (6) — advisory, skipping
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — LTC/USD S16-inside-short sell_stop 44.02146185 sl44.60134537 tp43.34192781 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — LTC/USD C-M15-shooting-star sell_stop 44.13146185 sl44.58134537 tp43.45663659 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — LTC/USD C-M15-tweezer-top sell_stop 44.13146185 sl44.58134537 tp43.45663659 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** SKIP — BCH/USD S10-ma-cross-short: already have pending/position in play
+- **11-17 17:54 UTC** SKIP — BCH/USD C-M15-gravestone: already have pending/position in play
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 7.09454639 sl7.15540721 tp6.8833471 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-shooting-star sell_stop 7.0606976 sl7.14875601 tp6.92860997 — paper-graded (spot can't short)
+- **11-17 17:54 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $99449.74 · 8s · venue fees $105.11 to date @ 0.02/0.05%
