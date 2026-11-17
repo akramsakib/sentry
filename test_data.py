@@ -1816,7 +1816,7 @@ check("the lab page fetches its own data with the desk token and escapes every s
 
 
 check("a run is bounded in BOTH phases (fetch and replay), so a report is guaranteed on a 30-min cron",
-      'RUN_SEC = int(env_num("LAB_RUN_SEC", 780, 60, 3000))' in _ls
+      'RUN_SEC = int(env_num("LAB_RUN_SEC", 600, 60, 3000))' in _ls
       and 'RUN_GRACE = int(env_num("LAB_RUN_GRACE", 240, 5, 900))' in _ls
       and "hard = deadline + RUN_GRACE" in _ls and "if deadline and time.time() > deadline" in _ls)
 check("a truncated sample is published as partial (a small n must never read as 'the playbook has no edge')",

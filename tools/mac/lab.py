@@ -112,7 +112,11 @@ PAGES = int(env_num("LAB_PAGES", 6, 1, 40))              # history-candles pages
 _BARS_PER_HOUR = {"5m": 12, "15m": 4, "1h": 1, "4h": 0.25, "1d": 1.0 / 24}
 REQ_MAX = int(env_num("LAB_REQ_MAX", 200, 10, 2000))       # requests per run across all symbols/timeframes
 _reqs = [0]
-RUN_SEC = int(env_num("LAB_RUN_SEC", 780, 60, 3000))   # a launchd job on StartInterval 1800 must be bounded
+RUN_SEC = int(env_num("LAB_RUN_SEC", 600, 60, 3000))   # default = fits inside StartInterval 1800
+                                                           # WITHOUT relying on launchd passing env through: a
+                                                           # check of the live job showed only LAB_ENGINE arriving,
+                                                           # so a 780 s default would overrun the 240 s grace and
+                                                           # the 30 min interval, run after run.
 RUN_GRACE = int(env_num("LAB_RUN_GRACE", 240, 5, 900))    # CPU time allowed AFTER fetching stops
 SYMS = [s.strip() for s in os.environ.get("LAB_SYMS", "BTC-USDT,ETH-USDT,SOL-USDT,BNB-USDT,XRP-USDT").split(",") if s.strip()]
 FIXDIR = os.environ.get("SENTRY_FIXTURES")
