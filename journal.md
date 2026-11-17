@@ -532,3 +532,10 @@
 - **11-17 17:54 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 7.09454639 sl7.15540721 tp6.8833471 — paper-graded (spot can't short)
 - **11-17 17:54 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-shooting-star sell_stop 7.0606976 sl7.14875601 tp6.92860997 — paper-graded (spot can't short)
 - **11-17 17:54 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $99449.74 · 8s · venue fees $105.11 to date @ 0.02/0.05%
+- **11-17 18:06 UTC** EXIT ETH/USD: price crossed stop 1793.72 (cur 1786.9) — market close
+- **11-17 18:06 UTC** SKIP — ETH/USD C-M15-dragonfly: already have pending/position in play
+- **11-17 18:06 UTC** SKIP — SOL/USD C-M15-hammer/takuri: already have pending/position in play
+- **11-17 18:06 UTC** SKIP — LINK/USD C-M15-bear-harami: already have pending/position in play
+- **11-17 18:06 UTC** NOTE — LTC/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-17 18:06 UTC** NOTE — AVAX/USD C-H1-homing-pigeon: soft cap on open items (6) — advisory, skipping
+- **11-17 18:06 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99378.99 · 8s · venue fees $111.65 to date @ 0.02/0.05%
