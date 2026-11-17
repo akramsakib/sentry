@@ -539,3 +539,7 @@
 - **11-17 18:06 UTC** NOTE — LTC/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
 - **11-17 18:06 UTC** NOTE — AVAX/USD C-H1-homing-pigeon: soft cap on open items (6) — advisory, skipping
 - **11-17 18:06 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99378.99 · 8s · venue fees $111.65 to date @ 0.02/0.05%
+- **11-17 18:13 UTC** CLOSED ETH/USD — graded loss (-0.84R net of 0.17R in venue fees) from exit 1786.9
+- **11-17 18:13 UTC** CLOSED BCH/USD — graded loss (-0.93R net of 0.08R in venue fees) from exit 207.05
+- **11-17 18:13 UTC** EXIT LINK/USD: price crossed stop 9.0694641 (cur 9.049) — market close
+- **11-17 18:13 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 3 positions equity $99218.29 · 7s · venue fees $118.58 to date @ 0.02/0.05%
