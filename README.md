@@ -470,6 +470,13 @@ Sakib asked for the office CCTV on "another page", including the phone. It is a 
 process as the trading radar (`tools/mac/trade_radar.py`), on the same port, behind the same token gate —
 not a second web server, not the NVR vendor's app, and not an `<iframe>`.
 
+It shares that process and nothing else. There is deliberately **no card for it on the trade radar and no
+link to it from the desk page**, and `data.json` carries no camera state — he asked for the cameras off the
+radar ("keep it on separate page not on hermes trade radar"), and there was a technical reason to obey:
+`snapshot()` used to call `cctv_state()`, so a recorder that hangs on a TCP connect could stall the page
+that shows his positions. `/cctv` reads its own state in its own handler now. Reach it by URL:
+`http://<mac>:8790/cctv?k=<key>` (bookmark it; the token comes from `radar.key`, never from the page).
+
 Why a proxy: the recorder answers on `192.168.0.133` (80/554/37777, Dahua-family) and sends
 `X-Frame-Options: SAMEORIGIN`, so a browser embedded frame is impossible; and an `<img>` tag cannot carry an
 `Authorization` header, while a login embedded in a `src` URL would leak into the phone's history. So the
