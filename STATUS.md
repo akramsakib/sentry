@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-17 22:03 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $58,427.35 · equity $99,547.72
+**2026-11-17 22:04 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $58,427.35 · equity $99,532.65
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$129.07 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -15,11 +15,11 @@ _None. Every symbol is scanned each cycle; a resting entry above is a trigger wa
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
 | ADA/USD | 20659.4 | 0.15347 | 0.15312 | $-7.23 | 0.1510798 | 0.15652524 | -0.14R |
-| BTC/USD | 0.0909312 | 64180 | 64186.36 | $0.58 | 63355.2 | 65042.397 | +0.01R |
-| DOGE/USD | 54931.8 | 0.05911149 | 0.05915 | $2.12 | 0.05820127 | 0.06047682 | +0.04R |
-| ETH/USD | 2.07483 | 1800.05 | 1799.15 | $-1.87 | 1775.9517 | 1813.9158 | -0.04R |
-| SOL/USD | 54.3458 | 71.398586 | 73.32 | $104.42 | 70.018534 | 72.918795 | +1.39R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9668 | $32.84 | 0.94357771 | 0.97833374 | +0.44R |
+| BTC/USD | 0.0909312 | 64180 | 64167.29 | $-1.16 | 63355.2 | 65042.397 | -0.02R |
+| DOGE/USD | 54931.8 | 0.05911149 | 0.0591 | $-0.63 | 0.05820127 | 0.06047682 | -0.01R |
+| ETH/USD | 2.07483 | 1800.05 | 1798.6 | $-3.01 | 1775.9517 | 1813.9158 | -0.06R |
+| SOL/USD | 54.3458 | 71.398586 | 73.28 | $102.25 | 70.018534 | 72.918795 | +1.36R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9664 | $30.98 | 0.94357771 | 0.97833374 | +0.41R |
 
 ## Last 12 signals (330 ever logged)
 
