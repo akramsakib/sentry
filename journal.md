@@ -475,3 +475,9 @@
 - **11-17 10:41 UTC** SKIP — LINK/USD C-M15-bear-engulfing: already have pending/position in play
 - **11-17 10:41 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-tweezer-top sell_stop 7.14865344 sl7.2158664 tp7.04783401 — paper-graded (spot can't short)
 - **11-17 10:41 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99643.30 · 11s · venue fees $94.05 to date @ 0.02/0.05%
+- **11-17 10:59 UTC** EXIT ETH/USD: price crossed stop 1787.89054228 (cur 1786.11) — market close
+- **11-17 10:59 UTC** SKIP — SOL/USD S18-rsi2-long: already have pending/position in play
+- **11-17 10:59 UTC** SKIP — LINK/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-17 10:59 UTC** NOTE — LTC/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-17 10:59 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-evening-star sell_stop 7.13365344 sl7.2028664 tp7.02983401 — paper-graded (spot can't short)
+- **11-17 10:59 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99384.59 · 10s · venue fees $94.41 to date @ 0.02/0.05%
