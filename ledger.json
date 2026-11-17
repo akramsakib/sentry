@@ -1,6 +1,6 @@
 {
- "cash": 69434.95169035534,
- "realized": -570.0249943204853,
+ "cash": 74423.81629112847,
+ "realized": -654.7187366534325,
  "orders": [
   {
    "id": "1794662610992",
@@ -829,6 +829,33 @@
    "stop_price": 1800.05,
    "status": "open",
    "placed_at": 1794940119
+  },
+  {
+   "id": "1794941818162",
+   "client_order_id": "ledger794941818162",
+   "symbol": "LINK/USD",
+   "side": "sell",
+   "type": "market",
+   "qty": 550.8619667711213,
+   "limit_price": null,
+   "stop_price": null,
+   "status": "filled",
+   "placed_at": 1794941818,
+   "filled_avg_price": 9.061,
+   "filled_qty": 550.8619667711213,
+   "filled_at": 1794941818
+  },
+  {
+   "id": "1794941818530",
+   "client_order_id": "sentryDOGEUSD1794941818530n39",
+   "symbol": "DOGE/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 54931.774735777966,
+   "limit_price": null,
+   "stop_price": 0.05911149,
+   "status": "open",
+   "placed_at": 1794941818
   }
  ],
  "positions": [
@@ -839,7 +866,7 @@
    "cid": "sentryXRPUSD1794687006293n9",
    "fees": 2.65438049,
    "opened": 1794717219,
-   "current_price": 0.9616
+   "current_price": 0.9577
   },
   {
    "symbol": "XRP/USD",
@@ -848,7 +875,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9616
+   "current_price": 0.9577
   },
   {
    "symbol": "LTC/USD",
@@ -857,7 +884,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 44.417
+   "current_price": 44.261
   },
   {
    "symbol": "XRP/USD",
@@ -866,7 +893,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9616
+   "current_price": 0.9577
   },
   {
    "symbol": "SOL/USD",
@@ -875,17 +902,8 @@
    "cid": "sentrySOLUSD1794848491576n30",
    "fees": 1.94010572,
    "opened": 1794848491,
-   "current_price": 72.75
-  },
-  {
-   "symbol": "LINK/USD",
-   "qty": 550.8619667711213,
-   "entry": 9.20561436,
-   "cid": "sentryLINKUSD1794848491786n31",
-   "fees": 2.53551142,
-   "opened": 1794848491,
-   "current_price": 9.13
+   "current_price": 72.39
   }
  ],
- "fees_paid": 118.58399478
+ "fees_paid": 121.07967492
 }
