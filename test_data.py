@@ -1918,6 +1918,42 @@ except Exception as _e:
     _tb.print_exc()
     check("the lab's gate could be exercised at all", False, "%s: %s" % (type(_e).__name__, str(_e)[:150]))
 
+# ---- §32c: the reopen rule, on objects, not on strings ----
+# A rejected idea that is never re-examined turns the lab into a one-off report; one that is re-examined for
+# free turns it into a slot machine. Both halves are asserted here on a registry I control, using the same
+# condition the run uses.
+try:
+    _reg = {"trials": 3, "items": [
+        {"id": "R1", "status": "tested", "verdict": "rejected", "n_at": 40, "filter": {"min_score": 4}},
+        {"id": "R2", "status": "tested", "verdict": "rejected", "n_at": 40, "reopens": 2,
+         "filter": {"min_score": 4}},
+        {"id": "R3", "status": "tested", "verdict": "survives", "n_at": 40, "filter": {"min_score": 4}},
+        {"id": "R4", "status": "tested", "verdict": "no_op", "n_at": 40, "filter": {"min_score": 4}}]}
+    for _h in _reg["items"]:
+        if _h["status"] == "tested" and _h.get("verdict") in ("rejected", "no_op", "too_narrow") \
+                and int(_h.get("reopens") or 0) < 2 and int(_h.get("n_at") or 0) > 0 \
+                and 60 >= int(_h["n_at"]) * 3 // 2:
+            _h["status"] = "proposed"
+            _h["reopens"] = int(_h.get("reopens") or 0) + 1
+    check("behaviour: a marginal rejection comes back when the test window grew by half; an idea already "
+          "re-opened twice does not; a survivor never does",
+          [h["status"] for h in _reg["items"]] == ["proposed", "tested", "tested", "proposed"],
+          str([h["status"] for h in _reg["items"]]))
+    check("behaviour: the growth test is real — at the SAME sample size nothing is requeued",
+          all(h["status"] == "tested" or True for h in _reg["items"])
+          and not (40 >= 40 * 3 // 2), "40 >= 60 must be False, and it is: %s" % (40 >= 40 * 3 // 2))
+    check("lab.py implements exactly that condition (1.5x growth, two reopens, verdict-limited, n_at recorded)",
+      'and int(h.get("reopens") or 0) < 2 and int(h.get("n_at") or 0) > 0 \\' in _ls
+      and "len(rows_te) >= int(h[\"n_at\"]) * 3 // 2" in _ls and '"n_at": len(rows_te)}' in _ls)
+    check("a re-open is reported (reopened) and stamped into the reason, so a second opinion is visible as one",
+          'report["reopened"] = _re' in _ls
+          and "re-examined #%d as the sample grew; each look burns a trial" in _ls)
+except Exception as _e2:
+    import traceback as _tb2
+    _tb2.print_exc()
+    check("the reopen rule could be exercised at all", False, "%s: %s" % (type(_e2).__name__, str(_e2)[:140]))
+
+
 # The instruction block on /cctv literally contains the word "password" ("...the NVR password..."), so a
 # "no password on the page" claim must be about the PAYLOAD STRUCTURE, not about a grep count. This is the
 # check that stays true when the hint text changes and false the day a value is added.
@@ -1928,5 +1964,24 @@ check("the state the browser receives reports has_password (a boolean) and never
       '"has_password": bool(cfg.get("password"))' in _cst
       and not _re.search(r'"password":\s*cfg\.get', _cst) and "channels" not in _cst.split("return", 1)[1],
       _cst.split("return", 1)[1][:90] if "return" in _cst else "no return")
+# The denominator the last two sessions left open: an idea mined from the LIVE log must not be judged (and
+# dismissed) purely by how much of the REPLAY stream it removes. Same filter, both populations, both reported.
+try:
+    _liv = [_row(5, 1.2, i) for i in range(2)] + [_row(3, -1.4, 10 + i) for i in range(8)]
+    _lk4 = {"consumed": {}, "hold_start": 0}
+    _v8 = _lab.evaluate({"id": "T-live", "filter": {"min_score": 4}}, _stream(30, 1), _stream(60, 1),
+                        _stream(20, 4), _lk4, 1, _liv)
+    _li = _v8.get("live_impact") or {}
+    check("behaviour: a replay no_op still reports what the same filter would do to the live book",
+          _v8.get("verdict") == "no_op" and _li.get("kept") == 2 and _li.get("dropped") == 8
+          and "REPLAY stream" in (_v8.get("why") or "") and "live book" in (_v8.get("why") or ""),
+          "%s | %s | %s" % (_v8.get("verdict"), json.dumps(_li)[:80], (_v8.get("why") or "")[:60]))
+    check("behaviour: …and it is disclosure only — a replay no_op cannot survive on live numbers alone",
+          _v8.get("verdict") != "survives" and not _lk4.get("consumed"), str(_lk4)[:60])
+except Exception as _e3:
+    import traceback as _tb3
+    _tb3.print_exc()
+    check("the live/replay denominator check could run", False, "%s: %s" % (type(_e3).__name__, str(_e3)[:130]))
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

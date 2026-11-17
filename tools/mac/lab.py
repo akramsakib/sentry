@@ -633,7 +633,7 @@ def sig(spec, window):
     return hashlib.sha1((json.dumps(spec, sort_keys=True) + "|" + str(window)).encode()).hexdigest()[:12]
 
 
-def evaluate(h, train_rows, test_rows, hold_rows, lk, trials):
+def evaluate(h, train_rows, test_rows, hold_rows, lk, trials, live_rows=None):
     """One hypothesis against the data it is allowed to see. Returns the verdict block."""
     f = make_filter(h.get("filter") or {})                      # raises FilterError, never silently passes
     seen_tr, seen_te, seen_ho = {}, {}, {}
@@ -650,6 +650,21 @@ def evaluate(h, train_rows, test_rows, hold_rows, lk, trials):
     n_ok = len(ke) >= MIN_N
     pt = (boot or {}).get("point")
     keep_rate = (len(ke) / float(len(ke) + len(de))) if (ke or de) else 1.0
+    # The live book is a DIFFERENT population from the replay, and an idea mined from the live log is a claim
+    # about the live book. Judging it only by how much of the replay it removes is how "drop the worst skill"
+    # comes back as a no-op (97 % kept) when that skill is a fifth of what the account actually traded: rare in
+    # 3 symbols over 15 days, common in the last 4 months of live firing. So both populations are measured
+    # with the same filter and both are reported — the verdict still comes from the replay (the only place with
+    # a holdout), but a no_op now says which stream it is a no_op ON, and quotes the live effect next to it.
+    live_imp = None
+    if live_rows:
+        lkept = [r for r in live_rows if r.get("result") and f(r, {})]
+        ldrop = [r for r in live_rows if r.get("result") and not f(r, {})]
+        if lkept or ldrop:
+            live_imp = {"kept": len(lkept), "dropped": len(ldrop),
+                        "keep_rate": round(len(lkept) / float(len(lkept) + len(ldrop)), 4),
+                        "kept_line": stats(lkept).get("line"), "dropped_line": stats(ldrop).get("line")}
+        v["live_impact"] = live_imp
     # keep_rate is in the gate on purpose: an idea that leaves 97% of the stream alone has not earned a look
     # at the one window nobody gets to look at twice.
     test_passed = bool(n_ok and pt is not None and pt >= v["bar"] and (boot or {}).get("lo", -9) > 0
@@ -676,10 +691,16 @@ def evaluate(h, train_rows, test_rows, hold_rows, lk, trials):
                "unfilled and censored trades are excluded, which is why the number is small)" % (len(ke), MIN_N))
     elif keep_rate > 0.95:
         verdict = "no_op"
-        why = "kept %.0f%% of the base stream — that is not a change, it is a no-op" % (100 * keep_rate)
+        why = "kept %.0f%% of the REPLAY stream — that is not a change, it is a no-op" % (100 * keep_rate)
+        if live_imp:
+            why += (" (on the live book the same filter would keep %d and drop %d of %d graded trades: %s)"
+                    % (live_imp["kept"], live_imp["dropped"], live_imp["kept"] + live_imp["dropped"],
+                       live_imp.get("dropped_line") or "no decisive trades dropped"))
     elif keep_rate < 0.20:
         verdict = "too_narrow"
-        why = "kept only %.0f%% of trades; anything looks good on a fifth of a stream" % (100 * keep_rate)
+        why = "kept only %.0f%% of replay trades; anything looks good on a fifth of a stream" % (100 * keep_rate)
+        if live_imp:
+            why += " (live book: keeps %d / drops %d)" % (live_imp["kept"], live_imp["dropped"])
     elif pt is None:
         verdict = "insufficient"
         why = "not enough in both arms for a bootstrap"
@@ -707,6 +728,8 @@ def evaluate(h, train_rows, test_rows, hold_rows, lk, trials):
                       (boot or {}).get("lo"), (boot or {}).get("hi"), len(ke), len(de)))
         if v["holdout"].get("locked"):
             why += "; holdout was already spent, so it could not be double-checked"
+        if h.get("reopens"):
+            why += " (re-examined #%d as the sample grew; each look burns a trial)" % h["reopens"]
     v.update({"verdict": verdict, "why": why})
     return v
 
@@ -963,10 +986,27 @@ def _run():
               "live_line": stats(live).get("line"),
               "trials": reg.get("trials", 0), "bar_to_clear": deflated_bar(reg.get("trials", 0)),
               "hypotheses": [], "proposals": [], "ideas_proposed": 0, "errors": []}
+    # A marginal rejection on a thin sample is not a refutation. `S-hours` on the first real run: paired
+    # +0.322 R with a CI entirely above zero (+0.104..+0.529), killed by a bar of +0.336 R — a miss by
+    # 0.018 R. Retiring that forever would leave the lab with a backlog it never empties and a verdict it
+    # never revisits while the archive it was judged on stops growing. So an idea gets RE-EXAMINED once the
+    # test window has grown by half again, and the re-examination costs a trial: a second attempt on more
+    # data has to clear a higher bar, not the one it missed. Two reopens, then it is settled.
+    _re = 0
+    for h in reg["items"]:
+        if h.get("status") == "tested" and h.get("verdict") in ("rejected", "no_op", "too_narrow") \
+                and int(h.get("reopens") or 0) < 2 and int(h.get("n_at") or 0) > 0 \
+                and len(rows_te) >= int(h["n_at"]) * 3 // 2:
+            h["status"] = "proposed"
+            h["reopened_at"] = int(time.time())
+            h["reopens"] = int(h.get("reopens") or 0) + 1
+            _re += 1
+    if _re:
+        report["reopened"] = _re                              # shown on the page: the lab is re-arguing, not idling
     todo = [h for h in reg["items"] if h.get("status") == "proposed"][:BUDGET]
     for h in todo:
         try:
-            v = evaluate(h, rows_tr, rows_te, rows_ho, lk, reg["trials"] + 1)
+            v = evaluate(h, rows_tr, rows_te, rows_ho, lk, reg["trials"] + 1, live)
         except FilterError as e:
             v = {"verdict": "invalid", "why": str(e)}
         except Exception as e:
@@ -982,7 +1022,7 @@ def _run():
         _win = "d%d/n%d" % (int(DAYS), len(rows_te))
         h.update({"status": ("proposed" if _v == "insufficient" else "tested"), "verdict": v.get("verdict"),
                   "why": v.get("why"), "tries": int(h.get("tries") or 0) + 1,
-                  "tested_at": int(time.time()), "window": _win})
+                  "tested_at": int(time.time()), "window": _win, "n_at": len(rows_te)})
         v["id"], v["claim"], v["origin"] = h["id"], h.get("claim"), h.get("origin")
         report["hypotheses"].append(v)
         # Findings are append-only, so "insufficient" is journalled only when the sample behind it changed —
