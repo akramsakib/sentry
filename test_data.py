@@ -1678,6 +1678,34 @@ check("the tile cache bucket is computed from a clamped TTL (a 0 or junk env val
       and _cs.index("except Exception") < _cs.index("CCTV_TTL = 8.0"))
 check("discovery reads the Mac's own ARP table only — no port sweep of the office network",
       'subprocess.run(["arp", "-a"]' in _cs and "probed" in _cs)
+# the four below are each a bug this build actually had; they are here so they cannot come back
+check("the auth ladder offers Digest — his XVR answers 401 with `WWW-Authenticate: Digest realm=...`, so "
+      "Basic-only code would call a correct password a refused one",
+      "HTTPDigestAuthHandler" in _cs and "privkey" in _cs and "digest" in _cs and "basic" in _cs)
+check("the request is sent with urlopen/opener.open, not urllib.request.open (that AttributeError silently "
+      "killed the cookie path and looked like a wrong password)",
+      "urllib.request.urlopen(req, timeout=timeout)" in _cs and "or urllib.request).open(" not in _cs,
+      str(_cs.count("(opener or urllib.request)")))
+check("the privkey cookie cache is per host and only caches success (a cached 404 after an NVR reboot used to "
+      "disable the cookie forever)", '_jar:" + realm' in _cs or "jkey" in _cs)
+check("the RTSP lane never reuses the web port written next to the host (rtsp://x:8099:554 was a real URL)",
+      "for_rtsp=True" in _cs and "port = None" in _cs.split("def _cctv_target")[1][:900])
+check("when the device offers only Digest, the 401 outranks urllib's Basic-handler complaint",
+      "raise last_http or last or" in _cs)
+check("the desk asks the device whether a login is really needed, and quotes that answer (the \"why a login?\" "
+      "question is settled by the box, not by me)",
+      "def cctv_probe_anon" in _cs and '"anon"] = pr' in _cs and "WWW-Authenticate" in _cs)
+check("auth:\"none\" is a supported mode, so guest/anonymous view needs no code change when it exists",
+      'want == "none" or not (user and pw)' in _cs and '\"auth\": \"none\"' in _cs)
+check("frames can come over RTSP via ffmpeg when the HTTP snapshot path is not this model's (his Mac has ffmpeg)",
+      "_cctv_rtsp" in _cs and "-rtsp_transport" in _cs and "cam/realmonitor" in _cs
+      and "no ffmpeg here" in _cs)
+check("discovery also reads the unauthenticated ONVIF Hello, and the parser is pure so a capture can be tested",
+      "_onvif_probe" in _cs and "def _onvif_parse" in _cs and "239.255.255.250" in _cs)
+check("no multicast from a test runner (CCTV_ONVIF=0 degrades to an empty list instead of hanging)",
+      'os.environ.get("CCTV_ONVIF"' in _cs)
+
+
 check("urllib is imported once at module level (an in-function `import urllib.error` shadows the name and "
       "crashed the route with UnboundLocalError)",
       _cs.count("import urllib") >= 3 and "\n    import urllib" not in _cs,

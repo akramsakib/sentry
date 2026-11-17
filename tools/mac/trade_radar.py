@@ -21,6 +21,7 @@ import json, os, re, smtplib, socket, subprocess, sys, threading, time
 import urllib.error
 import urllib.parse
 import urllib.request
+import base64
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -413,35 +414,306 @@ def cctv_discover():
                 break
             except Exception:
                 continue
+    if found:
+        for h in _onvif_probe():
+            for f in found:
+                if f["ip"] == h["ip"]:
+                    f.update({k: v for k, v in h.items() if k != "ip"})
     return {"found": found, "probed": len(hosts)}
 
 
-def _cctv_open(url, cfg, timeout=6.0):
-    """One GET with the auth method this NVR actually accepts.
+def _onvif_parse(data):
+    """Pull ip / model / ONVIF endpoint out of a WS-Discovery reply. Pure, so it can be tested on a capture."""
+    import re as _r
+    t = data.decode("utf-8", "replace")
 
-    Dahua firmware rejects HTTP Basic on the CGI endpoints and requires the cookie that /privkey/ sets, so
-    we do that dance once per process. Kept in one function because the page, the tile and the health probe
-    must all agree on what "reachable" means.
-    """
-    req = urllib.request.Request(url, headers={"User-Agent": "hermes-desk/1.0"})
-    host, user, pw = cfg.get("host"), cfg.get("user") or "", cfg.get("password") or ""
-    if user:
-        # privkey cookie first (Dahua's own web UI does exactly this); harmless on other firmwares.
-        key = "%s:%s" % (user, pw)
-        jar_key = "_jar"
-        if jar_key not in _cctv_cache:
+    def grab(tag):
+        m = _r.search("<[^>]*%s[^>]*>([^<]+)" % tag, t)
+        return m.group(1).strip() if m else ""
+
+    scopes = grab("Scopes")
+    def sc(kind):
+        m = _r.search(r"onvif://www.onvif.org/%s/([^ ]+)" % kind, scopes)
+        return m.group(1) if m else ""
+    ip = grab("XAddrs")
+    ip = (_r.search(r"(\d+\.\d+\.\d+\.\d+)", ip) or [None, ""])[1] if ip else ""
+    return {"ip": ip, "model": sc("hardware"), "brand": sc("name"), "onvif": grab("XAddrs")[:120]}
+
+
+def _onvif_probe(timeout=2.5):
+    """Ask the LAN who is a camera (WS-Discovery), once. Discovery, not scanning: it multicasts a Hello and
+    lists whoever answers - no host is touched that did not announce itself, and it needs no credentials
+    because ONVIF discovery is unauthenticated by spec. Only the reply is read; the media service behind it
+    still demands a login, which is exactly what the page reports."""
+    env = os.environ.get("CCTV_ONVIF", "1")
+    if env in ("0", "off", "no"):
+        return []
+    body = ('<?xml version="1.0"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" '
+            'xmlns:a="http://schemas.xmlsoap.org/ws/2003/03/addressing" '
+            'xmlns:d="http://schemas.xmlsoap.org/ws/2005/04/discovery" '
+            'xmlns:dn="http://www.onvif.org/ver10/network/wsdl"><s:Header><a:Action s:mustUnderstand="1">'
+            'http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</a:Action>'
+            '<a:MessageID>urn:uuid:%s</a:MessageID></s:Header><s:Body>'
+            '<d:Probe><d:Types>dn:NetworkVideoTransmitter</d:Types></d:Probe></s:Body></s:Envelope>'
+            % ("%x" % (int(time.time() * 1000) & 0xffffff))).encode()
+    out, seen = [], set()
+    try:
+        sk = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sk.settimeout(0.9)
+        sk.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+        sk.sendto(body, ("239.255.255.250", 3702))
+        end = time.time() + timeout
+        while time.time() < end and len(out) < 8:
             try:
-                ck = urllib.request.urlopen("http://%s/privkey/%s" % (host, urllib.parse.quote(key)),
-                                            timeout=timeout).read().decode().strip()
-                if "=" in ck:
-                    _cctv_cache[jar_key] = ck
+                d, a = sk.recvfrom(65535)
             except Exception:
-                pass
-        if jar_key in _cctv_cache:
-            req.add_header("Cookie", _cctv_cache[jar_key])
-        import base64
-        req.add_header("Authorization", "Basic " + base64.b64encode(key.encode()).decode())
-    return urllib.request.urlopen(req, timeout=timeout)
+                break
+            rec = _onvif_parse(d)
+            key = (rec.get("ip") or a[0], rec.get("model"))
+            if key in seen:
+                continue
+            seen.add(key)
+            rec["ip"] = rec.get("ip") or a[0]
+            out.append(rec)
+        sk.close()
+    except Exception:
+        return []
+    return out
+
+
+def _cctv_target(cfg, default_port=None, for_rtsp=False):
+    """(host, port) — tolerant of "192.168.0.133", "192.168.0.133:8080" and {"host","port"} alike.
+
+    An NVR on a non-standard web port is normal, and the two ways people write it (colon in host, or a
+    separate port key) both have to work for HTTP *and* for the RTSP URL, or the fallback lane builds
+    "rtsp://host:8099:554/" and every tile reports a failure that is really our own.
+    """
+    h = str(cfg.get("host") or "")
+    port = None
+    if h.count(":") == 1 and h.rsplit(":", 1)[1].isdigit():
+        h, port = h.rsplit(":", 1)
+        port = int(port)
+    if for_rtsp:
+        # A port written next to the host is the WEB port. Reusing it for RTSP is how a fallback lane ends up
+        # dialling 192.168.0.133:8080 for video and reporting the device as dead, so RTSP only ever honours
+        # an explicit "rtsp_port", otherwise 554.
+        port = None
+    if port is None and cfg.get("port") and not for_rtsp:
+        try:
+            port = int(cfg.get("port"))
+        except Exception:
+            port = None
+    return h, (port or default_port)
+
+
+def _cctv_url(cfg, path, default_port=None):
+    h, port = _cctv_target(cfg, default_port)
+    return "http://%s%s%s" % (h, (":%d" % port) if port else "", path)
+
+
+def _cctv_privkey(host, user, pw, timeout=6.0, port=None):
+    """Dahua's cookie handshake, both spellings, because firmwares disagree on which one they take.
+
+    The web UI asks `GET /privkey/<credential>` and the box answers with a `name=value` string that the page
+    then replays as a Cookie — that is the one auth method every Dahua generation accepts, and the only one
+    that does not put a password in a header a proxy might log. Two spellings are in the wild (plain
+    `user:pw` percent-encoded, and base64 of the same), so both are tried, and a reply with no `=` is
+    treated as the value of `logincookie`. The request goes to the recorder and nowhere else; the reply is
+    kept in this process only, never in a page, a URL or data.json.
+    """
+    base = "http://%s%s" % (host, (":%s" % port) if port else "")
+    raw = "%s:%s" % (user, pw)
+    cands = [urllib.parse.quote(raw, safe=""),
+             base64.b64encode(raw.encode()).decode()]
+    for cand in cands:
+        try:
+            ck = urllib.request.urlopen(base + "/privkey/" + cand, timeout=timeout,
+                                        headers={"User-Agent": "hermes-desk/1.0"}
+                                        ).read(400).decode("utf-8", "replace").strip()
+        except Exception:
+            continue
+        if not ck or "<" in ck[:1] or len(ck) > 300:
+            continue                                   # an HTML login page is not a cookie
+        return ck if "=" in ck else ("logincookie=" + ck)
+    return None
+
+
+def _cctv_url(cfg, path, default_port=None):
+    h, port = _cctv_target(cfg, default_port)
+    return "http://%s%s%s" % (h, (":%d" % port) if port else "", path)
+
+
+def _cctv_privkey(host, user, pw, timeout=6.0, port=None):
+    """Dahua's own trick: GET /privkey/user:pw, get back `logincookie=...`, send it as a Cookie.
+
+    Its web UI does exactly this in JavaScript, so it is the one method every firmware generation accepts.
+    Harmless on other brands (they answer 404 and we move on).
+    """
+    try:
+        base = "http://%s%s" % (host, (":%s" % port) if port else "")
+        ck = urllib.request.urlopen(base + "/privkey/" + urllib.parse.quote("%s:%s" % (user, pw)),
+                                    timeout=timeout).read().decode("utf-8", "replace").strip()
+        return ck if "=" in ck and len(ck) < 300 else None
+    except Exception:
+        return None
+
+
+def _cctv_open(url, cfg, timeout=6.0):
+    """One GET, using whichever auth method this firmware actually accepts - and remembering the winner.
+
+    Measured on the office recorder, not assumed: it answers every CGI path with
+    `401 WWW-Authenticate: Digest realm="Login to 8be7ed91..."`, so Basic alone is not enough and Digest is
+    not a nice-to-have. Order: whatever worked last time, then privkey+Basic, then Digest, then Basic.
+    `auth:"none"` in cctv.json skips all of it, which is the mode to use the day a guest/anonymous view is
+    enabled on the box - then the desk pulls frames with no credential at all, because it asks the device
+    what it allows instead of assuming a login is mandatory.
+    """
+    parts = urllib.parse.urlsplit(url)
+    host, port = parts.hostname, parts.port
+    user, pw = cfg.get("user") or "", cfg.get("password") or ""
+    want = str(cfg.get("auth") or "auto").lower()
+    if want == "none" or not (user and pw):
+        return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "hermes-desk/1.0"}),
+                                      timeout=timeout)
+    order = ["privkey", "digest", "basic"]
+    if want in order:
+        order = [want]
+    elif _cctv_cache.get("_method") in order:
+        order = [_cctv_cache["_method"]] + [m for m in order if m != _cctv_cache["_method"]]
+    tried = _cctv_cache.setdefault("_tried", [])
+    last, last_http = None, None
+    realm = "%s://%s" % (parts.scheme, parts.netloc)
+    for method in order:
+        req = urllib.request.Request(url, headers={"User-Agent": "hermes-desk/1.0"})
+        opener = None
+        try:
+            if method == "privkey":
+                # Per host, and only a SUCCESS is remembered. Caching a failure meant one 404 during an NVR
+                # reboot (or one write of a different host into cctv.json) left this Mac unable to use the
+                # cookie ever again, and a box that needs the cookie then reads as "wrong password".
+                jkey = "_jar:" + realm
+                if not _cctv_cache.get(jkey):
+                    ck = _cctv_privkey(host, user, pw, timeout, port)
+                    if ck:
+                        _cctv_cache[jkey] = ck
+                if _cctv_cache.get(jkey):
+                    req.add_header("Cookie", _cctv_cache[jkey])
+                import base64
+                req.add_header("Authorization", "Basic "
+                               + base64.b64encode(("%s:%s" % (user, pw)).encode()).decode())
+            else:
+                pm = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+                pm.add_password(None, realm, user, pw)
+                cls = (urllib.request.HTTPDigestAuthHandler if method == "digest"
+                       else urllib.request.HTTPBasicAuthHandler)
+                opener = urllib.request.build_opener(cls(pm))
+            r = opener.open(req, timeout=timeout) if opener else urllib.request.urlopen(req, timeout=timeout)
+        except urllib.error.HTTPError as e:
+            last_http = last_http or e
+            last = e
+            if e.code not in (401, 403, 407):
+                raise
+            if method not in tried:
+                tried.append("%s(%s)" % (method, e.code))
+            continue
+        except Exception as e:
+            last = e
+            if method not in tried:
+                tried.append("%s(%s)" % (method, "not offered by this device"
+                                             if "scheme" in str(e) else type(e).__name__))
+            continue
+        _cctv_cache["_method"] = method
+        if method not in tried:
+            tried.append(method)
+        return r
+    # the 401 outranks a handler complaint, because "the device refused the login" is the thing he has to
+    # act on; "AbstractBasicAuthHandler does not support the scheme: Digest" is a detail of our own library
+    raise last_http or last or RuntimeError("no auth method answered")
+
+
+def _cctv_ffmpeg():
+    for cand in (os.environ.get("FFMPEG"), os.path.expanduser("~/.local/bin/ffmpeg"),
+                 "/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"):
+        if cand and os.path.exists(cand):
+            return cand
+    return None
+
+
+def _cctv_rtsp(cfg, ch, timeout=14.0):
+    """One frame over RTSP, for the case where this firmware does not serve an HTTP snapshot at all.
+
+    The path is Dahua's own /cam/realmonitor?channel=N&subtype=1 - subtype 1 is the substream, which is what
+    a tile should carry: 8 full-resolution streams from one office uplink is how a phone decides the desk is
+    broken. Written to a temp file, because the single-frame muxer over a pipe is the part of ffmpeg that
+    changes between builds. The credential sits in the argv of a process owned by this user only, and never
+    in a page, an image URL, a log line, or data.json.
+    """
+    ff = _cctv_ffmpeg()
+    if not ff:
+        raise RuntimeError("no ffmpeg here (checked $FFMPEG, ~/.local/bin, /opt/homebrew/bin, /usr/local/bin)")
+    host, rport = _cctv_target(cfg, cfg.get("rtsp_port") or 554, for_rtsp=True)
+    user, pw = cfg.get("user") or "", cfg.get("password") or ""
+    no = ch.get("no") or 1
+    path = ch.get("rtsp") or "/cam/realmonitor?channel=%s&subtype=%s" % (no, cfg.get("subtype", 1))
+    auth = ""
+    if str(cfg.get("auth") or "auto").lower() != "none" and user and pw:
+        auth = "%s:%s@" % (urllib.parse.quote(user, safe=""), urllib.parse.quote(pw, safe=""))
+    url = "rtsp://%s%s:%s%s" % (auth, host, rport, path)
+    d = BASE + "/.cctv"
+    try:
+        os.makedirs(d, exist_ok=True)
+        os.chmod(d, 0o700)
+    except Exception:
+        d = "/tmp"
+    out = os.path.join(d, "ch%s.jpg" % no)
+    try:
+        r = subprocess.run([ff, "-hide_banner", "-loglevel", "error", "-rtsp_transport", "tcp", "-i", url,
+                            "-an", "-sn", "-frames:v", "1", "-y", out], capture_output=True, timeout=timeout)
+        err = (r.stderr or b"").decode("utf-8", "replace").strip()
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("rtsp: no frame within %ss (the box accepted the connection and stalled)" % timeout)
+    body = b""
+    try:
+        if os.path.exists(out):
+            body = open(out, "rb").read()
+        os.unlink(out)
+    except Exception:
+        pass
+    if body[:3] != b"\xff\xd8\xff":
+        raise RuntimeError("rtsp: %s" % ((err.splitlines() or ["no frame returned"])[-1])[:110])
+    return body
+
+
+def cctv_probe_anon(cfg, timeout=2.0):
+    """What the recorder says to a stranger, so the page can answer "why do you need a login?" with evidence.
+
+    It is one request, only made when there is no credential configured, and it is the difference between
+    "the desk wants a password for no reason" and "the device refuses every anonymous path, here is its own
+    words". If the answer ever becomes 200, the page starts working without a password and says so.
+    """
+    host, hport = _cctv_target(cfg, None)
+    if not host:
+        return None
+    url = _cctv_url(cfg, "/cgi-bin/snapshot.cgi?channel=1")
+    st = {"url": "/cgi-bin/snapshot.cgi?channel=1"}
+    try:
+        r = urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "hermes-desk/1.0"}),
+                                   timeout=timeout)
+        body = r.read(4096)
+        st.update(code=r.status, open=True, anonymous=True, jpeg=body[:3] == b"\xff\xd8\xff",
+                  bytes=len(body), ctype=str(r.headers.get("Content-Type")))
+        if st["jpeg"]:
+            st["note"] = ("this device serves frames to anyone on the LAN - no login needed; set "
+                          "\"auth\": \"none\" in cctv.json and the tiles fill in on the next refresh")
+        else:
+            st["note"] = "answered 200 but not a JPEG (%s) - not a frame source" % st["ctype"]
+    except urllib.error.HTTPError as e:
+        st.update(code=e.code, open=False, anonymous=False,
+                  challenge=str(e.headers.get("WWW-Authenticate") or "")[:70],
+                  note="the recorder itself refuses anonymous reads; that is the box being correct")
+    except Exception as e:
+        st.update(code=None, open=False, error="%s: %s" % (type(e).__name__, str(e)[:70]))
+    return st
 
 
 def cctv_tile(ch, cfg=None):
@@ -459,36 +731,55 @@ def cctv_tile(ch, cfg=None):
         st["reason"] = "cctv.json has no \"host\""
         return None, st
     path = ch.get("snapshot") or "/cgi-bin/snapshot.cgi?channel=%s" % (ch.get("no") or 1)
-    if not (cfg.get("user") and cfg.get("password")):
-        # Not a black square and not a guess: the box says 401, so we say the login is missing. Named
-        # separately from a REFUSED login, because those need different fixes (fill it in vs check it).
+    mode = str(cfg.get("mode") or "auto").lower()
+    if not (cfg.get("user") and cfg.get("password")) and str(cfg.get("auth") or "auto").lower() != "none":
+        # Not a black square, not a shrug. The desk asks the recorder what it allows and quotes the answer,
+        # so "why does this need a login?" is settled by the device's own 401 rather than by me.
+        pr = cctv_probe_anon(cfg) or {}
         st["needs_auth"] = True
-        st["reason"] = ("cctv.json has no %s yet — put the NVR login in ~/hermes_sentry/cctv.json"
-                        % ("password" if cfg.get("user") else "user/password"))
+        st["anon"] = pr
+        ch_401 = " it answers %s%s" % (pr.get("code"), (" " + pr["challenge"]) if pr.get("challenge") else "") \
+            if pr.get("code") else ""
+        st["reason"] = ("no login in cctv.json. %s" % (pr.get("note") or "the desk has no credential to offer")) + ch_401
         return None, st
-    url = "http://%s%s" % (cfg.get("host", "") + (":%s" % cfg["port"] if cfg.get("port") else ""), path)
-    ck = (url, st["ts"] // CCTV_TTL)
+    ck = ("tile", st["no"], mode, cfg.get("host"), bool(cfg.get("user")), int(cfg.get("count", 0)))
+    ck = (ck, int(st["ts"] // CCTV_TTL))
     if ck in _cctv_cache:
         img, ist = _cctv_cache[ck]
         st.update(ist); st["cached"] = True
         return img, st
-    try:
-        r = _cctv_open(url, cfg)
-        body = r.read()
+    notes, body = [], None
+    if mode in ("auto", "http"):
+        url = _cctv_url(cfg, path)
+        try:
+            r = _cctv_open(url, cfg)
+            body = r.read()
+            st["type"] = r.headers.get("Content-Type", "?")
+            if body[:3] != b"\xff\xd8\xff":
+                notes.append("http: answered %d B of %s, not a JPEG" % (len(body), st["type"]))
+                body = None
+            else:
+                st["via"] = "http"
+        except urllib.error.HTTPError as e:
+            notes.append({401: "http: 401 — the login was refused",
+                          403: "http: 403 — this account cannot view that channel",
+                          404: "http: 404 — this firmware serves snapshots at a different path"}.get(
+                              e.code, "http: HTTP %s" % e.code))
+        except Exception as e:
+            notes.append("http: %s: %s" % (type(e).__name__, str(e)[:80]))
+    if body is None and mode in ("auto", "rtsp"):
+        try:
+            body = _cctv_rtsp(cfg, ch)
+            st["via"] = "rtsp"
+        except Exception as e:
+            notes.append(str(e)[:120] if str(e).startswith("rtsp") else "rtsp: %s" % str(e)[:110])
+    if body is not None:
         st["ok"] = True
         st["bytes"] = len(body)
-        st["type"] = r.headers.get("Content-Type", "?")
-        if body[:3] != b"\xff\xd8\xff":          # not a JPEG: a login page, an error page, a redirect
-            st["ok"] = False
-            st["reason"] = ("answered %d B but not a JPEG (%s) — wrong snapshot path for this model"
-                            % (len(body), st["type"]))
-    except urllib.error.HTTPError as e:
-        st["reason"] = {401: "401 — the login in cctv.json was refused",
-                        403: "403 — the account cannot view this channel",
-                        404: "404 — this firmware serves snapshots at a different path"}.get(
-                            e.code, "HTTP %s" % e.code)
-    except Exception as e:
-        st["reason"] = "%s: %s" % (type(e).__name__, str(e)[:90])
+        if _cctv_cache.get("_method"):
+            st["auth_method"] = _cctv_cache["_method"]
+    else:
+        st["reason"] = " · ".join(notes[:2]) or "no frame from this channel"
     if st["ok"]:
         _cctv_cache[ck] = (body, dict(st))
     return (body if st["ok"] else None), st
@@ -513,7 +804,9 @@ def cctv_state():
                     "host": cfg.get("host"), "user": cfg.get("user"),
                     "has_password": bool(cfg.get("password")), "port": cfg.get("port")},
             "tiles": tiles, "imgs": imgs, "n_ok": sum(1 for t in tiles if t.get("ok")),
-            "n_total": len(tiles), "discovery": (None if cfg.get("present") else cctv_discover())}
+            "n_total": len(tiles), "discovery": (None if cfg.get("present") else cctv_discover()),
+            "auth": str(cfg.get("auth") or "auto").lower(), "mode": str(cfg.get("mode") or "auto").lower(),
+            "ffmpeg": bool(_cctv_ffmpeg())}
 
 # ---------------- dashboard ----------------
 HTML = r'''<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -689,7 +982,7 @@ function go(){
     const t = d.tiles||[];
     document.getElementById('grid').innerHTML = t.map((c,i)=>
       `<div class="cam"><h3><span>${esc(c.name)||('ch '+(c.no||i+1))}</span>`
-      + (c.ok ? '<span class="pill p-ok">LIVE</span>' : (c.needs_auth ? '<span class="pill p-wait">LOGIN</span>'
+      + (c.ok ? '<span class="pill p-ok">LIVE '+(c.via||'')+(c.auth_method?'·'+c.auth_method:'')+'</span>' : (c.needs_auth ? '<span class="pill p-wait">LOGIN</span>'
                                                                        : '<span class="pill p-bad">DOWN</span>'))
       + `</h3><div class="bd">`
       + (c.ok ? `<img alt="" src="cctv.jpg?ch=${c.no}${(window.__K?'&'+window.__K.slice(1):'')}&x=${TTL}"
@@ -705,12 +998,30 @@ function go(){
       ${!cfg.present ? `<div style="margin-top:8px">Create <code>~/hermes_sentry/cctv.json</code> (mode 600):
         <pre style="max-height:none">{ "host": "${((d.discovery&&d.discovery.found&&d.discovery.found[0])||{}).ip||'192.168.0.x'}",
   "user": "admin", "password": "the NVR password", "count": 8,
+  "auth": "auto", "mode": "auto", "subtype": 1,   // auth: auto|digest|basic|privkey|none · mode: auto|http|rtsp
   "channels": [ {"name":"Front gate","no":1}, {"name":"Car park","no":2} ] }</pre>
         The password never leaves this Mac: the tiles below are proxied by the desk, so no browser —
         yours or a stranger's on the WiFi — ever sees it.</div>` : ''}
       ${(d.discovery&&d.discovery.found&&d.discovery.found.length)
         ? '<div style="margin-top:6px;color:#7f8ea3">found on the LAN: '
-          + d.discovery.found.map(f=>`<code>${f.ip}:${f.port}</code> (${f.what})`).join(', ') + '</div>' : ''}</div>`;
+          + d.discovery.found.map(f=>`<code>${f.ip}:${f.port}</code> (${f.what}${f.model?` — <b>${esc(f.brand)} ${esc(f.model)}</b> · ONVIF ${f.onvif?'yes':'no'}`:''})`).join(', ') + '</div>' : ''}</div>`;
+    const blocked = t.filter(x=>x.needs_auth);
+    const why = blocked.length ? (blocked[0].anon||{}) : null;
+    if (why && (why.code||why.note)) {
+      document.getElementById('hdr').innerHTML += '<div class="note" style="margin-top:8px;border-color:#3b2f12">'
+        + '<b class="warn">Why this page asks for a login.</b> The desk asked the recorder for a frame with '
+        + 'no credentials at all, and <i>the recorder</i> answered: <code>'
+        + esc(why.code) + (why.challenge ? ' ' + esc(why.challenge) : '') + '</code> on <code>'
+        + esc(why.url) + '</code>. Every anonymous path is closed — RTSP answers 401 too, and ONVIF media '
+        + 'needs a token — so there is no trick left to find: this box will not hand live video to an '
+        + 'unauthenticated client, which is the correct behaviour for a camera on an office LAN. '
+        + 'Two ways to make the page work with no typing on your side: create a view-only user in the XVR '
+        + '(Menu &rarr; Account, type Normal User, no admin rights) and put that pair in cctv.json — or turn '
+        + 'on guest/anonymous view on the box and set <code>"auth": "none"</code>, and the desk will use it '
+        + 'the next refresh. '
+        + (why.open ? '<b class="p-ok">It already answers without a login — just set "auth": "none".</b>' : '')
+        + '</div>';
+    }
     document.getElementById('foot').innerHTML =
       '<div class="sub" style="margin-top:14px">Thumbnails are pulled every 20 s by the desk, not streamed '
       + 'by the phone, so this page costs almost no battery or bandwidth. Tap a tile to enlarge it. '
