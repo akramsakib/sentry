@@ -2,32 +2,31 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-17 21:59 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $61,599.54 · equity $99,599.53
+**2026-11-17 22:03 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $58,427.35 · equity $99,547.72
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$129.07 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
-## Orders resting on the book now (1)
+## Orders resting on the book now (0)
 
-| symbol | order | trigger | size | notional | risk | tape | to trigger | age |
-|---|---|---|---|---|---|---|---|---|
-| ADA/USD | buy_limit | 0.1535 | 20659.4 | $3,171 | $50.00 | 0.154 | -0.32% | 0 min |
+_None. Every symbol is scanned each cycle; a resting entry above is a trigger waiting to be hit, not a position._
 
-_Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
-
-## Positions (5)
+## Positions (6)
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BTC/USD | 0.0909312 | 64180 | 64236.47 | $5.13 | 63355.2 | 65042.397 | +0.07R |
-| DOGE/USD | 54931.8 | 0.05911149 | 0.05924 | $7.06 | 0.05820127 | 0.06047682 | +0.14R |
-| ETH/USD | 2.07483 | 1800.05 | 1800.69 | $1.33 | 1775.9517 | 1813.9158 | +0.03R |
+| ADA/USD | 20659.4 | 0.15347 | 0.15312 | $-7.23 | 0.1510798 | 0.15652524 | -0.14R |
+| BTC/USD | 0.0909312 | 64180 | 64186.36 | $0.58 | 63355.2 | 65042.397 | +0.01R |
+| DOGE/USD | 54931.8 | 0.05911149 | 0.05915 | $2.12 | 0.05820127 | 0.06047682 | +0.04R |
+| ETH/USD | 2.07483 | 1800.05 | 1799.15 | $-1.87 | 1775.9517 | 1813.9158 | -0.04R |
 | SOL/USD | 54.3458 | 71.398586 | 73.32 | $104.42 | 70.018534 | 72.918795 | +1.39R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9684 | $40.27 | 0.94357771 | 0.97833374 | +0.54R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9668 | $32.84 | 0.94357771 | 0.97833374 | +0.44R |
 
-## Last 12 signals (328 ever logged)
+## Last 12 signals (330 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-17 22:03 | BTC/USD | C-H1-morning-star | 3/5 | 64127.145 | 63504.388 | 65061.281 | $50.00 | not fired (guard/duplicate) |
+| 11-17 22:03 | BTC/USD | C-H1-tweezer-bottom | 3/5 | 64127.145 | 63504.388 | 65061.281 | $50.00 | not fired (guard/duplicate) |
 | 11-17 21:59 | ADA/USD | S18-rsi2-long | 4/5 | 0.1535 | 0.1510798 | 0.15652524 | $50.00 | order placed |
 | 11-17 21:59 | DOGE/USD | C-M15-three-outside-up | 4/5 | 0.05975965 | 0.05895587 | 0.06096533 | $50.00 | not fired (guard/duplicate) |
 | 11-17 21:59 | DOGE/USD | S18-rsi2-long | 4/5 | 0.05927 | 0.05843418 | 0.06031478 | $50.00 | not fired (guard/duplicate) |
@@ -38,8 +37,6 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 | 11-17 20:44 | LINK/USD | C-M15-tweezer-top | 4/5 | 9.0677326 | 9.1451685 | 8.9515787 | $50.00 | paper-graded (spot cannot short) |
 | 11-17 20:44 | DOGE/USD | C-M15-tweezer-top | 4/5 | 0.05877984 | 0.05925541 | 0.05806648 | $50.00 | not fired (guard/duplicate) |
 | 11-17 20:20 | AVAX/USD | C-H1-tweezer-top | 4/5 | 7.0410079 | 7.1629803 | 6.8580493 | $50.00 | paper-graded (spot cannot short) |
-| 11-17 20:20 | LINK/USD | S18-rsi2-short | 4/5 | 9.125 | 9.2602088 | 8.955989 | $50.00 | paper-graded (spot cannot short) |
-| 11-17 20:20 | ADA/USD | C-H1-bear-harami | 4/5 | 0.15089665 | 0.15340838 | 0.14712906 | $50.00 | paper-graded (spot cannot short) |
 
 ## Accuracy so far
 
@@ -47,7 +44,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 1 new order(s), 10 symbols scanned
+## This cycle: 0 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
