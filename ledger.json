@@ -928,6 +928,18 @@
    "stop_price": 0.1510798,
    "status": "open",
    "placed_at": 1794953095
+  },
+  {
+   "id": "1794954459565",
+   "client_order_id": "sentryprot1794954459",
+   "symbol": "SOL/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 54.34577394327491,
+   "limit_price": null,
+   "stop_price": 71.68457894,
+   "status": "open",
+   "placed_at": 1794954459
   }
  ],
  "positions": [
@@ -938,7 +950,7 @@
    "cid": "sentryXRPUSD1794687006293n9",
    "fees": 2.65438049,
    "opened": 1794717219,
-   "current_price": 0.9663
+   "current_price": 0.9694
   },
   {
    "symbol": "XRP/USD",
@@ -947,7 +959,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9663
+   "current_price": 0.9694
   },
   {
    "symbol": "LTC/USD",
@@ -956,7 +968,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 44.663
+   "current_price": 44.804
   },
   {
    "symbol": "XRP/USD",
@@ -965,7 +977,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9663
+   "current_price": 0.9694
   },
   {
    "symbol": "SOL/USD",
@@ -974,7 +986,7 @@
    "cid": "sentrySOLUSD1794848491576n30",
    "fees": 1.94010572,
    "opened": 1794848491,
-   "current_price": 73.28
+   "current_price": 73.64
   },
   {
    "symbol": "DOGE/USD",
@@ -983,7 +995,7 @@
    "cid": "sentryDOGEUSD1794941818530n39",
    "fees": 1.62354953,
    "opened": 1794948298,
-   "current_price": 0.0591
+   "current_price": 0.0594
   },
   {
    "symbol": "BTC/USD",
@@ -992,7 +1004,7 @@
    "cid": "sentryBTCUSD1794938063037n37",
    "fees": 2.91798251,
    "opened": 1794952739,
-   "current_price": 64161.6
+   "current_price": 64494.2
   },
   {
    "symbol": "ETH/USD",
@@ -1001,7 +1013,7 @@
    "cid": "sentryETHUSD1794940119294n38",
    "fees": 1.86740233,
    "opened": 1794952739,
-   "current_price": 1798.59
+   "current_price": 1805.4
   },
   {
    "symbol": "ADA/USD",
@@ -1010,7 +1022,7 @@
    "cid": "sentryADAUSD1794952740058n40",
    "fees": 1.58530287,
    "opened": 1794952740,
-   "current_price": 0.15312
+   "current_price": 0.15408
   }
  ],
  "fees_paid": 129.07391216
