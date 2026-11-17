@@ -16,6 +16,10 @@ import os
 import sys
 import tempfile
 import time
+import re as _re32
+import os as _os32
+import shutil as _shutil32
+import subprocess as _sp32
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 FAILS = []
@@ -1111,10 +1115,15 @@ else:
     check("...and no book folder path appears in a write, only in a read",
           "books" not in "".join(_w25), "".join(_w25))
     check("the forex card counts what the FX build itself calls its book, not its lifetime ticket list",
-          '"n_positions": items' in _m25 and "book items" in _m25
-          and 'st.get("known_positions")' not in _m25
+          "book items" in _m25 and 'st.get("known_positions")' not in _m25
           and "only ever appends" in _m25,
           "known_positions is an ever-growing seen-list; printing its length as 'open' would be a lie")
+    # v4.7.8: the card CAN show real open positions now, because the build publishes them. What it must still
+    # never do is merge the two measurements — positions_now (the terminal's list) and `book items N` (its
+    # whole open book, orders included) — so the pin is that the journal count survives as its own field.
+    check("...and the journal count is kept as its own figure, not folded into the position count",
+          '"n_journal_items": items' in _m25 and "_open_count" in _m25
+          and 'b.get("n_positions") is not None' in _m25, "two measurements, one card")
     check("...and it says so on the card, so nobody reads it as a position count",
           "positions_label" in _m25 and _m25.count("positions_label") >= 3)
     check("the page refreshes itself, so it is a dashboard and not a screenshot",
@@ -1750,6 +1759,296 @@ if _sh.which("node"):
     check("the camera page's own script parses as JavaScript (Python's ast proves nothing about JS)",
           _cn is not None and _sp.run(["node", "--check", _cj.name], capture_output=True).returncode == 0)
     _os.unlink(_cj.name)
+
+
+
+# ---------- 32: the forex watch — every chart, every open trade, and no invented numbers ----------
+# "now you monitor all current trade and playbook all charts in forex". The charts are read by the MT5
+# resident, which is the only thing on the Mac allowed to talk to the terminal, so the fix had to be made
+# there: it now writes what it saw (positions with R lived, the bar count per symbol per timeframe, its own
+# rule set) into state.json. Both pages then READ that. The checks below are mostly about the reading, and
+# the two that matter most are negative: a card must not print a position it was not told about, and a
+# resident that has not been deployed yet must produce "not published", not an empty table.
+print("\n== 32: forex watch (all charts, all current trades)")
+_mp32 = _asset("tools/mac/monitor.py")
+_rp32 = _asset("tools/mac/trade_radar.py")
+import importlib.util as _ilu32
+
+
+def _load32(name, path):
+    _sp = _ilu32.spec_from_file_location(name, path)
+    _mo = _ilu32.module_from_spec(_sp)
+    _sp.loader.exec_module(_mo)          # import only; the server starts under __main__
+    return _mo
+
+
+def _fx_state(**over):
+    st = {
+        "watch_asof": "2026-11-18 04:10:02 KL", "bridge": "up",
+        "positions_now": [
+            {"id": "6001", "action": "buy", "sym": "XAUUSD", "time": "2026-11-17 21:00:00", "vol": 0.05,
+             "open": 2650.0, "last": 2660.0, "sl": 2645.0, "tp": 2670.0, "profit": 50.0,
+             "r_now": 2.0, "age_min": 430},
+            {"id": "6002", "action": "sell", "sym": "EURUSD", "time": "2026-11-17 22:00:00", "vol": 0.1,
+             "open": 1.09, "last": 1.088, "sl": 1.09, "tp": 1.07, "profit": 20.0,
+             "r_now": None, "age_min": 370}],
+        "positions_total_pl": 70.0, "positions_open": 2,
+        "orders": [{"sym": "XAUUSD", "skill": "S13-ichimoku-short", "risk": 100, "type": "sell stop"}],
+        "book": {"n": 3, "items": [
+            {"ticket": "771", "sym": "XAUUSD", "type": "buy stop", "state": "active", "price": 2655.5},
+            {"ticket": "772", "sym": "EURUSD", "type": "sell limit", "state": "filled", "price": 1.0955},
+            {"ticket": "773", "sym": "AMD", "type": "buy limit", "state": "active", "price": 151.2}]},
+        "charts": {"XAUUSD": {"M15": {"bars": 60, "last": "2026-11-18T04:00:00", "patterns": 5,
+                                      "enough": True},
+                               "theme": "dollar", "fired_today": 2, "fired_rolling": 46,
+                               "fired_days": ["2026-11-17", "2026-11-18"], "held": 2, "resting": 3,
+                               "quote": {"bid": 2660.0, "ask": 2660.2}},
+                   "AMD": {"M15": {"bars": 4, "last": None, "patterns": 0, "enough": False},
+                            "theme": "equity", "fired_today": 0, "fired_rolling": 33, "fired_days": ["2026-11-18"],
+          "held": 0, "resting": 1, "quote": {}, "thin": {"M15": 4}}},
+        "charts_thin": {"AMD": {"M15": 4}},
+        "playbook": {"cycle_s": 300, "risk_base": 100.0, "risk_band": [50.0, 200.0], "max_orders_day": 4,
+                     "theme_cap": {"dollar": 600.0}, "timeframes": ["M15"], "bars_needed": {"M15": 15},
+                     "orders": "pending only (limit/stop) — never market",
+                     "red_window": "no new entries 20:15-22:30 KL (crypto exempt)",
+                     "candle_library": "H1 + M15 closed bars",
+                     "universe": {"XAUUSD": "dollar", "AMD": "equity"}}}
+    st.update(over)
+    return st
+
+
+def _desk32(state):
+    """A whole desk root holding nothing but these files, so what the card prints is what the files prove."""
+    import shutil as _sh32
+    d = tempfile.mkdtemp(prefix="fxwatch-")
+    os.makedirs(os.path.join(d, "books"))
+    json.dump(state, open(os.path.join(d, "state.json"), "w"))
+    open(os.path.join(d, "desk_mode.json"), "w").write('{"entries_enabled": false}')
+    open(os.path.join(d, "sentry_mac.py"), "w").write(
+        '#!/usr/bin/env python3\n"""Trade Sentry — executor (demo account).\n"""\n')
+    open(os.path.join(d, "sentry.out.log"), "w").write("x\n")
+    open(os.path.join(d, "trades_log.jsonl"), "w").write("")
+    open(os.path.join(d, "sentry_journal.md"), "w").write(
+        "\n".join(["- **11-13 04:50 KL** **S13-ichimoku-short HIT — XAUUSD** · Risk $100 "
+                    "· ticket ? sell stop 0.01@3875.9 sl3941.2 tp3837.1"] * 97
+                   + ["- **11-18 04:10 KL** scan ok · book items 5"]) + "\n")
+    return d
+
+
+if _mp32 and _rp32:
+    _mon32 = _load32("desk_monitor32", _mp32)
+    _d32 = _desk32(_fx_state())
+    _mon32.ROOT, _mon32.BOOKS = _d32, os.path.join(_d32, "books")
+    _fx = _mon32.fx_section()
+    _md = _mon32.to_markdown([], _fx, "t")
+    _html = _mon32.to_html([], _fx, "t", "TRADING.md")
+    check("the forex card now carries the terminal's own open trades, with R lived on each",
+          _fx["n_positions"] == 2 and len(_fx["positions"]) == 2
+          and _fx["positions"][0]["r_live"] == 2.0 and _fx["positions"][0]["pnl"] == 50.0
+          and _fx["positions_total_pl"] == 70.0, str(_fx["positions"][:1]))
+    check("...and the pending table is the resting orders off the book, not the day's send counter "
+          "(filled/other states filtered out)",
+          _fx["n_book"] == 3 and _fx["n_book_pending"] == 2 and _fx["n_pendings"] == 1
+          and {p["sym"] for p in _fx["pendings"]} == {"XAUUSD", "AMD"},
+          f"book={_fx['n_book']} pending={_fx['n_book_pending']} day={_fx['n_pendings']}")
+    check("a chart row exists for every symbol x timeframe the build recorded, and it is a READING not a "
+          "guess (bars, need, patterns, last bar)",
+          len(_fx["chart_rows"]) == 2 and all(
+              set(("sym", "tf", "bars", "need", "enough", "patterns", "last")) <= set(r)
+              for r in _fx["chart_rows"]), str(_fx["chart_rows"][:1]))
+    check("too-few-bars is a visible state of its own: 'not scanned', never a silent zero-signal row",
+          "not scanned" in _md and "not scanned" in _html
+          and [r for r in _fx["chart_rows"] if not r["enough"]][0]["bars"] == 4
+          and _fx["charts_thin"] == {"AMD": {"M15": 4}} and _fx["chart_rows"][0]["need"] == 15, str([r for r in _fx["chart_rows"] if not r["enough"]]))
+    check("the build's own rule set is echoed from its own fields (cycle, risk band, caps, windows)",
+          _fx["playbook"]["cycle_s"] == 300 and _fx["playbook"]["max_orders_day"] == 4
+          and "20:15-22:30" in _md and "pending only" in _md, str(_fx["playbook"].get("risk_band")))
+    check("per-trade risk on the card comes from the build, not from a number remembered in the page",
+          _fx["sizing"].get("source", "").startswith("published by the build")
+          and _fx["sizing"]["base_risk"] == 100.0 and "per-trade **$100**" in _md, str(_fx["sizing"]))
+    check("the two open-book measurements are shown side by side and labelled, because they are not the "
+          "same quantity (5 journal items vs 3 in the state read vs 2 positions)",
+          _fx["n_journal_items"] == 5 and "book items 5" in _md and _fx["n_positions"] == 2
+          and "book items" in _md, str((_fx["n_journal_items"], _fx["n_book"], _fx["n_positions"])))
+    # The build's send result never carries an order id (all 97 of its journalled HIT lines read `ticket ?`),
+    # so no page can honestly attach a skill to a live position. Saying so is the feature.
+    check("and it says out loud that a position cannot be tied to the skill that opened it",
+          _fx["n_hits"] == 97 and _fx["n_no_ticket"] == 97 and "not knowable from these files" in _md
+          and "not knowable" in _html, f"{_fx['n_no_ticket']}/{_fx['n_no_ticket']}")
+    check("a position whose stop sits on its entry has NO R scale: the cell reads 'no stop distance', "
+          "not 0R and not a division by zero",
+          _fx["positions"][1]["r_live"] is None and "no stop distance" in _md and "no stop distance" in _html
+          and "NoneR" not in _md and "NoneR" not in _html, str(_fx["positions"][1]))
+    # Every one of these came from reading the REAL state.json off the Mac, not the fixture: a short printed
+    # -0.415R while its PnL was +$50.96, "fired today" summed six days, ages vanished because the terminal
+    # writes a "T" in its timestamps, and "14 of its daily limit of 4" implied a cap the build only treats as
+    # advisory. The checks below are those four bugs, as rules.
+    _fx_np = _mon32.fx_section()
+    _md_np = _mon32.to_markdown([], _fx_np, "t")
+    check("a symbol the build is HOLDING is marked as such in the matrix, so the 25 rows are not all equal",
+          _fx_np["chart_rows"] and any(r.get("open_pos") for r in _fx_np["chart_rows"])
+          and "●" in _md_np and "●" in _mon32.to_html([], _fx_np, "t", "TRADING.md"),
+          str([r.get("open_pos") for r in _fx_np["chart_rows"]]))
+    check("held-but-not-quoted is called out in words (a position on a feed the charts did not answer for)",
+          "a symbol is held but was not quoted this cycle" in _mon32.to_markdown(
+              [], dict(_fx_np, chart_rows=[{"sym": "EURUSD", "tf": "M15", "bars": 0, "need": 15,
+                                            "enough": False, "patterns": 0, "last": None, "theme": "dollar",
+                                            "fired_today": 0, "fired_rolling": 0, "bid": None, "ask": None,
+                                            "open_pos": 1, "no_quote": True, "short": None}]), "t"))
+    check("a cap the build only ADVISES is never printed as a limit: the card says advisory and quotes the note",
+          "advisory, not enforced" in _mon32.to_markdown(
+              [], dict(_fx_np, caps_advisory=True, n_advisory=6, advisory_last="entry #15 over soft cap"), "t")
+          and "advisory" in _mon32.to_html([], dict(_fx_np, caps_advisory=True, n_advisory=6,
+                                                   advisory_last="x"), "t", "TRADING.md"))
+    check("the day-counter line is labelled for what it is (sends today), not 'pendings', next to the real "
+          "book count",
+          "sends today (its day counter)" in _md_np and _fx_np["pendings_word"].startswith("sends today"),
+          str(_fx_np.get("pendings_word")))
+    check("the matrix shows the per-day count AND the rolling one, so a six-day list cannot be read as a day",
+          "decided today" in _md_np and "(rolling)" in _md_np
+          and "decisions, not orders" in _md_np
+          and [r for r in _fx_np["chart_rows"]][0].get("fired_rolling") is not None,
+          str(_fx_np["chart_rows"][:1]))
+
+    _d32b = _desk32({"orders": [{"sym": "XAUUSD", "skill": "S1-x", "risk": 100, "type": "buy stop"}],
+                     "bridge": "up"})
+    _mon32.ROOT = _d32b
+    _fx_old = _mon32.fx_section()
+    _md_old = _mon32.to_markdown([], _fx_old, "t")
+    _html_old = _mon32.to_html([], _fx_old, "t", "TRADING.md")
+    check("an OLD resident (no watch fields) degrades to 'not published by the build' on both pages, with "
+          "no empty table dressed up as a zero",
+          _fx_old["watch_published"] is False and _fx_old["n_positions"] is None
+          and not _fx_old["chart_rows"] and "not published by the build" in _md_old
+         
+          and "not published by the build" in _html_old, str(_fx_old["watch_published"]))
+    check("...and its open count falls back to the journal figure WITH the journal's own words, never "
+          "presented as a position count",
+          _fx_old["n_journal_items"] == 5 and "positions AND" in _md_old
+          and "the terminal's own open positions" not in _md_old, str(_fx_old["positions_label"]))
+    _t32_old = time.time() - 3600
+    os.utime(os.path.join(_d32, "state.json"), (_t32_old, _t32_old))
+    _mon32.ROOT = _d32                      # back to the FULL desk: staleness is about a live build going quiet
+    _fx_stale = _mon32.fx_section()
+    check("staleness is measured off the state file's own mtime and spelled out (a quiet job must not look "
+          "healthy just because the page still renders)",
+          _fx_stale["watch_stale"] is True and _fx_stale["book_age_min"] > 15
+          and "STALE" in _mon32.to_markdown([], _fx_stale, "t"), str(_fx_stale["book_age_min"]))
+    _d32e = _desk32(_fx_state(watch_error="KeyError: 'bars'"))
+    _mon32.ROOT = _d32e
+    _fxe = _mon32.fx_section()
+    check("the build's own reporting failure is quoted verbatim instead of being swallowed (a monitor that "
+          "hides its own breakage is the worst kind of lie)",
+          _fxe["watch_error"] == "KeyError: 'bars'" and "KeyError" in _mon32.to_markdown([], _fxe, "t"),
+          str(_fxe["watch_error"]))
+    for _dd in (_d32, _d32b, _d32e):
+        import shutil as _sh32
+        _sh32.rmtree(_dd, ignore_errors=True)
+
+    _rad32 = _load32("trade_radar32", _rp32)
+    _blk = _rad32.fx_charts_block(_fx_state())
+    check("the radar reads the SAME published fields, from the file the snapshot already opened — it adds no "
+          "fetch of its own",
+          _blk["published"] is True and len(_blk["rows"]) == 2 and _blk["thin"] == ["AMD/M15"]
+          and _blk["positions_open"] == 2 and _blk["book_n"] == 3, str(_blk["thin"]))
+    check("...and it carries the chart keys + bar minimums so the page cannot reorder them itself",
+          _blk["tfs"] == ["M15"] and _blk["need"] == {"M15": 15}, str(_blk["tfs"]))
+    _blk_old = _rad32.fx_charts_block({"orders": []})
+    check("the radar's forex block also refuses to invent: no charts in the file means published=False",
+          _blk_old["published"] is False and _blk_old["rows"] == [], str(_blk_old["published"]))
+    _blk_bad = _rad32.fx_charts_block("not-a-dict")
+    check("a half-written state.json (the classic accident) yields the empty block, never a traceback on "
+          "the page", isinstance(_blk_bad, dict) and _blk_bad["published"] is False, str(type(_blk_bad)))
+    _src32 = open(_rp32, encoding="utf-8").read()
+    check("the radar page renders the matrix in its own table, with the header built from the build's "
+          "timeframe list",
+          'id="fx"' in _src32 and 'id="fxnote"' in _src32 and "tfs.map(t=>'<th>'+t+'</th>')" in _src32,
+          "")
+    check("and its column is labelled for what the number is (once-a-day KEYS = decisions, not orders)",
+          "Decided today" in _src32 and "DECISIONS, not orders" in _src32
+          and "<th>Fired today</th>" not in _src32,
+          [l.strip()[:70] for l in _src32.splitlines() if "Fired" in l])
+    check("the radar gains exactly one payload key for it, and that key is cut out of the state file the "
+          "snapshot ALREADY read (a second fetch would be a second truth)",
+          _src32.count('snap["fx_charts"]') == 1
+          and 'snap["fx_charts"] = fx_charts_block(snap.get("sentry_state") or {})' in _src32,
+          str(_src32.count('snap["fx_charts"]')))
+    check("...and none of this opened a route or a page: the allow-list the earlier section pins is the "
+          "same seven it was, and no lab/cctv coupling crept back in",
+          '"/cctv.json"' in _src32 and '"/lab"' not in _src32 and '"/fxcharts"' not in _src32, "")
+    _jsx = _re32.search(r"<script>(.*?)</script>", _rad32.HTML, _re32.S)
+    if _shutil32.which("node") and _jsx:
+        _jf = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False)
+        _jf.write(_jsx.group(1)); _jf.close()
+        check("the page's JavaScript — including the new matrix — parses as JavaScript",
+              _sp32.run(["node", "--check", _jf.name], capture_output=True).returncode == 0)
+        _os32.unlink(_jf.name)
+    _msrc32 = open(_mp32, encoding="utf-8").read()
+    check("neither page reached for the terminal to answer this: the desk still imports no socket, no "
+          "subprocess, no HTTP client",
+          not any(k in _msrc32 for k in ("urllib", "requests", "socket", "subprocess", "22346")),
+          "monitor stays file-only")
+else:
+    check("monitor.py and trade_radar.py are both in this folder for section 32", False,
+          str((_mp32, _rp32)))
+
+# ---- the producer: only checkable where the MT5 build actually lives (it is not part of the GitHub release) ----
+_sm32 = _asset("sentry_mac.py") or _asset("tools/mac/sentry_mac.py")
+_src32 = open(_rp32, encoding="utf-8").read() if _rp32 else ""
+if _sm32:
+    _ssm32 = open(_sm32, encoding="utf-8").read()
+    check("the resident publishes the watch itself (publish_watch), and does it AFTER the cycle's try, so a "
+          "degraded cycle still reports what it last saw",
+          "def publish_watch" in _ssm32 and "publish_watch(state, quotes, tf_map, positions, chart_thin, "
+          "positions)" in _ssm32 and "state[\"watch_error\"]" in _ssm32, "")
+    check("the scan gate and the page share ONE bar-minimum table (no second copy to drift)",
+          "TF_MIN = {\"M5\": 25, \"M15\": 15, \"H1\": 60, \"H4\": 30, \"D1\": 8}" in _ssm32
+          and "len(m5) < 25" not in _ssm32 and "len(b) < TF_MIN[t]" in _ssm32, "")
+    check("the watch block cannot break the bot: it is wrapped in its own try, and save_state follows it "
+          "unconditionally",
+          _ssm32.count("save_state(state)") >= 1 and "except Exception as _we" in _ssm32
+          and _ssm32.index("save_state(state)") > _ssm32.index("state[\"watch_error\"]"), "")
+    check("the guardrails are untouched by any of this (the watch publishes them, it does not set them)",
+          all(k in _ssm32 for k in ("MAX_SENTRY_ORDERS_DAY = 4", "pending order", "self_size")), "")
+    _mo32 = _load32("sm32", _sm32)
+    _raw32 = ('{"position_id": "9002", "action": "sell", "symbol": "EURUSD", '
+              '"create_time": "2026-11-17T20:59:52", "volume": 1.04, "price_open": 1.10122, '
+              '"price_last": 1.10073, "stop_loss": 1.1024, "take_profit": 1.09946, "profit": 50.96} '
+              '{"position_id": "9003", "action": "buy", "symbol": "XAUUSD", '
+              '"create_time": "2026-11-18 03:00:00", "volume": 0.05, "price_open": 2650.0, '
+              '"price_last": 2645.0, "stop_loss": 2645.0, "take_profit": 2670.0, "profit": -25.0}')
+    _st32 = {"day": "2026-11-18",
+             "fired_today": ["FIRE|XAUUSD|C-M15-engulfing|2026-11-18", "FIRE|XAUUSD|S21|2026-11-17",
+                             "FIRE|XAUUSD|S13|2026-11-13", "FIRE|EURUSD|S2-spring|2026-11-18"],
+             "seen_candles": ["XAUUSD|M15|engulfing|t"], "orders": []}
+    _tfm32 = {"XAUUSD": dict((t, [{"t": "2026-11-18T04:00:00"}] * _mo32.TF_MIN[t]) for t in _mo32.TFS)}
+    _mo32.publish_watch(_st32, {"XAUUSD": {"bid": 2645.0, "ask": 2645.2}}, _tfm32, _raw32, {},
+                        '{"order_id": "771", "symbol": "GBPUSD", "type": "buy stop", "state": "active", '
+                        '"price_order": 1.32}')
+    _pp32 = {x["id"]: x for x in _st32["positions_now"]}
+    check("a SHORT moving in its favour is POSITIVE R (the stop distance is a distance, not a signed "
+          "number — a card that printed -0.415R beside +$50.96 taught this one)",
+          _pp32["9002"]["r_now"] == 0.415, str(_pp32["9002"]))
+    check("a long sitting exactly on its stop reads -1.0R, and a stop ON the entry still gives None",
+          _pp32["9003"]["r_now"] == -1.0, str(_pp32["9003"]))
+    check("the terminal's ISO timestamp (with its T) is parsed, so age is not silently dropped",
+          isinstance(_pp32["9002"]["age_min"], int) and _pp32["9002"]["age_min"] >= 0,
+          str(_pp32["9002"]["age_min"]))
+    check("`fired_today` is filtered on the day the build stamps, with the unfiltered count kept beside it",
+          _st32["charts"]["XAUUSD"]["fired_today"] == 1
+          and _st32["charts"]["XAUUSD"]["fired_rolling"] == 3
+          and _st32["charts"]["XAUUSD"]["fired_days"] == ["2026-11-13", "2026-11-17", "2026-11-18"],
+          str(_st32["charts"]["XAUUSD"]))
+    check("a symbol you hold but did not get quotes for still gets a chart row (bars 0, not scanned) — the "
+          "row a monitor exists to show",
+          _st32["charts"]["EURUSD"]["M15"]["bars"] == 0
+          and _st32["charts"]["EURUSD"]["M15"]["enough"] is False and "GBPUSD" in _st32["charts"],
+          str(sorted(_st32["charts"])))
+    check("and the radar surfaces that same per-day/rolling pair from the state file",
+          '"fired": c.get("fired_today")' in _src32 and "fired_rolling" in _src32, "radar block")
+else:
+    check("sentry_mac.py is the Mac-side forex build and is not in this release — its producer checks run "
+          "on the Mac (not a finding)", True, "skipped here by design")
 
 
 print("\n%d checks failed" % len(FAILS))

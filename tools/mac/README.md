@@ -123,6 +123,44 @@ just read `books/*.json` yourself.
 open ~/hermes_sentry/TRADING.html                        # auto-refreshes every 60 s
 ```
 
+### What the forex card can and cannot say
+
+`monitor.py` never opens the terminal, and it will not start. The MT5 resident
+(`~/hermes_sentry/sentry_mac.py`, Mac-only and deliberately not part of this release) is the one
+thing allowed to talk to MetaTrader, so at the end of every cycle it writes what it saw into
+`state.json`, and the desk page reads that. Concretely it publishes:
+
+| field | what it is |
+|---|---|
+| `positions_now` | the terminal's own open positions, each with `r_now` — R multiples lived, measured against that position's own stop distance |
+| `book` | the same open book the resident's own caps gate parses, so `n` is one truth, not a second count |
+| `charts` | one row per symbol × timeframe: bars held, the build's own minimum for that timeframe, patterns logged, last bar time, plus `held` / `resting` / `fired_today` (per day) / `fired_rolling` |
+| `playbook` | the rules the build enforces, echoed from its own constants (cycle, risk band, daily cap, theme caps, windows) |
+| `watch_asof` | when that was true — the page prints it, so a stale read is visibly a stale read |
+
+Two things it will **not** pretend to know, both printed on the card rather than hidden:
+
+* **Which skill opened which trade.** The resident's send result never contains an order id — every
+  `HIT` line in its journal reads `ticket ?` — so a position cannot be tied back to a skill without
+  guessing on a live trade. The card says so and counts the sends that way.
+* **Whether the caps bound it.** `MAX_SENTRY_ORDERS_DAY` and the theme caps are advisory in this build
+  (it journals `advisory only, FULL FREEDOM mode` and carries on). The card reports the configured
+  number *and* the advisory notes, because "14 of a 4/day limit" is only meaningful once you know the
+  4 is a wish.
+
+A chart with too few bars is shown as `not scanned`, never as zero signals — the difference between a
+quiet market and a feed that did not answer. And a symbol the build is holding something on but got no
+quotes for this cycle keeps its row at zero bars, because that is the row worth seeing.
+
+```sh
+/usr/bin/python3 ~/hermes_sentry/monitor.py --print      # the same card, as text, right now
+/usr/bin/python3 ~/hermes_sentry/fx_watch_test.py        # the publisher's contract, against the live build
+```
+
+The radar (`com.hermes.radar`, `/cctv` and all) cuts its forex chart table out of the same
+`sentry_state` it already loads, so the two pages cannot disagree, and neither of them can make the
+terminal do anything.
+
 Pause **new entries** without stopping a book:
 
 ```sh

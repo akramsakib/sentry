@@ -341,6 +341,9 @@ number, not a fee-free fantasy. Verified the day it shipped: a paper AVAX trade 
   sizes itself with, so this file is pushed whole each cycle rather than appended.
 - **`state.json`** — machine state: open orders, positions, `sizing` tiers, `seen` (one fire per
   symbol-skill-day), `realized`.
+  On the Mac, the forex build's own `~/hermes_sentry/state.json` is a different file and carries the
+  per-cycle forex watch (open positions, the open book, one row per symbol × timeframe) — see
+  **The forex watch** below.
 - **`ledger.json`** — cash, positions and marks in ledger mode.
 - **`.github/workflows/scan.yml`** — the cron + `permissions: contents: write` that lets it commit memory.
 
@@ -463,6 +466,18 @@ On the Mac, each book publishes `~/hermes_sentry/books/<book>.json` after every 
 `~/hermes_sentry/TRADING.html`. Entries for all three crypto books can be paused with
 `~/hermes_sentry/crypto_desk_mode.json` (`{"entries_enabled": false}`), which stops new entries while
 stops, exits and the graded record keep running. See `tools/mac/README.md`.
+
+## The forex watch (v4.7.8)
+
+"Monitor all current trades and the playbook across all charts" could only be answered honestly from
+the Mac: the MT5 resident is the only process on that machine that can see the terminal, and the desk
+pages are read-only by design. So the resident now records what it saw each cycle — every open
+position with the R it is living, the open book, one row per symbol × timeframe with the bar count it
+actually had, and the rule set it enforces — and both pages render that. What it cannot know is
+printed as a gap instead of a number: no order id ever comes back from the terminal, so a position
+cannot be attributed to a skill, and the build's daily/theme caps are advisory (it journals that it
+ignored them). The camera page and the radar keep their own routes; nothing new was wired between them.
+See `tools/mac/README.md` for the field list.
 
 ## The camera page (`/cctv` on the same desk server)
 

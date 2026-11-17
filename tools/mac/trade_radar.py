@@ -236,6 +236,51 @@ def tail(path, n=12):
         with open(path) as f: return "".join(f.readlines()[-n:])
     except Exception: return ""
 
+def fx_charts_block(st, now=None):
+    """The forex playbook, chart by chart, as the resident itself last recorded it.
+
+    Nothing is fetched here: the block is cut out of the state file snapshot() has ALREADY read, so the radar
+    stays exactly as read-only as it was — a hung MetaTrader cannot stall this page, and the numbers cannot
+    disagree with the desk page because both read the same published fields. When the build on the Mac is
+    older than the per-chart publishing (no `charts` key), the payload says `published: false` and the page
+    says so: an empty table would read as "the playbook found nothing", which is a different claim entirely.
+    """
+    st = st if isinstance(st, dict) else {}
+    charts = st.get("charts") or {}
+    pb = st.get("playbook") or {}
+    tfs = pb.get("timeframes") or ["M5", "M15", "H1", "H4", "D1"]
+    need = pb.get("bars_needed") or {}
+    rows, thin = [], []
+    for sym in sorted(charts):
+        c = charts[sym] or {}
+        tf = {}
+        for t in tfs:
+            r = c.get(t) or {}
+            if not r:
+                continue
+            tf[t] = {"bars": r.get("bars"), "enough": bool(r.get("enough")),
+                     "pat": r.get("patterns"), "last": r.get("last")}
+            if not r.get("enough"):
+                thin.append("%s/%s" % (sym, t))
+        q = c.get("quote") or {}
+        rows.append({"sym": sym, "theme": c.get("theme"), "tf": tf,
+                     "fired": c.get("fired_today"), "fired_rolling": c.get("fired_rolling"),
+                     "days": c.get("fired_days") or [], "held": c.get("held"),
+                     "resting": c.get("resting"), "bid": q.get("bid"), "ask": q.get("ask")})
+    try:
+        age_min = round(((time.time() if now is None else now) - os.path.getmtime(STATE_F)) / 60.0, 1)
+    except Exception:
+        age_min = None
+    return {"published": bool(charts), "asof": st.get("watch_asof") or "", "tfs": tfs, "need": need,
+            "day": st.get("day"),
+            "held": {k: v.get("held") for k, v in (charts or {}).items() if v.get("held")},
+            "rows": rows, "thin": thin[:12], "error": st.get("watch_error") or "",
+            "age_min": age_min, "stale": (age_min is not None and age_min > 15),
+            "positions_open": st.get("positions_open"), "book_n": (st.get("book") or {}).get("n"),
+            "rules": {k: pb.get(k) for k in ("cycle_s", "risk_base", "risk_band", "max_orders_day",
+                                             "theme_cap", "orders", "red_window", "candle_library") if k in pb}}
+
+
 def snapshot():
     now = time.time()
     if _cache["data"] and now - _cache["ts"] < CACHE_S:
@@ -251,6 +296,7 @@ def snapshot():
     snap["red_window"] = red_window()
     snap["float_pl"] = round(sum(p["profit"] for p in snap.get("positions", [])), 2)
     snap["record"] = record_block()
+    snap["fx_charts"] = fx_charts_block(snap.get("sentry_state") or {})
     ip = lan_ip()
     snap["access"] = {"lan_ip": ip, "port": PORT,
                       "phone_url": ("http://%s:%d/?k=%s" % (ip, PORT, security_key())) if ip else None,
@@ -821,6 +867,9 @@ h2{font-size:14px;margin:14px 0 6px;color:#9fb2c8}
 <h2>Graded record — win rate the sizer is actually reading</h2>
 <table id="record"><tr><th>Book</th><th>Win rate</th><th>W / L / voids</th><th>Graded</th><th>Net R</th><th>Best skill (accuracy)</th></tr></table>
 <h2>Working orders</h2><table id="ord"><tr><th>Symbol</th><th>Type</th><th>Price</th><th>SL</th><th>TP</th><th>State</th></tr></table>
+<h2>Forex — the playbook across every chart it reads</h2>
+<div id="fxnote" class="sub"></div>
+<table id="fx"><tr><th>Symbol</th><th>Theme</th><th>Decided today</th><th>Bid / Ask</th></tr></table>
 <div class="cols"><div><h2>Sentry journal</h2><pre id="journal"></pre></div>
 <div><h2>Alert queue</h2><pre id="outbox"></pre></div></div>
 <h2>Delivery channels</h2><pre id="channels"></pre>
@@ -888,6 +937,59 @@ async function tick(){
     const cb = document.getElementById('cmpb'); if (cb) cb.onclick = function(){ document.body.classList.toggle('cmp'); };
     tbl('pos', d.positions||[], p=>`<tr><td>${p.sym}</td><td>${p.action}</td><td>${p.vol}</td><td>${p.open}</td><td>${p.last}</td><td>${p.sl}</td><td>${p.tp}</td><td class="${p.profit>0?'up':(p.profit<0?'down':'')}">${p.profit}</td></tr>`);
     tbl('ord', d.orders||[], o=>`<tr><td>${o.sym}</td><td>${o.type}</td><td>${o.price}</td><td>${o.sl}</td><td>${o.tp}</td><td>${o.state}</td></tr>`);
+    // The chart matrix is the resident's OWN record of what it read last cycle, taken from state.json. The
+    // page never asks the terminal, so a closed MetaTrader cannot make this table lie — it goes stale instead.
+    const fx = d.fx_charts||{};
+    const fxt = document.getElementById('fx');
+    const fxn = document.getElementById('fxnote');
+    const tfs = fx.tfs||[];
+    // the header is built from the build's own timeframe list, so a column can never sit over the wrong cell
+    const head = '<tr><th>Symbol</th><th>Theme</th>'+tfs.map(t=>'<th>'+t+'</th>').join('')
+               +'<th>Decided today</th><th>Bid / Ask</th></tr>';
+    if(!fx.published){
+      fxt.innerHTML = '<tr><th>Symbol</th><th>Charts (bars · signals)</th><th>Decided</th><th>Quote</th></tr>'
+        +'<tr><td colspan="4" style="color:#f1c40f">the resident on this Mac does not publish its per-chart '
+        +'record yet — deploy the sentry_mac.py that writes <code>charts</code> into state.json and this table '
+        +'fills in on its next cycle. Left empty on purpose: a blank table would read as "the playbook found '
+        +'nothing on any chart", which is a different claim from "I have not been told".</td></tr>';
+      fxn.textContent = '';
+    } else {
+      fxt.innerHTML = head + (fx.rows||[]).map(r=>{
+        const cells = tfs.map(t=>{
+          const c = (r.tf||{})[t]||{};
+          if(c.bars==null) return '<td style="color:#7f8ea3">—</td>';
+          const bar = c.bars+'/'+((fx.need||{})[t]||'?');
+          return c.enough
+            ? '<td>'+bar+' <span class="up">·</span> '+(c.pat||0)+'</td>'
+            : '<td style="color:#f1c40f">'+bar+' not scanned</td>';
+        }).join('');
+        return '<tr><td><b>'+r.sym+'</b></td><td style="color:#7f8ea3">'+(r.theme||'—')+'</td>'+cells
+          +'<td>'+(r.held?'<b style="color:#2ecc71">●'+r.held+'</b> ':'')+(r.fired||0)+(r.fired_rolling!=null
+              ?' <span style="color:#7f8ea3">/'+r.fired_rolling+'</span>':'')+'</td>'
+          +'<td>'+(r.bid!=null?(r.bid+' / '+(r.ask!=null?r.ask:'—'))
+                   :'<span style="color:#f1c40f">no quote</span>')+'</td></tr>';
+      }).join('');
+      const rl = fx.rules||{};
+      const band = rl.risk_band||[];
+      fxn.innerHTML = 'as the resident recorded it: <b>'+(fx.asof||'—')+'</b>'
+        +(fx.age_min!=null?' · state file '+fx.age_min+' min old':'')
+        +(fx.stale?' <b style="color:#f1c40f">STALE — the build is not writing</b>':'')
+        +(fx.positions_open!=null?' · '+fx.positions_open+' open forex position(s) in its own read':'')
+        +(fx.book_n!=null?' · book it read: '+fx.book_n+' item(s)':'')
+        +((fx.thin&&fx.thin.length)?' · <span style="color:#f1c40f">too few bars to scan: '+fx.thin.join(', ')+'</span>':'')
+        +(fx.error?' · <b style="color:#e74c3c">its watch block raised: '+fx.error+'</b>':'')
+        +'<br>rules as the build publishes them: cycle '+rl.cycle_s+'s · $'+(rl.risk_base||'?')+' self-scaled '
+        +'inside $'+(band[0]||'?')+'–$'+(band[1]||'?')+' · max '+(rl.max_orders_day||'?')+'/day · '
+        +(rl.orders||'')+' · '+(rl.red_window||'')
+        +'<br><i>today/rolling</i> is the build\'s once-a-day key count for that symbol on '+(fx.day||'its day')
+        +' — it stamps that key for a below-gate candidate, a refused entry AND a sent order alike, so it '
+        +'counts DECISIONS, not orders; the rolling number spans several days. '
+        +' over what is left in its rolling list (which spans several days, so it is NOT a per-day figure)'
+        +(fx.held&&Object.keys(fx.held).length?' · holding '+Object.entries(fx.held).map(([k,v])=>k+'×'+v).join(', '):'')
+        +'. <br>each cell is <i>bars / bars needed</i> then the patterns it has logged for that chart (a rolling '
+        +'300-key list, cumulative — not a per-day hit rate). <span style="color:#f1c40f">not scanned</span> '
+        +'means the checklist could not run, which says nothing about the market.';
+    }
     document.getElementById('journal').textContent = d.journal_tail||'(empty)';
     document.getElementById('outbox').textContent = d.outbox_tail||'(queue empty)';
     document.getElementById('channels').textContent = d.channels
