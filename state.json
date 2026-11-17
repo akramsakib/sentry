@@ -57,22 +57,17 @@
   "FIRE|SOL/USD|S18-rsi2-long|2026-11-17",
   "FIRE|LINK/USD|C-M15-tweezer-bottom|2026-11-17",
   "FIRE|LTC/USD|C-M15-tweezer-bottom|2026-11-17",
-  "FIRE|AVAX/USD|C-M15-evening-star|2026-11-17"
+  "FIRE|AVAX/USD|C-M15-evening-star|2026-11-17",
+  "FIRE|BTC/USD|C-H1-bull-harami|2026-11-17",
+  "FIRE|ETH/USD|S13-ichimoku-short|2026-11-17",
+  "FIRE|XRP/USD|S13-ichimoku-long|2026-11-17",
+  "FIRE|DOGE/USD|S23-spring-long|2026-11-17",
+  "FIRE|ADA/USD|S13-ichimoku-long|2026-11-17",
+  "FIRE|LINK/USD|C-H1-hammer/takuri|2026-11-17",
+  "FIRE|BCH/USD|S4-band-fade-short|2026-11-17",
+  "FIRE|BCH/USD|C-H1-tweezer-top|2026-11-17"
  ],
- "open_cids": {
-  "sentryBCHUSD1794910860071n36": {
-   "sym": "BCH/USD",
-   "skill": "S13-ichimoku-long",
-   "otype": "buy_stop",
-   "entry": 209.2672383,
-   "sl": 206.65552339,
-   "tp": 213.32949512,
-   "qty": 28.71676373,
-   "r_dist": 2.6117149099999892,
-   "score": 3,
-   "risk": 75
-  }
- },
+ "open_cids": {},
  "pos_state": {
   "BTC/USD": {
    "side": "long",
@@ -83,8 +78,8 @@
    "qty": 0.06908402900547651,
    "skill": "S18-ma-revert-long",
    "be": 63278.87,
-   "sent_sl": 63278.87,
-   "last_price": 64004.94
+   "sent_sl": 63984.94891695,
+   "last_price": 64922.33
   },
   "XRP/USD": {
    "side": "long",
@@ -96,7 +91,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 0.94357771,
-   "last_price": 0.9549
+   "last_price": 0.9701
   },
   "SOL/USD": {
    "side": "long",
@@ -106,9 +101,9 @@
    "r_dist": 1.3800521100000083,
    "qty": 54.34577394327491,
    "skill": "S16-inside-long",
-   "be": null,
-   "sent_sl": 70.01853421,
-   "last_price": 72.02
+   "be": 71.39858632,
+   "sent_sl": 71.39858632,
+   "last_price": 73.45
   },
   "LINK/USD": {
    "side": "long",
@@ -120,7 +115,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 9.0694641,
-   "last_price": 9.09
+   "last_price": 9.25
   },
   "ETH/USD": {
    "side": "long",
@@ -130,13 +125,25 @@
    "r_dist": 10.24945772000001,
    "qty": 7.317460303646184,
    "skill": "S4-band-fade-long",
+   "be": 1793.72,
+   "sent_sl": 1793.72,
+   "last_price": 1820.34
+  },
+  "BCH/USD": {
+   "side": "long",
+   "entry": 209.2672383,
+   "sl": 206.65552339,
+   "tp": 213.32949512,
+   "r_dist": 2.6117149099999892,
+   "qty": 28.716763729774897,
+   "skill": "S13-ichimoku-long",
    "be": null,
    "sent_sl": null,
-   "last_price": 1786.11
+   "last_price": null
   }
  },
  "cid_seq": 36,
- "last_cycle": 1794913156.8206232,
+ "last_cycle": 1794916786.8746176,
  "seen_candles": [
   "BTC/USD|H1|tweezer-bottom|2026-11-14T19:00:00Z",
   "BTC/USD|H1|bull-harami|2026-11-14T19:00:00Z",
@@ -421,6 +428,9 @@
   "AVAX/USD|M15|tweezer-top|2026-11-17T10:00:00Z",
   "LINK/USD|M15|tweezer-bottom|2026-11-17T10:15:00Z",
   "LTC/USD|M15|tweezer-bottom|2026-11-17T10:15:00Z",
-  "AVAX/USD|M15|evening-star|2026-11-17T10:15:00Z"
+  "AVAX/USD|M15|evening-star|2026-11-17T10:15:00Z",
+  "BTC/USD|H1|bull-harami|2026-11-17T09:00:00Z",
+  "LINK/USD|H1|hammer/takuri|2026-11-17T09:00:00Z",
+  "BCH/USD|H1|tweezer-top|2026-11-17T09:00:00Z"
  ]
 }
