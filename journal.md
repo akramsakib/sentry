@@ -468,3 +468,10 @@
 - **11-17 10:21 UTC** NOTE — AVAX/USD C-M15-marubozu: soft cap on open items (6) — advisory, skipping
 - **11-17 10:21 UTC** NOTE — AVAX/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
 - **11-17 10:21 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 2 new · 2 pendings · 4 positions equity $99611.44 · 12s · venue fees $87.49 to date @ 0.02/0.05%
+- **11-17 10:41 UTC** FILL — ETH/USD S4-band-fade-long 7.317460303646184@1793.72 sl1787.89054228 tp1824.216
+- **11-17 10:41 UTC** SKIP — XRP/USD C-M15-tweezer-top: already have pending/position in play
+- **11-17 10:41 UTC** CANDIDATE(score 5/5) — DOGE/USD C-M15-bear-engulfing sell_stop 0.05844252 sl0.05889371 tp0.05776574 — paper-graded (spot can't short)
+- **11-17 10:41 UTC** CANDIDATE(score 5/5) — ADA/USD C-M15-tweezer-top sell_stop 0.15233285 sl0.15371787 tp0.15025531 — paper-graded (spot can't short)
+- **11-17 10:41 UTC** SKIP — LINK/USD C-M15-bear-engulfing: already have pending/position in play
+- **11-17 10:41 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-tweezer-top sell_stop 7.14865344 sl7.2158664 tp7.04783401 — paper-graded (spot can't short)
+- **11-17 10:41 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99643.30 · 11s · venue fees $94.05 to date @ 0.02/0.05%
