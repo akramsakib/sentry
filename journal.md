@@ -553,3 +553,19 @@
 - **11-17 18:28 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-tweezer-top sell_stop 206.56396244 sl208.3050939 tp203.95226526 — paper-graded (spot can't short)
 - **11-17 18:28 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-three-outside-down sell_stop 206.56396244 sl208.3050939 tp203.95226526 — paper-graded (spot can't short)
 - **11-17 18:28 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 2 pendings · 3 positions equity $99457.03 · 7s · venue fees $118.58 to date @ 0.02/0.05%
+- **11-17 18:56 UTC** EXIT LINK/USD: price crossed stop 9.0694641 (cur 9.061) — market close
+- **11-17 18:56 UTC** SKIP — XRP/USD C-M15-bull-engulfing: already have pending/position in play
+- **11-17 18:56 UTC** SKIP — XRP/USD C-M15-three-inside-up: already have pending/position in play
+- **11-17 18:56 UTC** SKIP — SOL/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-17 18:56 UTC** SKIP — SOL/USD C-M15-three-inside-up: already have pending/position in play
+- **11-17 18:56 UTC** ORDER BOOKED — DOGE/USD C-M15-bull-engulfing (score 4/5) stop buy_stop qty 54931.774736 @ 0.05911149 sl0.05820127 tp0.06047682 · risk $50.00 · fees ~$3.22 (0.06R)
+- **11-17 18:56 UTC** NOTE — DOGE/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — DOGE/USD C-M15-three-inside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — ADA/USD C-M15-three-inside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — LTC/USD C-M15-three-inside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — BCH/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — BCH/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — BCH/USD C-M15-three-inside-up: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — AVAX/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** NOTE — AVAX/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-17 18:56 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 3 pendings · 3 positions equity $99316.43 · 11s · venue fees $121.08 to date @ 0.02/0.05%
