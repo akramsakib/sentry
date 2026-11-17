@@ -1607,5 +1607,46 @@ check("wire_feeder is not part of the release",
               for _n in ("wire_feeder.sh", "com.hermes.wire-feeder.plist")))
 
 
+# ---------- 30: the phone has to see the SAME page, not a weaker copy of it ----------
+# He asked to see the dashboard from his phone. Two traps here: (1) shipping a second "mobile" dashboard,
+# which is a second thing to keep honest, and (2) opening the desk to a whole office WiFi because "it's only
+# read-only" — this page shows positions, P/L and what the books are waiting on. So: one page, responsive
+# CSS, and a token that only non-localhost clients must carry. The URL and the firewall verdict are READ
+# from the machine and printed on the page; nothing about reachability is assumed in code.
+print("\n== 30: phone access — one page, token-gated off-localhost")
+_rp = _asset("tools/mac", "trade_radar.py")
+_rs = open(_rp).read() if _rp else ""
+check("the radar serves his phone with the SAME HTML (no second dashboard, no data fork)",
+      "@media(max-width:760px)" in _rs and 'id="phone"' in _rs and _rs.count("HTML = r") == 1, str(_rp))
+check("loopback needs no token (the Mac's own browser and the embed stay effortless)",
+      "if not is_local(client)" in _rs and 'def is_local(ip)' in _rs)
+check("...and every other address must present the token, compared exactly (no prefix match, no bypass)",
+      'qs.get("k", [""])[0] != security_key()' in _rs)
+check("only the three fixed routes are served at all (no path list to walk)",
+      'if path not in ("/", "/index.html", "/data.json", "/embed")' in _rs)
+check("the token file is written 600 and its path is overridable, so a test cannot touch the live desk",
+      'os.chmod(KEY_F, 0o600)' in _rs and 'os.environ.get("RADAR_KEY_FILE")' in _rs)
+check("a key that cannot be stored fails CLOSED (in-memory token, logged) rather than opening the LAN",
+      "in-memory only" in _rs and _rs.count("return k") >= 2)
+check("the page threads its own token into the 10 s refreshes, so it does not die on the second tick",
+      "window.__K = P.get('k')" in _rs and "data.json' + (window.__K || '')" in _rs)
+check("...and /embed passes the query through for the same reason",
+      "data.json'+(location.search||'')" in _rs)
+check("phone URL / LAN IP / firewall / tailscale are PROBED and published, never hard-coded",
+      "def lan_ip()" in _rs and "def firewall_state()" in _rs and "def tailscale_hint()" in _rs
+      and 'snap["access"]' in _rs)
+check("the firewall note tells him the one command instead of guessing for him",
+      "socketfilterfw" in _rs and "Touch ID" in _rs)
+# the alert/record features must not be displaced by the new one
+check("the win rate and the channel report still ride the same snapshot the phone sees",
+      'snap["record"] = record_block()' in _rs and 'snap["channels"]' in _rs
+      and "Win rate" in _rs and "Alerts queued" in _rs)
+check("no token, key or secret is ever printed into the HTML itself (only the count of characters)",
+      '"token_len": len(security_key())' in _rs and "token_len" in _rs
+      and not _re.search(r"print\(.*security_key\(\)", _rs))
+check("and the desk page (monitor) is untouched by any of this: one reader, one file",
+      "8790" not in open(_asset("tools/mac", "monitor.py")).read())
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

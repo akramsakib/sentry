@@ -34,6 +34,89 @@ DIGEST_S = 4 * 3600
 
 _cache = {"ts": 0, "data": None}
 
+# ---------------------------------------------------------------- phone access
+# He asked to see this dashboard from his phone. It already binds 0.0.0.0, so the only real questions are
+# "what URL", "is the Mac's firewall in the way" and "who else on that WiFi can read my positions". The
+# answer to the last one: a token, generated on first run, that loopback (this Mac) never needs.
+# Where the token lives. Overridable so a test or a second instance cannot write into the live desk
+# folder by accident — a shared secret is exactly the kind of file you do not want silently clobbered.
+KEY_F = os.environ.get("RADAR_KEY_FILE") or (BASE + "/radar.key")
+_key_mem = [None]
+
+
+def security_key():
+    """64-bit URL token, file mode 600, created on first need.
+
+    Not for localhost — nobody types a token into their own machine — but any address that is not loopback
+    must present ?k=<key>. If the file cannot be written (read-only volume, a test harness) the key is kept
+    in memory and logged, so the gate fails CLOSED rather than open: a dashboard that cannot store its secret
+    should not be readable by the whole network.
+    """
+    if _key_mem[0]:
+        return _key_mem[0]
+    try:
+        k = open(KEY_F).read().strip()
+        if len(k) >= 8:
+            _key_mem[0] = k
+            return k
+    except Exception:
+        pass
+    import secrets
+    k = secrets.token_urlsafe(8)
+    try:
+        with open(KEY_F, "w") as f:
+            f.write(k + "\n")
+        os.chmod(KEY_F, 0o600)
+    except Exception as e:
+        print("radar.key not stored (%s) — token is in-memory only and changes on restart" % e, flush=True)
+    _key_mem[0] = k
+    return k
+
+
+def lan_ip():
+    for iface in ("en0", "en1"):
+        try:
+            r = subprocess.run(["ipconfig", "getifaddr", iface], capture_output=True, text=True, timeout=4)
+            ip = r.stdout.strip()
+            if ip.count(".") == 3:
+                return ip
+        except Exception:
+            pass
+    return None
+
+
+def is_local(ip):
+    return ip in ("127.0.0.1", "::1", "localhost")
+
+
+def firewall_state():
+    """"reachable" is a fact about the machine, not about this code. The macOS application firewall lets a
+    process on the Mac talk to itself but can still refuse an incoming connection from a phone, so the page
+    says which it is and hands over the one command that changes it. Never guess this — read it."""
+    try:
+        r = subprocess.run(["/usr/libexec/ApplicationFirewall/socketfilterfw", "--getglobalstate"],
+                           capture_output=True, text=True, timeout=6)
+        out = (r.stdout or "").strip()
+    except Exception:
+        return {"probed": False, "enabled": None, "note": "could not read the firewall state"}
+    en = "enabled" in out.lower()
+    return {"probed": True, "enabled": en, "raw": out[:80],
+            "note": ("macOS firewall is ON: if the page does not open on the phone, add an exception for "
+                     "/usr/bin/python3 (needs Touch ID / admin once), or use Tailscale instead of the WiFi IP")
+            if en else "firewall off — the WiFi URL should work as-is"}
+
+
+def tailscale_hint():
+    try:
+        r = subprocess.run(["tailscale", "ip", "-4"], capture_output=True, text=True, timeout=6)
+        ip = (r.stdout or "").strip()
+    except Exception:
+        return None
+    ip = ip.splitlines()[0].strip() if ip else ""
+    return ip if ip.count(".") == 3 and ip.startswith("100.") else None
+
+
+
 def kl_now():
     return datetime.utcnow() + timedelta(hours=8)
 
@@ -156,6 +239,11 @@ def snapshot():
     snap["red_window"] = red_window()
     snap["float_pl"] = round(sum(p["profit"] for p in snap.get("positions", [])), 2)
     snap["record"] = record_block()
+    ip = lan_ip()
+    snap["access"] = {"lan_ip": ip, "port": PORT,
+                      "phone_url": ("http://%s:%d/?k=%s" % (ip, PORT, security_key())) if ip else None,
+                      "tailscale_ip": tailscale_hint(), "firewall": firewall_state(),
+                      "token_len": len(security_key())}
     snap["channels"] = {"gmail_cfg": os.path.exists(SMTP_F),
                         "notifier": os.path.exists(BASE + "/hermes-notifier"),
                         "webhook": os.environ.get("HERMES_ALERT_WEBHOOK", "").strip()[:60] or None,
@@ -266,11 +354,19 @@ pre{background:#0e1520;border:1px solid #1e2a3a;border-radius:8px;padding:10px;f
 .badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:700}
 .b-live{background:#123b25;color:#2ecc71}.b-dead{background:#3b1212;color:#e74c3c}.b-red{background:#3b2f12;color:#f1c40f}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:800px){.cols{grid-template-columns:1fr}}
+/* Phone. It is the same page, not a second dashboard: a copy would be a second thing to keep honest. */
+@media(max-width:760px){body{padding:10px}h1{font-size:17px}.grid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px}
+.card{padding:9px}.v{font-size:16px}table{font-size:12px}th,td{padding:5px 6px}
+pre{max-height:150px;font-size:10px}h2{margin:11px 0 5px}}
+#phone{font-size:12px}
+body.cmp .desk{display:none}body.cmp table{font-size:11px}body.cmp pre{max-height:110px}
+button{background:#16202e;color:#d7e0ea;border:1px solid #1e2a3a;border-radius:8px;padding:5px 10px;font-size:12px}
 h2{font-size:14px;margin:14px 0 6px;color:#9fb2c8}
 </style></head><body>
 <h1>📡 Hermes Trade Radar</h1>
-<div class="sub">24/7 sentry monitor · playbook v3.0 · auto-refresh 10s · <span id="kl"></span> KL</div>
+<div class="sub">24/7 sentry monitor · playbook v3.0 · auto-refresh 10s · <span id="kl"></span> KL · <span id="age"></span></div>
 <div id="badges"></div>
+<div class="card" id="phone" style="margin-bottom:12px"></div>
 <div class="grid" id="cards"></div>
 <h2>Positions</h2><table id="pos"><tr><th>Symbol</th><th>Dir</th><th>Vol</th><th>Open</th><th>Last</th><th>SL</th><th>TP</th><th>P/L</th></tr></table>
 <h2>Graded record — win rate the sizer is actually reading</h2>
@@ -280,10 +376,22 @@ h2{font-size:14px;margin:14px 0 6px;color:#9fb2c8}
 <div><h2>Alert queue</h2><pre id="outbox"></pre></div></div>
 <h2>Delivery channels</h2><pre id="channels"></pre>
 <script>
+const P = new URLSearchParams(location.search);
+window.__K = P.get('k') ? ('?k=' + P.get('k')) : '';   // same-origin, same token: the page's own refreshes
+                                                       // must authenticate exactly like the first load
 async function tick(){
   try{
-    const d = await (await fetch('data.json')).json();
+    const d = await (await fetch('data.json' + (window.__K || ''))).json();
     document.getElementById('kl').textContent = d.kl||'';
+    // "DOWN" here means "the radar could not read fresh state", not "you lost money". Age is measured
+    // against the desk's own stamp, so a sleeping laptop is visible from the phone at a glance.
+    try{
+      const t = Date.parse((d.kl||'').replace(' ','T')+'+08:00');
+      const age = Math.max(0, Math.round((Date.now()-t)/1000));
+      const el = document.getElementById('age');
+      el.textContent = (age < 90 ? 'fresh' : age < 900 ? 'STALE' : 'DOWN') + ' · ' + age + 's';
+      el.style.color = age < 90 ? '#2ecc71' : (age < 900 ? '#f1c40f' : '#e74c3c');
+    }catch(e){}
     document.getElementById('badges').innerHTML =
       '<span class="badge '+(d.sentry_alive?'b-live':'b-dead')+'">SENTRY '+(d.sentry_alive?'LIVE':'DOWN')+'</span> '+
       (d.red_window?'<span class="badge b-red">RED WINDOW — no new entries</span>':'');
@@ -302,6 +410,18 @@ async function tick(){
             ? 'LOCAL ONLY' : (d.channels&&d.channels.webhook?'webhook':'mail'),
            (d.channels&&(d.channels.gmail_cfg||d.channels.webhook))?'up':'flat')+
       card('Alerts queued', d.channels?d.channels.queued:'-');
+    const a = d.access||{};
+    const fw = a.firewall||{};
+    document.getElementById('phone').innerHTML =
+      '<span class="k">Phone / LAN</span><div class="v" style="font-size:14px;word-break:break-all">'
+      + (a.phone_url ? '<a href="'+a.phone_url+'" style="color:#2ecc71">'+a.phone_url+'</a>'
+                     : 'no LAN address right now (WiFi off?) — localhost still works')
+      + '</div><div style="color:#7f8ea3;margin-top:4px">'
+      + (fw.probed ? (fw.enabled ? 'macOS firewall <b>ON</b> — if the phone cannot load it, allow /usr/bin/python3 in Firewall, or use Tailscale' : 'macOS firewall off') : 'firewall state unknown')
+      + (a.tailscale_ip ? ' · Tailscale <b>'+a.tailscale_ip+':'+a.port+'</b> (works away from home; tunnel currently stopped)' : '')
+      + ' · localhost needs no token, anything else does ('+(a.token_len||0)+' chars)</div>'
+      + ' <button id="cmpb">compact</button>'
+      + (a.lan_ip ? ' <button id="cpb">copy link</button>' : '') + '</div>';
     const rec = d.record||{};
     const rrows = [];
     if(rec.fx) rrows.push(['forex (MT5)', rec.fx]);
@@ -312,6 +432,10 @@ async function tick(){
         g.win_rate==null?'—':(100*g.win_rate).toFixed(1)+'%'}</td><td>${g.wins||0} / ${g.losses||0} / ${g.scratch||0}</td><td>${g.graded||0}</td><td>${g.net_r||0}</td><td>${
         (g.by_skill&&g.by_skill.length)?g.by_skill[0].skill+' '+(100*g.by_skill[0].acc).toFixed(0)+'% ('+g.by_skill[0].n+')':'—'}</td></tr>`).join('')
       + (rec.error?`<tr><td colspan="6">${rec.error}</td></tr>`:'');
+    const cp = document.getElementById('cpb');
+    if (cp) cp.onclick = function(){ const u = (a.phone_url||'');
+      if (navigator.clipboard) navigator.clipboard.writeText(u); cp.textContent = 'copied'; };
+    const cb = document.getElementById('cmpb'); if (cb) cb.onclick = function(){ document.body.classList.toggle('cmp'); };
     tbl('pos', d.positions||[], p=>`<tr><td>${p.sym}</td><td>${p.action}</td><td>${p.vol}</td><td>${p.open}</td><td>${p.last}</td><td>${p.sl}</td><td>${p.tp}</td><td class="${p.profit>0?'up':(p.profit<0?'down':'')}">${p.profit}</td></tr>`);
     tbl('ord', d.orders||[], o=>`<tr><td>${o.sym}</td><td>${o.type}</td><td>${o.price}</td><td>${o.sl}</td><td>${o.tp}</td><td>${o.state}</td></tr>`);
     document.getElementById('journal').textContent = d.journal_tail||'(empty)';
@@ -332,7 +456,7 @@ tick(); setInterval(tick, 10000);
 
 EMBED = '''<!DOCTYPE html><html><body style="margin:0;background:#0b0f17;color:#d7e0ea;font:12px -apple-system,sans-serif;padding:8px">
 <b style="color:#2ecc71">● HERMES SENTRY</b> <span id="s">loading…</span>
-<script>async function t(){try{const d=await(await fetch('data.json')).json();
+<script>async function t(){try{const d=await(await fetch('data.json'+(location.search||''))).json();
 document.getElementById('s').textContent='float '+(d.float_pl||0)+' USD · '+(d.positions||[]).length+' pos · '+(d.orders||[]).length+' orders · '+((d.record&&d.record.overall&&d.record.overall.line)||'win rate —')+' · sentry '+(d.sentry_alive?'LIVE':'DOWN');}catch(e){}}
 t();setInterval(t,15000);</script></body></html>'''
 
@@ -344,10 +468,37 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body.encode())
+    def _denied(self):
+        self.send_response(403)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        try:
+            self.wfile.write(("<!doctype html><meta charset=utf-8><body style=\"background:#0b0f17;"
+                              "color:#d7e0ea;font:15px -apple-system,sans-serif;padding:24px\">"
+                              "<b>Open the address from the desk page or the radar log — it carries ?k=…</b>"
+                              "<p style=\"color:#7f8ea3\">This page shows positions and P/L, so anything that"
+                              " is not this Mac has to present the token. (http://127.0.0.1:8790 on the Mac"
+                              " itself needs nothing.)</body>").encode())
+        except Exception:
+            pass
+
     def do_GET(self):
-        if self.path.startswith("/data.json"):
+        # Local loopback stays effortless — the Mac's own browser and the embed. Everything else, including
+        # his phone on the same WiFi, must carry the token. The path is checked as a whole segment ("/../"
+        # is refused) because this server only ever serves three fixed routes.
+        client = (self.client_address[0] if self.client_address else "") or ""
+        path = self.path.split("?")[0]
+        if path not in ("/", "/index.html", "/data.json", "/embed"):
+            self.send_error(404)
+            return
+        if not is_local(client):
+            import urllib.parse
+            qs = urllib.parse.parse_qs(self.path.split("?", 1)[1] if "?" in self.path else "")
+            if qs.get("k", [""])[0] != security_key():
+                return self._denied()      # exact compare, and an absent token lands here too
+        if path.startswith("/data.json"):
             self._send(json.dumps(snapshot()), "application/json")
-        elif self.path.startswith("/embed"):
+        elif path.startswith("/embed"):
             self._send(EMBED, "text/html")
         else:
             self._send(HTML, "text/html")
