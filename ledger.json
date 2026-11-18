@@ -1,5 +1,5 @@
 {
- "cash": 75463.54956859048,
+ "cash": 66291.65556470449,
  "realized": -936.1290173782593,
  "orders": [
   {
@@ -1166,8 +1166,11 @@
    "qty": 157866.5463873943,
    "limit_price": 0.05817261,
    "stop_price": null,
-   "status": "open",
-   "placed_at": 1795019663
+   "status": "filled",
+   "placed_at": 1795019663,
+   "filled_avg_price": 0.05807,
+   "filled_qty": 157866.5463873943,
+   "filled_at": 1795020701
   },
   {
    "id": "1795019664043",
@@ -1180,6 +1183,18 @@
    "stop_price": 207.43763585,
    "status": "open",
    "placed_at": 1795019664
+  },
+  {
+   "id": "1795020701196",
+   "client_order_id": "sentryAVAXUSD1795020701196n47",
+   "symbol": "AVAX/USD",
+   "side": "buy",
+   "type": "limit",
+   "qty": 576.6409442518561,
+   "limit_price": 6.896,
+   "stop_price": null,
+   "status": "open",
+   "placed_at": 1795020701
   }
  ],
  "positions": [
@@ -1190,7 +1205,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9688
+   "current_price": 0.9653
   },
   {
    "symbol": "LTC/USD",
@@ -1199,7 +1214,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 43.291
+   "current_price": 43.374
   },
   {
    "symbol": "XRP/USD",
@@ -1208,7 +1223,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9688
+   "current_price": 0.9653
   },
   {
    "symbol": "SOL/USD",
@@ -1217,8 +1232,17 @@
    "cid": "sentrySOLUSD1795019663510n44",
    "fees": 3.93424455,
    "opened": 1795019663,
-   "current_price": 72.53
+   "current_price": 72.56
+  },
+  {
+   "symbol": "DOGE/USD",
+   "qty": 157866.5463873943,
+   "entry": 0.05807,
+   "cid": "sentryDOGEUSD1795019663767n45",
+   "fees": 4.58365517,
+   "opened": 1795020701,
+   "current_price": 0.05807
   }
  ],
- "fees_paid": 171.41363925
+ "fees_paid": 175.99729442
 }
