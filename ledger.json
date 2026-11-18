@@ -1,6 +1,6 @@
 {
- "cash": 50455.843607825445,
- "realized": -740.4510616635766,
+ "cash": 75463.54956859048,
+ "realized": -936.1290173782593,
  "orders": [
   {
    "id": "1794662610992",
@@ -617,7 +617,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 70.01853421,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794861594
   },
   {
@@ -746,7 +746,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 71.39858632,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794916786
   },
   {
@@ -875,7 +875,7 @@
    "qty": 54931.774735777966,
    "limit_price": null,
    "stop_price": 0.05820127,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794952739
   },
   {
@@ -938,7 +938,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 71.68457894,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794954459
   },
   {
@@ -950,7 +950,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 72.57346334,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794969482
   },
   {
@@ -974,7 +974,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 72.96607312,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794973589
   },
   {
@@ -998,7 +998,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 72.96465852,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1794998550
   },
   {
@@ -1022,7 +1022,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 72.23237453,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795015734
   },
   {
@@ -1046,7 +1046,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 72.33237453,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795016208
   },
   {
@@ -1058,7 +1058,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 72.10237453,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795016325
   },
   {
@@ -1070,7 +1070,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 71.83237453,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795017269
   },
   {
@@ -1112,7 +1112,7 @@
    "qty": 54.34577394327491,
    "limit_price": null,
    "stop_price": 71.39858632,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795017818
   },
   {
@@ -1124,8 +1124,62 @@
    "qty": 0.25761202304153163,
    "limit_price": null,
    "stop_price": 62547.97419989,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795018291
+  },
+  {
+   "id": "1795019663308",
+   "client_order_id": "ledger795019663308",
+   "symbol": "BTC/USD",
+   "side": "sell",
+   "type": "market",
+   "qty": 0.25761202304153163,
+   "limit_price": null,
+   "stop_price": null,
+   "status": "filled",
+   "placed_at": 1795019663,
+   "filled_avg_price": 62448.76,
+   "filled_qty": 0.25761202304153163,
+   "filled_at": 1795019663
+  },
+  {
+   "id": "1795019663510",
+   "client_order_id": "sentrySOLUSD1795019663510n44",
+   "symbol": "SOL/USD",
+   "side": "buy",
+   "type": "limit",
+   "qty": 108.48599330560018,
+   "limit_price": 72.68081500000001,
+   "stop_price": null,
+   "status": "filled",
+   "placed_at": 1795019663,
+   "filled_avg_price": 72.53,
+   "filled_qty": 108.48599330560018,
+   "filled_at": 1795019663
+  },
+  {
+   "id": "1795019663768",
+   "client_order_id": "sentryDOGEUSD1795019663767n45",
+   "symbol": "DOGE/USD",
+   "side": "buy",
+   "type": "limit",
+   "qty": 157866.5463873943,
+   "limit_price": 0.05817261,
+   "stop_price": null,
+   "status": "open",
+   "placed_at": 1795019663
+  },
+  {
+   "id": "1795019664043",
+   "client_order_id": "sentryBCHUSD1795019664043n46",
+   "symbol": "BCH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 27.427781329348985,
+   "limit_price": null,
+   "stop_price": 207.43763585,
+   "status": "open",
+   "placed_at": 1795019664
   }
  ],
  "positions": [
@@ -1136,7 +1190,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9739
+   "current_price": 0.9688
   },
   {
    "symbol": "LTC/USD",
@@ -1145,7 +1199,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 43.587
+   "current_price": 43.291
   },
   {
    "symbol": "XRP/USD",
@@ -1154,44 +1208,17 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9739
+   "current_price": 0.9688
   },
   {
    "symbol": "SOL/USD",
-   "qty": 54.34577394327491,
-   "entry": 71.39858632,
-   "cid": "sentrySOLUSD1794848491576n30",
-   "fees": 1.94010572,
-   "opened": 1794848491,
-   "current_price": 73.3
-  },
-  {
-   "symbol": "DOGE/USD",
-   "qty": 54931.774735777966,
-   "entry": 0.05911149,
-   "cid": "sentryDOGEUSD1794941818530n39",
-   "fees": 1.62354953,
-   "opened": 1794948298,
-   "current_price": 0.05858
-  },
-  {
-   "symbol": "BTC/USD",
-   "qty": 0.1545672138270428,
-   "entry": 62972.71,
-   "cid": "sentryBTCUSD1795017269998n43",
-   "fees": 4.86675817,
-   "opened": 1795017818,
-   "current_price": 62879.16
-  },
-  {
-   "symbol": "BTC/USD",
-   "qty": 0.25761202304153163,
-   "entry": 62879.25,
-   "cid": "sentryBTCUSD1795017269617n42",
-   "fees": 8.0992254,
-   "opened": 1795018291,
-   "current_price": 62879.16
+   "qty": 108.48599330560018,
+   "entry": 72.53,
+   "cid": "sentrySOLUSD1795019663510n44",
+   "fees": 3.93424455,
+   "opened": 1795019663,
+   "current_price": 72.53
   }
  ],
- "fees_paid": 151.0311059
+ "fees_paid": 171.41363925
 }
