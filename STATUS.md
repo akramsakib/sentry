@@ -2,32 +2,35 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-18 15:38 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $62,110.31 · equity $99,542.19
+**2026-11-18 15:54 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $76,400.78 · equity $99,393.30
 
-_Venue cost: 0.02 % maker / 0.05 % taker per side · **$130.92 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
+_Venue cost: 0.02 % maker / 0.05 % taker per side · **$138.07 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
-## Orders resting on the book now (1)
+## Orders resting on the book now (3)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ETH/USD | buy_stop | 1778.1605 | 1.77043 | $3,148 | $50.00 | 1770.65 | +0.42% | 10 min |
+| BTC/USD | buy_limit | 63033.2 | 0.257612 | $16,238 | $75.00 | 63268.7 | -0.37% | 0 min |
+| BTC/USD | buy_limit | 63033.2 | 0.154567 | $9,743 | $75.00 | 63268.7 | -0.37% | 0 min |
+| ETH/USD | buy_stop | 1778.1605 | 1.77043 | $3,148 | $50.00 | 1767.37 | +0.61% | 26 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
-## Positions (5)
+## Positions (3)
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| ADA/USD | 20659.4 | 0.15347 | 0.15183 | $-33.88 | 0.1510798 | 0.15652524 | -0.68R |
-| BTC/USD | 0.0909312 | 64180 | 63436.61 | $-67.60 | 63355.2 | 65042.397 | -0.90R |
-| DOGE/USD | 54931.8 | 0.05911149 | 0.05884 | $-14.91 | 0.05820127 | 0.06047682 | -0.30R |
-| SOL/USD | 54.3458 | 71.398586 | 73.76 | $128.33 | 70.018534 | 72.918795 | +1.71R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9811 | $99.24 | 0.94357771 | 0.97833374 | +1.32R |
+| DOGE/USD | 54931.8 | 0.05911149 | 0.05869 | $-23.15 | 0.05820127 | 0.06047682 | -0.46R |
+| SOL/USD | 54.3458 | 71.398586 | 73.49 | $113.66 | 70.018534 | 72.918795 | +1.52R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9754 | $72.77 | 0.94357771 | 0.97833374 | +0.97R |
 
-## Last 12 signals (389 ever logged)
+## Last 12 signals (392 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-18 15:54 | SOL/USD | C-M15-evening-star | 4/5 | 73.617119 | 74.487203 | 72.311992 | $100.00 | not fired (guard/duplicate) |
+| 11-18 15:54 | BTC/USD | S18-ma-revert-long | 3/5 | 63033.2 | 62547.974 | 64315.683 | $75.00 | order placed |
+| 11-18 15:54 | BTC/USD | S4-band-fade-long | 3/5 | 63654.844 | 62742.065 | 64364.375 | $75.00 | order placed |
 | 11-18 15:36 | BCH/USD | S22-rsi-bear-div | 4/5 | 206.78401 | 209.90998 | 202.09505 | $75.00 | paper-graded (spot cannot short) |
 | 11-18 15:36 | BCH/USD | S2-breakdown-short | 4/5 | 206.42002 | 210.09998 | 200.90008 | $75.00 | paper-graded (spot cannot short) |
 | 11-18 15:36 | LTC/USD | C-M15-tweezer-top | 5/5 | 43.849228 | 44.281931 | 43.200172 | $94.00 | paper-graded (spot cannot short) |
@@ -37,17 +40,14 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 | 11-18 15:36 | LINK/USD | S22-rsi-bear-div | 4/5 | 9.0618756 | 9.196811 | 8.8594724 | $75.00 | paper-graded (spot cannot short) |
 | 11-18 15:36 | ADA/USD | C-M15-tweezer-top | 4/5 | 0.15183558 | 0.15341104 | 0.14947239 | $75.00 | not fired (guard/duplicate) |
 | 11-18 15:36 | DOGE/USD | S22-rsi-bear-div | 4/5 | 0.05895402 | 0.05986994 | 0.05758014 | $75.00 | not fired (guard/duplicate) |
-| 11-18 15:36 | SOL/USD | S22-rsi-bear-div | 4/5 | 73.697119 | 75.227203 | 71.401992 | $75.00 | not fired (guard/duplicate) |
-| 11-18 15:28 | BCH/USD | S1-pullback-short | 4/5 | 208.55811 | 210.09998 | 206.24531 | $50.00 | paper-graded (spot cannot short) |
-| 11-18 15:28 | LTC/USD | S13-ichimoku-short | 4/5 | 43.748841 | 44.667317 | 42.913007 | $50.00 | paper-graded (spot cannot short) |
 
 ## Accuracy so far
 
-6 graded outcomes (1 win / 4 loss / 1 scratch) · win rate 20% · avg -0.22R · sizing today: score 3 -> $75.00 · score 4 -> $100.00 · score 5 -> $125.00
+8 graded outcomes (1 win / 6 loss / 1 scratch) · win rate 14% · avg -0.38R · sizing today: score 3 -> $50.00 · score 4 -> $67.00 · score 5 -> $83.00
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 0 new order(s), 10 symbols scanned
+## This cycle: 2 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
