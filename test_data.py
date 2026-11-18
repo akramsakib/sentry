@@ -2710,5 +2710,113 @@ else:
           _src37.rindex("d[\"retcode\"] not in (None, 0, SEND_OK_RETCODE)", 0, _i37) < _i37
           and _src37.count("not in (None, 0, SEND_OK_RETCODE)") == 1, "")
 
+
+# 38 — the alert queue, measured before it was touched.  Asked "alerts queued?" on 2026-11-18 23:56 KL,
+# the Mac said: alerts.outbox 200 lines (exactly the cap), oldest 11:08 the same day, newest 23:50, of
+# the held lines 116 NOTE advisories vs 4 FILLs; alerts.sent.log 2 lines, BOTH of them a bridge-drain
+# test dated 11-17 02:45; no gmail_smtp.json; no HERMES_ALERT_WEBHOOK in com.hermes.radar's environment
+# (launchctl printed only PATH/XPC_SERVICE_NAME).  So nothing had ever been delivered off the laptop,
+# every line was re-queued every 60 s, each pass re-notified all 200, and the trim threw the OLDEST away
+# — which over a 13-hour backlog means the FILL lines were the ones being lost.  Three local fixes, no
+# new secret, all three checked here against the shipped functions.
+print("\n== 38: the alert queue drains, or says it is not draining")
+_RP38 = _asset("trade_radar.py") or _asset("tools", "mac", "trade_radar.py") \
+    or _asset("tools/mac/trade_radar.py")
+if not _RP38:
+    check("trade_radar.py is not next to the repo, so the queue checks run on the Mac (skipped here)",
+          True, "skipped: no trade_radar.py")
+else:
+    import tempfile as _tf38, shutil as _sh38
+    _d38 = _tf38.mkdtemp(prefix="q38")
+    _rd = _load32("radar38", _RP38)
+    _rd.BASE = _d38
+    _rd.OUTBOX_F = os.path.join(_d38, "alerts.outbox")
+    _rd.SENT_F = os.path.join(_d38, "alerts.sent.log")
+    _rd.NOTED_F = os.path.join(_d38, "alerts.notified")
+    _rd.DROPPED_F = os.path.join(_d38, "alerts.dropped")
+    _rd.SMTP_F = os.path.join(_d38, "gmail_smtp.json")
+    _rd.OUTBOX_CAP = 20            # small, so the overflow maths is readable
+
+    def _mk38(n_note, n_fill):
+        """Interleaved the way the real file is: advisories and FILLs arriving in no particular order."""
+        out, i, j = [], 0, 0
+        while i < n_note or j < n_fill:
+            if i < n_note:
+                out.append("11-18 12:%02d KL | NOTE — advisory %d over soft cap" % (i % 60, i)); i += 1
+            if j < n_fill:
+                out.append("11-18 09:%02d KL | FILL — EURUSD sell 0.25@1.09668 profit -1.5 | ticket %d"
+                           % (j % 60, 59378751598 + j)); j += 1
+        return out
+
+    _l38, _dr38 = _rd.trim_outbox(_mk38(200, 50), 60)
+    check("over the cap the advisories are what gets thrown, not the fills",
+          len(_l38) == 60 and sum(1 for x in _l38 if " FILL " in x) == 50,
+          "kept %d, fills %d" % (len(_l38), sum(1 for x in _l38 if " FILL " in x)))
+    check("...and the drop is counted, not silent", _dr38 == 190, "dropped %d" % _dr38)
+    _l38z, _dr38z = _rd.trim_outbox(_mk38(200, 50), 20)
+    check("if the urgent lines alone overflow the cap, the noise goes entirely and the newest fills stay",
+          len(_l38z) == 20 and all(" FILL " in x for x in _l38z) and _dr38z == 230,
+          "kept %d, dropped %d" % (len(_l38z), _dr38z))
+    check("kept lines stay in the order they arrived (a shuffled tail reads as a broken clock)",
+          _l38 == sorted(_l38, key=lambda x: x.split(" KL | ")[0]), "")
+    _l38b, _dr38b = _rd.trim_outbox(_mk38(0, 50), 20)
+    check("when EVERYTHING is important it keeps the newest, and still says how many went",
+          len(_l38b) == 20 and _dr38b == 30
+          and "ticket 59378751647" in _l38b[-1] and "ticket 59378751598" not in "".join(_l38b),
+          _l38b[-1][-28:])
+    _l38c, _dr38c = _rd.trim_outbox(_mk38(5, 2), 20)
+    check("under the cap it is the identity — no reordering, no counting",
+          _l38c == _mk38(5, 2) and _dr38c == 0, "")
+    check("the tag test reads through the timestamp stamp, not the whole line",
+          _rd.is_urgent("11-18 23:49 KL | CHECK/SEND FAILED NVDA sell stop: retcode 10015")
+          and not _rd.is_urgent("11-18 23:49 KL | NOTE — GBPUSD theme exposure over soft cap"), "")
+    check("a crypto line counts as urgent even though its tag is a bracket",
+          _rd.is_urgent("11-18 23:50 KL | [CRYPTO/crypto] FILL — AVAX/USD S4-band-fade-long 1008@6.963"), "")
+
+    # the flush itself: stub the terminal-side channels, leave the logic shipped
+    _pings = []
+    _rd.mac_notify = lambda title, text: _pings.append(text)
+    _rd.send_webhook = lambda line: None
+    _q38 = _mk38(3, 1)
+    with open(_rd.OUTBOX_F, "w") as _f38:
+        _f38.write("\n".join(_q38) + "\n")
+    _rd.flush_outbox()
+    _after1 = [l.rstrip("\n") for l in open(_rd.OUTBOX_F) if l.strip()]
+    check("with no channel configured a line stays QUEUED — it is never dropped to look tidy",
+          len(_after1) == 4 and os.path.exists(_rd.SENT_F) is False, str(len(_after1)))
+    check("each line is announced exactly once per flush cycle", len(_pings) == 4, "%d pings" % len(_pings))
+    _rd.flush_outbox()
+    _rd.flush_outbox()
+    check("...and NOT once a minute forever (this is the 200-ping bug: 3 flushes, still 4 notifications)",
+          len(_pings) == 4, "%d pings after 3 flushes" % len(_pings))
+    with open(_rd.OUTBOX_F, "a") as _f38:
+        _f38.write("11-18 23:58 KL | FILL — GBPUSD buy 0.26@1.31660 profit 2.1 | ticket 59402000001\n")
+    _rd.flush_outbox()
+    check("a genuinely NEW event still notifies immediately, watermark or not", len(_pings) == 5,
+          "%d pings" % len(_pings))
+    _rd.send_webhook = lambda line: True
+    _rd.flush_outbox()
+    check("once something off the Mac accepts it, it leaves the queue and is journalled as sent",
+          os.path.exists(_rd.OUTBOX_F) and not [l for l in open(_rd.OUTBOX_F) if l.strip()]
+          and sum(1 for l in open(_rd.SENT_F) if l.strip()) == 5, "")
+    # flush_outbox binds the REAL cap (200) as its default, so this overflow is sized against 200 and not
+    # against the small cap the pure trim calls above used — 204 advisories plus 4 fills.
+    with open(_rd.OUTBOX_F, "w") as _f38:
+        _f38.write("\n".join(_mk38(204, 4)) + "\n")
+    _rd.send_webhook = lambda line: None
+    _rd.OUTBOX_CAP = 200
+    _rd.flush_outbox()
+    _ov = [l.rstrip("\n") for l in open(_rd.OUTBOX_F) if l.strip()]
+    check("an overflowing queue keeps its fills and reports the loss",
+          len(_ov) == 200 and sum(1 for x in _ov if " FILL " in x) == 4 and _rd._read_dropped() > 0,
+          "held %d, dropped %d" % (len(_ov), _rd._read_dropped()))
+    _snip = open(_RP38).read()
+    check("the queue's state is published, not just logged: cap, urgent held, dropped, full",
+          all(k in _snip for k in ('"cap": OUTBOX_CAP', '"urgent_held"', '"dropped": _read_dropped()',
+                                   '"full": len(_ob) >= OUTBOX_CAP')), "")
+    check("and the page prints it as queued/CAP plus a dropped count, so a stuck queue is visible on the phone",
+          "d.channels.queued+'/'+" in _snip and "' held, '" in _snip, "")
+    _sh38.rmtree(_d38, ignore_errors=True)
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

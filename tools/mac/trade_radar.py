@@ -19,6 +19,7 @@ Digest email every DIGEST_H hours with positions + P&L + recent events + the gra
 """
 import http.client
 import json, os, re, smtplib, socket, subprocess, sys, threading, time
+import hashlib
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -33,6 +34,19 @@ STATE_F = BASE + "/state.json"
 JOURNAL_F = BASE + "/sentry_journal.md"
 OUTBOX_F = BASE + "/alerts.outbox"
 SENT_F = BASE + "/alerts.sent.log"
+NOTED_F = BASE + "/alerts.notified"
+DROPPED_F = BASE + "/alerts.dropped"
+# The outbox is a sliding window, so what it keeps matters more than how big it is.  Measured on
+# 2026-11-18: 200 lines held (the cap), the oldest from 11:08 and the newest from 23:50, and
+# alerts.sent.log holding 2 lines — both of them a bridge-drain TEST from 11-17 02:45.  No
+# gmail_smtp.json, no HERMES_ALERT_WEBHOOK in the job environment, so nothing has ever been
+# delivered off this laptop and every line has been re-queued until the trim threw the oldest away.
+# At that rate the queue spends its 200 slots on 116 advisory NOTE lines and drops the 4 FILLs.
+# Three fixes, all local, no new secret: an important line is never the one that goes; a line is
+# announced once instead of once a minute forever; and what got dropped is counted and shown.
+OUTBOX_CAP = 200
+URGENT_PREFIX = ("FILL", "HIT", "CHECK/SEND FAILED", "CANDIDATE", "REFUSED", "HELD", "TRAIL",
+                 "BE moved", "SEND ", "[CRYPTO", "DAILY REVIEW", "Sentry online", "margin floor")
 SMTP_F = BASE + "/gmail_smtp.json"
 CACHE_S = 20
 DIGEST_S = 4 * 3600
@@ -307,10 +321,19 @@ def snapshot():
                       "phone_url": ("http://%s:%d/?k=%s" % (ip, PORT, security_key())) if ip else None,
                       "tailscale_ip": tailscale_hint(), "firewall": firewall_state(),
                       "token_len": len(security_key())}
+    try:
+        _ob = [l.rstrip("\n") for l in open(OUTBOX_F) if l.strip()]
+    except Exception:
+        _ob = []
     snap["channels"] = {"gmail_cfg": os.path.exists(SMTP_F),
                         "notifier": os.path.exists(BASE + "/hermes-notifier"),
                         "webhook": os.environ.get("HERMES_ALERT_WEBHOOK", "").strip()[:60] or None,
-                        "queued": _count_lines(OUTBOX_F), "sent": _count_lines(SENT_F)}
+                        "queued": len(_ob), "sent": _count_lines(SENT_F),
+                        # cap / urgent_held / dropped: what the queue is, not what it should be. If it is
+                        # at the cap with nothing urgent held, advisories are being lost and that is a fact
+                        # worth a number; the delivery count is the one that says whether mail ever left.
+                        "cap": OUTBOX_CAP, "urgent_held": sum(1 for l in _ob if is_urgent(l)),
+                        "dropped": _read_dropped(), "full": len(_ob) >= OUTBOX_CAP}
     _cache.update({"ts": now, "data": snap})
     return snap
 
@@ -366,13 +389,83 @@ def send_webhook(line):
         return False
 
 
+def alert_body(line):
+    """The message, without the "11-18 23:50 KL | " stamp every alert line carries."""
+    return line.split(" | ", 1)[1] if " | " in line else line
+
+
+def is_urgent(line):
+    return alert_body(line).startswith(URGENT_PREFIX)
+
+
+def trim_outbox(lines, cap=OUTBOX_CAP):
+    """(kept, n_dropped).  Over the cap, the ADVISORY lines are what gets thrown away, oldest first,
+    and a FILL or a refusal is kept even when it is older than the noise that would have evicted it.
+    Order is preserved, because the page shows the tail and a shuffled tail reads as a broken clock.
+    """
+    if len(lines) <= cap:
+        return list(lines), 0
+    idx_u = [i for i, l in enumerate(lines) if is_urgent(l)]
+    idx_o = [i for i, l in enumerate(lines) if not is_urgent(l)]
+    keep_u = idx_u[-cap:]
+    room = cap - len(keep_u)
+    keep_o = idx_o[-room:] if room > 0 else []
+    keep = set(keep_u) | set(keep_o)
+    kept = [l for i, l in enumerate(lines) if i in keep]
+    return kept, len(lines) - len(kept)
+
+
+def _line_hash(line):
+    return hashlib.sha1(line.encode("utf-8", "replace")).hexdigest()[:16]
+
+
+def _notified():
+    try:
+        with open(NOTED_F) as f:
+            return set(x.strip() for x in f if x.strip())
+    except Exception:
+        return set()
+
+
+def _mark_notified(hashes):
+    try:
+        with open(NOTED_F, "w") as f:
+            f.write("\n".join(sorted(hashes)[-1200:]) + ("\n" if hashes else ""))
+    except Exception:
+        pass
+
+
+def _read_dropped():
+    try:
+        return int(open(DROPPED_F).read().split()[0])
+    except Exception:
+        return 0
+
+
+def _write_dropped(n):
+    try:
+        with open(DROPPED_F, "w") as f:
+            f.write("%d %s\n" % (n, kl_now().strftime("%m-%d %H:%M KL")))
+    except Exception:
+        pass
+
+
 def flush_outbox():
     if not os.path.exists(OUTBOX_F): return
     with open(OUTBOX_F) as f: lines = [l.rstrip("\n") for l in f if l.strip()]
     if not lines: return
     remaining = []
+    noted = _notified()
     for line in lines:
-        mac_notify("Hermes Trade Alert", line)
+        # Once per LINE, not once per minute.  This loop runs every 60 s over an undrained queue, so
+        # 200 stuck lines meant 200 macOS notifications a minute, forever — and a notification he has
+        # seen 800 times is worse than no notification, because it teaches him to ignore the one that
+        # matters.  A hash of the line is the watermark: it survives a restart, so the backlog does not
+        # re-ping the desk, and a genuinely new event still fires immediately.
+        h = _line_hash(line)
+        if h not in noted:
+            mac_notify("Hermes Trade Alert", line)
+            noted.add(h)
         hooked = send_webhook(line)
         # Delivered means SOMETHING OFF THE MAC GOT IT: mail, or his webhook. The notification is local to
         # this laptop and is not counted as delivery, because a laptop is not a channel when he is away.
@@ -381,7 +474,13 @@ def flush_outbox():
             with open(SENT_F, "a") as f: f.write(line + "\n")
         else:
             remaining.append(line)
-    with open(OUTBOX_F, "w") as f: f.write("\n".join(remaining[-200:]) + ("\n" if remaining else ""))
+    kept, dropped = trim_outbox(remaining)
+    if dropped:
+        # Never silently.  The count is on disk and on the page, so "the desk looks fine" cannot be the
+        # only evidence that the queue overflowed — the same principle as watch_error on the resident.
+        _write_dropped(_read_dropped() + dropped)
+    with open(OUTBOX_F, "w") as f: f.write("\n".join(kept) + ("\n" if kept else ""))
+    _mark_notified(noted)
 
 def digest_loop():
     last = 0
@@ -912,7 +1011,10 @@ async function tick(){
       card('Alert delivery', d.channels&&!d.channels.gmail_cfg&&!d.channels.webhook
             ? 'LOCAL ONLY' : (d.channels&&d.channels.webhook?'webhook':'mail'),
            (d.channels&&(d.channels.gmail_cfg||d.channels.webhook))?'up':'flat')+
-      card('Alerts queued', d.channels?d.channels.queued:'-');
+      card('Alerts queued', d.channels?(d.channels.queued+'/'+(d.channels.cap||200)):'-',
+           (d.channels&&d.channels.full)?'flat':'')+
+      card('Urgent held', d.channels?(d.channels.urgent_held+' held, '+(d.channels.dropped||0)+' dropped')
+            :'-', (d.channels&&d.channels.dropped)?'flat':'up');
     const a = d.access||{};
     const fw = a.firewall||{};
     document.getElementById('phone').innerHTML =

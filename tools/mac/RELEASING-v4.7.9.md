@@ -28,18 +28,31 @@ both mine, both now pinned by a test:
      10015 (GBPUSD was at 1.3154/1.3156). Fixed by `pending_geom`, which refuses with a reason *before*
      spending the call, counts the hold into `state.geom_held`, and does **not** burn the day's fire key
      — a pullback makes the level valid again. Nothing re-prices and nothing converts stop to limit: a
-     fade of the rally is not the trade the signal asked for. New: `fmt_px(sym, v)` applied at the one place the payload is
-   filled in, and at the two chandelier-trail sites that hardcoded 5 digits. Volumes never pass through it —
-   formatting, not sizing. `test_data.py` §35 calls the shipped `send_order` with the terminal stubbed and reads
-   back the curl payload; §36 pins the geometry rule on the three probe calls; §37 pins the reply shapes
-   the two MCP calls actually answer.  Suite: **566 PASS / 0 failed**.
+     fade of the rally is not the trade the signal asked for.
+   `fmt_px(sym, v)` (the digits half) is applied at the one place the payload is filled in, and at the two
+   chandelier-trail sites that hardcoded 5 digits; volumes never pass through it — formatting, not sizing.
+3. **The alert queue was full and had never drained** — asked "alerts queued?", measured at 23:56 KL:
+   `alerts.outbox` 200 lines = exactly the cap (oldest 11:08, newest 23:50), `alerts.sent.log` **2 lines,
+   both a bridge-drain test from 11-17 02:45**, no `gmail_smtp.json`, and `HERMES_ALERT_WEBHOOK` absent from
+   `com.hermes.radar`'s environment (`launchctl print` showed only `PATH` and `XPC_SERVICE_NAME`). So every
+   line failed the "did anything off the Mac get this" test and was re-queued, which meant three things: the
+   desk re-notified all 200 lines **every 60 seconds**, the trim discarded the **oldest** lines regardless of
+   what they were (116 advisories held against 4 fills — the FILLs were what got thrown), and the loss was
+   counted nowhere. Fixed locally, no new secret: `trim_outbox` keeps urgent lines first and drops the noise,
+   `alerts.notified` is a sha1 watermark so a line is announced once instead of forever, and `alerts.dropped`
+   counts what overflowed — all three published in `channels` (`queued/cap`, `urgent_held`, `dropped`,
+   `full`) and printed on the page. Re-measured at 00:02: 200 held, **70 urgent** (an 11:08 refusal survives,
+   which it would not have before), `dropped 2`, notifications 183→185 rather than +200.
+   `test_data.py` §38 runs the shipped `trim_outbox`/`flush_outbox` against stubbed channels — including the
+   check that a line with no channel **stays queued** rather than being dropped to look tidy.
+   Suite: **582 PASS / 0 failed** (sections 34–38 are new since the first row of this file was written).
 
 | file | md5 | bytes |
 |---|---|---|
 | `sentry_mac.py` (the resident — now in the repo too) | `4fde1219dd1ac7418989a027da670ea7` | 108,142 |
 | `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
 | `account_switch.sh` (switch kit) | `ef3dcf53b2ef4f5d632e1a8275d8ced3` | 15,339 |
-| `trade_radar.py` (radar page) | `1cd8a0726257173bd789fc506f316d34` | 68,124 |
+| `trade_radar.py` (radar page) | `1fed0a6dd3e5d325a3cfddd3691b590a` | 72,745 |
 
 ## The two things it could not do before
 
