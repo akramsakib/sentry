@@ -166,7 +166,7 @@
    "skill": "S16-inside-long",
    "be": 0.95972892,
    "sent_sl": 0.95972892,
-   "last_price": 0.9642
+   "last_price": 0.966
   },
   "SOL/USD": {
    "side": "long",
@@ -178,7 +178,7 @@
    "skill": "S4-band-fade-long",
    "be": 72.53,
    "sent_sl": 72.53,
-   "last_price": 72.8
+   "last_price": 72.92
   },
   "DOGE/USD": {
    "side": "long",
@@ -190,11 +190,11 @@
    "skill": "S4-band-fade-long",
    "be": 0.05807,
    "sent_sl": 0.05807,
-   "last_price": 0.05841
+   "last_price": 0.05844
   }
  },
  "cid_seq": 47,
- "last_cycle": 1795033919.0693007,
+ "last_cycle": 1795034308.8219328,
  "seen_candles": [
   "AVAX/USD|M15|marubozu|2026-11-16T08:00:00Z",
   "AVAX/USD|M15|three-outside-down|2026-11-16T08:00:00Z",
