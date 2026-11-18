@@ -644,3 +644,15 @@
 - **11-18 03:46 UTC** NOTE — AVAX/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
 - **11-18 03:46 UTC** NOTE — AVAX/USD C-M15-dragonfly: soft cap on open items (6) — advisory, skipping
 - **11-18 03:46 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99900.86 · 11s · venue fees $129.07 to date @ 0.02/0.05%
+- **11-18 10:42 UTC** SKIP — ETH/USD C-M15-tweezer-top: already have pending/position in play
+- **11-18 10:42 UTC** SKIP — ETH/USD C-M15-three-outside-down: already have pending/position in play
+- **11-18 10:42 UTC** SKIP — XRP/USD S23-upthrust-short: already have pending/position in play
+- **11-18 10:42 UTC** SKIP — XRP/USD C-H1-tweezer-top: already have pending/position in play
+- **11-18 10:42 UTC** SKIP — SOL/USD C-M15-tweezer-top: already have pending/position in play
+- **11-18 10:42 UTC** SKIP — DOGE/USD C-H1-tweezer-top: already have pending/position in play
+- **11-18 10:42 UTC** SKIP — ADA/USD S13-ichimoku-long: already have pending/position in play
+- **11-18 10:42 UTC** SKIP — ADA/USD C-H1-tweezer-top: already have pending/position in play
+- **11-18 10:42 UTC** CANDIDATE(score 5/5) — LTC/USD C-H1-bear-harami sell_stop 44.48078158 sl44.88804606 tp43.86988485 — paper-graded (spot can't short)
+- **11-18 10:42 UTC** CANDIDATE(score 5/5) — LTC/USD C-M15-three-outside-down sell_stop 44.25078158 sl44.73804606 tp43.51988485 — paper-graded (spot can't short)
+- **11-18 10:42 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-three-outside-down sell_stop 7.10492752 sl7.2101812 tp6.94704701 — paper-graded (spot can't short)
+- **11-18 10:42 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $100081.90 · 10s · venue fees $129.07 to date @ 0.02/0.05%
