@@ -741,3 +741,20 @@
 - **11-18 16:51 UTC** CANDIDATE(score 4/5) — LINK/USD S21-pivot-S1-short sell_stop 8.95279638 sl9.16066667 tp8.56566667 — paper-graded (spot can't short)
 - **11-18 16:51 UTC** ORDER BOOKED — AVAX/USD S18-ma-revert-long (score 3/5) limit buy_limit qty 576.640944 @ 6.896 sl6.80929093 tp7.11473454 · risk $50.00 · fees ~$3.95 (0.08R)
 - **11-18 16:51 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 3 pendings · 3 positions equity $98950.93 · 10s · venue fees $176.00 to date @ 0.02/0.05%
+- **11-18 19:08 UTC** BE +1R: SOL/USD stop -> entry 72.53
+- **11-18 19:08 UTC** BE +1R: DOGE/USD stop -> entry 0.05807
+- **11-18 19:08 UTC** NOTE — BTC/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-18 19:08 UTC** SKIP — XRP/USD C-M15-three-outside-up: already have pending/position in play
+- **11-18 19:08 UTC** SKIP — SOL/USD C-H1-bull-engulfing: already have pending/position in play
+- **11-18 19:08 UTC** SKIP — SOL/USD C-M15-marubozu: already have pending/position in play
+- **11-18 19:08 UTC** SKIP — DOGE/USD C-H1-bull-engulfing: already have pending/position in play
+- **11-18 19:08 UTC** SKIP — DOGE/USD C-M15-marubozu: already have pending/position in play
+- **11-18 19:08 UTC** SKIP — DOGE/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-18 19:08 UTC** SKIP — DOGE/USD C-M15-three-outside-up: already have pending/position in play
+- **11-18 19:08 UTC** CANDIDATE(score 4/5) — ADA/USD S13-ichimoku-short sell_stop 0.15163434 sl0.15328132 tp0.14800364 — paper-graded (spot can't short)
+- **11-18 19:08 UTC** NOTE — ADA/USD C-M15-marubozu: soft cap on open items (6) — advisory, skipping
+- **11-18 19:08 UTC** NOTE — ADA/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-18 19:08 UTC** NOTE — ADA/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-18 19:08 UTC** NOTE — LINK/USD C-H1-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-18 19:08 UTC** NOTE — LINK/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-18 19:08 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 3 pendings · 3 positions equity $99253.09 · 9s · venue fees $176.00 to date @ 0.02/0.05%
