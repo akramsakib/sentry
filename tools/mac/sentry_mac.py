@@ -1192,6 +1192,7 @@ def main():
                                   " check on those symbols is the risk one. On a small account that is not the"
                                   " same as being clear to trade.")
                 state["margin_floor"] = dict(MARGIN)
+            chart_thin = {}             # which symbol was skipped this cycle, and for want of what
             for sym in quotes:
                 tf = tf_map.get(sym, {})
                 m5 = tf.get("M5", []); m15 = tf.get("M15", []); h1 = tf.get("H1", [])

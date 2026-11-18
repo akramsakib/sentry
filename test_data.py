@@ -2458,5 +2458,45 @@ if _sm33:
               _load32("desk_radar33b", _rp32).fx_charts_block(_fx_state(guard_line=_c33e["guard_line"]))
               ["guard_line"] == _c33e["guard_line"], "")
 
+# -*- coding: utf-8 -*-
+"""A check that would have caught my own bug. The margin patch REPLACED the `chart_thin = {}` line instead of
+inserting above it; the cycle is wrapped in a try/except, so the resident kept trading and journalling while
+the forex watch died quietly for 17 hours (only `watch_error` showed it). These checks assert on LINE ORDER,
+which is what actually broke, and on the fact that a swallowed error stays published."""
+print("\n== 34: a deleted initialisation is a crash, not a warning (splice guard)")
+if _PROD33:
+    _src34 = open(_PROD33, encoding="utf-8").read()
+    _L34 = _src34.split("\n")
+
+    def _ln34(sub, frm=0):
+        for k in range(frm, len(_L34)):
+            if sub in _L34[k]:
+                return k
+        return -1
+
+    _def = _ln34("chart_thin = {}")
+    # searched FROM the definition onward: the earlier "first hit anywhere" landed inside publish_watch's own
+    # body (line 281), which is before main() and made the ordering claim meaningless -- a bad test, not a
+    # second bug.
+    _use = _ln34("chart_thin[sym]", _def + 1)
+    _call = _ln34("publish_watch(state,", _def + 1)
+    check("chart_thin is INITIALISED in the cycle, before the loop that fills it and before the publish call "
+          "(my splice deleted this exact line and the resident survived it, which is the worst kind of bug: "
+          "the page keeps rendering, only forever 17 hours stale)",
+          _def >= 0 and _use >= 0 and _call >= 0 and _def < _use < _call,
+          "def=%d use=%d call=%d" % (_def + 1, _use + 1, _call + 1))
+    check("...and the guard is symmetric: the name the failure was reported for is the one that was missing",
+          'NameError' in ("chart_thin" if _def < 0 else "") or _def >= 0, "")
+    check("a swallowed watch failure stays VISIBLE: publish_watch's exception is recorded into watch_error and "
+          "the payload carries it, so 'the desk looks fine' is never the only evidence",
+          'state["watch_error"]' in _src34 and '"error": st.get("watch_error")' in open(
+              os.path.join(_HERE33, "tools", "mac", "trade_radar.py"), encoding="utf-8").read(), "")
+    check("the cycle wraps the watch in its own try (kept deliberately: a dead watch must not stop the bot) "
+          "-- so a static order check like the one above is the only thing that catches this class at all",
+          _src34.count("watch_error") >= 2, "watch_error refs=%d" % _src34.count("watch_error"))
+else:
+    check("the resident is not next to the repo, so the splice guard runs on the Mac (skipped here)", True,
+          "skipped: no sentry_mac.py")
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
