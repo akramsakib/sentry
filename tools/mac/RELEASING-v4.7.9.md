@@ -45,14 +45,24 @@ both mine, both now pinned by a test:
    which it would not have before), `dropped 2`, notifications 183→185 rather than +200.
    `test_data.py` §38 runs the shipped `trim_outbox`/`flush_outbox` against stubbed channels — including the
    check that a line with no channel **stays queued** rather than being dropped to look tidy.
-   Suite: **582 PASS / 0 failed** (sections 34–38 are new since the first row of this file was written).
+   **Then, asked "why 200?":** because it was never a queue-depth requirement — the shipped line was a bare
+   `remaining[-200:]` with no name and no comment, and 200 is this build's house number for "recent history"
+   (the resident trims its fired-key list with `del done[:-200]`).  It exists only so an append-only spool
+   cannot grow forever: nothing truncates `alerts.outbox` except this rewrite, and the page displays
+   `tail(OUTBOX_F, 10)` regardless of the cap.  As a retention window it was actively costing things: 200
+   lines = 29,832 bytes and 13 hours, so anything older than half a day was being discarded while no channel
+   existed.  Retention is free — `OUTBOX_CAP = 5000` ≈ 750 KB — so the number is now a named constant at the
+   top of the file, passed at flush time rather than bound at import, with the notify watermark tracking it.
+   Measured after the kickstart: `cap 5000`, `queued 200`, `full false`, `urgent_held 81`, `dropped 12`
+   (frozen, cumulative — nothing further is discarded until 5,000 lines build up).
+   Suite: **585 PASS / 0 failed** (sections 34–38 are new since the first row of this file was written).
 
 | file | md5 | bytes |
 |---|---|---|
 | `sentry_mac.py` (the resident — now in the repo too) | `4fde1219dd1ac7418989a027da670ea7` | 108,142 |
 | `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
 | `account_switch.sh` (switch kit) | `ef3dcf53b2ef4f5d632e1a8275d8ced3` | 15,339 |
-| `trade_radar.py` (radar page) | `1fed0a6dd3e5d325a3cfddd3691b590a` | 72,745 |
+| `trade_radar.py` (radar page) | `d29d7cf10cfcd0b62aa57b8b46fe54de` | 74,062 |
 
 ## The two things it could not do before
 

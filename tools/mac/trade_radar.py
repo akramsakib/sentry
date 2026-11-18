@@ -44,7 +44,20 @@ DROPPED_F = BASE + "/alerts.dropped"
 # At that rate the queue spends its 200 slots on 116 advisory NOTE lines and drops the 4 FILLs.
 # Three fixes, all local, no new secret: an important line is never the one that goes; a line is
 # announced once instead of once a minute forever; and what got dropped is counted and shown.
-OUTBOX_CAP = 200
+# Why 200 was there: it was not a queue-depth requirement.  The shipped line was a bare
+# `remaining[-200:]` inside the rewrite, with no comment and no name, and 200 is this build's house
+# number for "recent history" — the resident keeps its day of fired keys with `del done[:-200]` and
+# its paper track with `[:-60]`.  It exists so an append-only spool cannot grow without bound: the
+# producer never truncates alerts.outbox, only this flush rewrites it.  Nothing about the page depends
+# on the size, because the page shows tail(OUTBOX_F, 10).
+#
+# 200 was also, on its own, losing alerts: measured 200 lines = 29,832 bytes, and the whole held window
+# was 13 hours (oldest kept 11:08, newest 23:56), so while no channel was configured anything older
+# than half a day was being discarded silently.  Retention costs nothing — 5,000 lines is ~750 KB, and
+# while there is no delivery path the spool IS the record — so the window is now 5,000 and the count of
+# what overflowed is published either way.  Raise OUTBOX_CAP again if you want more history; nothing
+# else in the file assumes a value.
+OUTBOX_CAP = 5000
 URGENT_PREFIX = ("FILL", "HIT", "CHECK/SEND FAILED", "CANDIDATE", "REFUSED", "HELD", "TRAIL",
                  "BE moved", "SEND ", "[CRYPTO", "DAILY REVIEW", "Sentry online", "margin floor")
 SMTP_F = BASE + "/gmail_smtp.json"
@@ -430,7 +443,7 @@ def _notified():
 def _mark_notified(hashes):
     try:
         with open(NOTED_F, "w") as f:
-            f.write("\n".join(sorted(hashes)[-1200:]) + ("\n" if hashes else ""))
+            f.write("\n".join(sorted(hashes)[-OUTBOX_CAP:]) + ("\n" if hashes else ""))
     except Exception:
         pass
 
@@ -474,7 +487,9 @@ def flush_outbox():
             with open(SENT_F, "a") as f: f.write(line + "\n")
         else:
             remaining.append(line)
-    kept, dropped = trim_outbox(remaining)
+    # cap passed explicitly so it is read from the module at flush time, not bound at import:
+    # one number at the top of the file to change, and the tests can shrink it to see the overflow.
+    kept, dropped = trim_outbox(remaining, OUTBOX_CAP)
     if dropped:
         # Never silently.  The count is on disk and on the page, so "the desk looks fine" cannot be the
         # only evidence that the queue overflowed — the same principle as watch_error on the resident.

@@ -2799,23 +2799,39 @@ else:
     check("once something off the Mac accepts it, it leaves the queue and is journalled as sent",
           os.path.exists(_rd.OUTBOX_F) and not [l for l in open(_rd.OUTBOX_F) if l.strip()]
           and sum(1 for l in open(_rd.SENT_F) if l.strip()) == 5, "")
-    # flush_outbox binds the REAL cap (200) as its default, so this overflow is sized against 200 and not
-    # against the small cap the pure trim calls above used — 204 advisories plus 4 fills.
+    # The cap is read from the module at flush time, not bound at import — so this overflow can be
+    # sized against the small cap the pure trim calls above used: 24 advisories plus 4 fills, cap 20.
     with open(_rd.OUTBOX_F, "w") as _f38:
-        _f38.write("\n".join(_mk38(204, 4)) + "\n")
+        _f38.write("\n".join(_mk38(24, 4)) + "\n")
     _rd.send_webhook = lambda line: None
-    _rd.OUTBOX_CAP = 200
+    _rd.OUTBOX_CAP = 20
     _rd.flush_outbox()
     _ov = [l.rstrip("\n") for l in open(_rd.OUTBOX_F) if l.strip()]
     check("an overflowing queue keeps its fills and reports the loss",
-          len(_ov) == 200 and sum(1 for x in _ov if " FILL " in x) == 4 and _rd._read_dropped() > 0,
+          len(_ov) == 20 and sum(1 for x in _ov if " FILL " in x) == 4 and _rd._read_dropped() > 0,
           "held %d, dropped %d" % (len(_ov), _rd._read_dropped()))
-    _snip = open(_RP38).read()
+    # Read the constant back out of the source: _rd.OUTBOX_CAP has been set to 20 by the overflow test
+    # above, so the module attribute can no longer tell us what ships.  The file is the only witness.
+    _snip0 = open(_RP38).read()
+    _code0 = "\n".join(l for l in _snip0.splitlines() if not l.lstrip().startswith("#"))
+    _cap_src38 = _re35.search(r"^OUTBOX_CAP = (\d+)", _code0, _re35.M)
+    # prose is allowed to QUOTE the old literal — that is what the comment above the constant is for —
+    # so the "the bare number is gone" half is measured against the code lines only.  A check that
+    # failed on its own explanation is a check that trains you to distrust it.
+    check("the cap is one named constant, read at flush time (nothing else in the file assumes a value)",
+          "trim_outbox(remaining, OUTBOX_CAP)" in _code0 and "remaining[-200:]" not in _code0,
+          "literal still in code" if "remaining[-200:]" in _code0 else "call site does not pass the cap")
+    check("the shipped retention is a decision, not the inherited literal 200",
+          _cap_src38 is not None and int(_cap_src38.group(1)) >= 2000,
+          "OUTBOX_CAP = %s" % (_cap_src38.group(1) if _cap_src38 else "?"))
+    check("the notify watermark tracks the cap, so a bigger spool cannot re-ping old lines",
+          "[-OUTBOX_CAP:]" in _snip0, "")
+    _snip0 = open(_RP38).read()
     check("the queue's state is published, not just logged: cap, urgent held, dropped, full",
-          all(k in _snip for k in ('"cap": OUTBOX_CAP', '"urgent_held"', '"dropped": _read_dropped()',
+          all(k in _snip0 for k in ('"cap": OUTBOX_CAP', '"urgent_held"', '"dropped": _read_dropped()',
                                    '"full": len(_ob) >= OUTBOX_CAP')), "")
     check("and the page prints it as queued/CAP plus a dropped count, so a stuck queue is visible on the phone",
-          "d.channels.queued+'/'+" in _snip and "' held, '" in _snip, "")
+          "d.channels.queued+'/'+" in _snip0 and "' held, '" in _snip0, "")
     _sh38.rmtree(_d38, ignore_errors=True)
 
 print("\n%d checks failed" % len(FAILS))
