@@ -12,18 +12,31 @@ both mine, both now pinned by a test:
    `publish_watch` then raised `NameError` every cycle for ~17 hours — the per-cycle `try/except` swallowed it,
    so the desk looked healthy and only the forex watch was dead. Now `test_data.py` §34 checks the line order
    (init < use < publish call) rather than trusting a grep.
-2. **`retcode 10015 Invalid price` was not the broker being flaky.** 213 journal lines, 79 of them XAUUSD
-   against 26 gold fills ever. `send_order` substituted the raw Python float into the JSON
-   (`1.3165645839210065` for a 5-digit symbol; `154.13837845882833` for a 2-digit one), and MT5 refuses that
-   on `trade_check_pending_order` — before an order exists, so the candidate just vanished while the journal,
-   which printed through `rnd()`, looked fine. New: `fmt_px(sym, v)` applied at the one place the payload is
+2. **`retcode 10015 Invalid price` was not the broker being flaky — and it was not one thing.**
+   91 `CHECK/SEND FAILED` lines, **79 of them XAUUSD against 26 gold fills ever**.  The file also holds 148
+   bare `"jsonrpc...` reply dumps, all dated 11-13, from an `UNPARSED send result` line this build no
+   longer has — which is worth saying because counting the string `10015` overstates the failures: 211
+   mentions, 91 refusals.  Get the number from the tag, not the code. Two causes were tangled in that number:
+   - `send_order` substituted the raw Python float into the JSON (`1.3165645839210065` for a 5-digit
+     symbol; `154.13837845882833` for a 2-digit one) while the journal printed the same order through
+     `rnd()` — so **the log and the order disagreed**, and no amount of reading the journal could have
+     found the real cause. Fixed by `fmt_px` at the one place the payload is filled in and at the two
+     chandelier-trail sites, which hardcoded 5 digits and so were wrong for gold and the equity symbols.
+   - the refusals themselves are **geometry**: a short candidate drawn from a closed candle, retried
+     every cycle after the market crossed its level. Probed live, three calls differing only in
+     type/price — `sell stop @1.31256` ok, `sell limit @1.31656` ok, `sell stop @1.31656` refused
+     10015 (GBPUSD was at 1.3154/1.3156). Fixed by `pending_geom`, which refuses with a reason *before*
+     spending the call, counts the hold into `state.geom_held`, and does **not** burn the day's fire key
+     — a pullback makes the level valid again. Nothing re-prices and nothing converts stop to limit: a
+     fade of the rally is not the trade the signal asked for. New: `fmt_px(sym, v)` applied at the one place the payload is
    filled in, and at the two chandelier-trail sites that hardcoded 5 digits. Volumes never pass through it —
-   formatting, not sizing. `test_data.py` §35 calls the shipped `send_order` with the terminal stubbed and
-   reads back the curl payload; suite is at **537 PASS / 0 failed**.
+   formatting, not sizing. `test_data.py` §35 calls the shipped `send_order` with the terminal stubbed and reads
+   back the curl payload; §36 pins the geometry rule on the three probe calls; §37 pins the reply shapes
+   the two MCP calls actually answer.  Suite: **566 PASS / 0 failed**.
 
 | file | md5 | bytes |
 |---|---|---|
-| `sentry_mac.py` (the resident — now in the repo too) | `0772e0e626da2f42a0e3d6216b650caa` | 101,940 |
+| `sentry_mac.py` (the resident — now in the repo too) | `4fde1219dd1ac7418989a027da670ea7` | 108,142 |
 | `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
 | `account_switch.sh` (switch kit) | `ef3dcf53b2ef4f5d632e1a8275d8ced3` | 15,339 |
 | `trade_radar.py` (radar page) | `1cd8a0726257173bd789fc506f316d34` | 68,124 |

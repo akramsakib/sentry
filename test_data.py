@@ -2501,8 +2501,8 @@ else:
 
 # 35 — a price with too many decimals is a REFUSAL, not a rounding preference (retcode 10015).
 # Found while answering "sentry down?": the watch had been dead 17 hours (see 34) and, next to it,
-# 213 journal lines said "CHECK/SEND FAILED ... retcode 10015 Invalid price" — 79 of them XAUUSD,
-# against 26 gold fills ever. Nothing in the build was wrong with size or signal: fire() hands the
+# 90 journal lines said "CHECK/SEND FAILED ... retcode 10015 Invalid price" (plus 124 verbatim
+# copies of the same reply), 79 of the 90 on XAUUSD against 26 gold fills ever. Nothing in the build was wrong with size or signal: fire() hands the
 # entry/sl/tp straight through from arithmetic, so the payload carried values like
 # 1.3165645839210065 for a five-digit symbol, and MT5 answers that with "Invalid price" on the
 # trade_check_pending_order call, before an order number exists. The journal printed the same order
@@ -2607,6 +2607,108 @@ else:
           and _body35.index("entries_enabled") < _body35.index("fmt_px(sym, price)")
           < _body35.index('.replace("__PRICE__"'),
           "count=%d" % _body35.count("fmt_px(sym, price)"))
+
+
+# 36 — the 10015 that was NOT about digits.  The three probe calls below were run against his live
+# terminal (127.0.0.1:22346) on 2026-11-18 at 23:38 KL and differ only in type and price; GBPUSD was
+# trading about 1.3156.  They are the whole argument for the geometry gate, so they are pinned as
+# measured and not re-derived: a sell stop above the market is refused, the same price as a sell
+# limit or a buy stop is accepted, and a sell stop below the market is accepted.  What the build did
+# with that for a week was retry the frozen level every cycle and print a broker error code.
+print("\n== 36: a stop must sit beyond the market, a limit within it")
+if _PROD33 is None:
+    check("the producer is not next to the repo, so the geometry gate is checked on the Mac (skipped here)",
+          True, "skipped: no sentry_mac.py")
+else:
+    _BID, _ASK = 1.31561, 1.31564          # the quoted spread at probe time
+    _ok1, _w1 = _sm33.pending_geom("GBPUSD", "sell stop", 1.31656, 1.31957, 1.31096, _BID, _ASK)
+    check("the exact level the terminal refused is refused here, with a reason",
+          _ok1 is False and "10015" in _w1, _w1[:110])
+    check("...and the reason names the cause the journal never did",
+          "crossed" in _w1, _w1[:110])
+    _ok2, _w2 = _sm33.pending_geom("GBPUSD", "sell stop", 1.31256, 1.31957, 1.30896, _BID, _ASK)
+    check("a sell stop BELOW the market passes (the probe call the terminal answered retcode 0 Done)",
+          _ok2 is True, _w2)
+    _ok3, _w3 = _sm33.pending_geom("GBPUSD", "sell limit", 1.31656, 1.31957, 1.31096, _BID, _ASK)
+    check("the same price as a SELL LIMIT passes (accepted by the terminal, retcode 0 Done)",
+          _ok3 is True, _w3)
+    _ok4, _w4 = _sm33.pending_geom("GBPUSD", "buy stop", 1.31656, 1.31355, 1.31957, _BID, _ASK)
+    check("the same price as a BUY STOP passes (accepted by the terminal, retcode 0 Done)",
+          _ok4 is True, _w4)
+    check("a buy stop below the ask is refused, the mirror-image rule",
+          _sm33.pending_geom("GBPUSD", "buy stop", 1.31256, 1.31000, 1.31957, _BID, _ASK)[0] is False, "")
+    check("a stop on the wrong side of its own entry is refused",
+          _sm33.pending_geom("GBPUSD", "sell stop", 1.31256, 1.31000, 1.30896, _BID, _ASK)[0] is False,
+          "sl above a sell entry only; here sl is below it")
+    check("a target on the wrong side of its own entry is refused",
+          _sm33.pending_geom("GBPUSD", "sell stop", 1.31256, 1.31957, 1.31896, _BID, _ASK)[0] is False, "")
+    # the gate must never be the reason a trade did not happen on a broken quote
+    for _b, _a in ((0, 0), (None, None), ("x", "y"), (1.31561, 0)):
+        check("no opinion when the market is not visible (bid %r ask %r) — never blocks a real signal"
+              % (_b, _a),
+              _sm33.pending_geom("GBPUSD", "sell stop", 1.31656, 1.31957, 1.31096, _b, _a)[0] is True, "")
+    check("an order type that is not pending is nobody's business",
+          _sm33.pending_geom("GBPUSD", "buy", 1.31656, 0, 0, _BID, _ASK)[0] is True, "")
+    _src36 = open(_PROD33).read()
+    _i36 = _src36.index("gok, gwhy = pending_geom(")
+    check("the gate sits between the size report and the send, so a held level is never spent at the terminal",
+          _src36.rindex("size_report(sym,", 0, _i36) < _i36 < _src36.index("send_order(state, sym, otype", _i36),
+          "")
+    check("a held level does NOT burn the day's fire key (if price pulls back the signal is live again)",
+          "done.append(fkey)" not in _src36[_i36:_i36 + 1400], "")
+    check("...and it journals once per level, not once per cycle (that is how 90 lines were born)",
+          "_gkey not in _gseen" in _src36[_i36:_i36 + 1400], "")
+    check("the hold is counted into state, so the desk can see candidates waiting on price",
+          'state["geom_held"]' in _src36[_i36:_i36 + 1400], "")
+
+
+# 37 — "rejected" has to mean rejected.  Every retcode below was taken from his own journal of
+# 2026-11-18 (211 mentions of 10015, 19 of 10018, 10 of 10021, 6 of 10016, 6 of 10009 — counted, not
+# remembered), and the shapes are what the two MCP calls actually answer: trade_check_pending_order
+# wraps its verdict in "ok": true/false, trade_send_pending_order answers with a bare retcode.
+print("\n== 37: the terminal's answer, read as what it says")
+if _PROD33 is None:
+    check("no producer next to the repo (skipped here)", True, "skipped: no sentry_mac.py")
+else:
+    import json as _j37
+
+    def _wrap37(inner):
+        return _j37.dumps({"jsonrpc": "2.0", "id": 4, "result": {"isError": False,
+                                                                  "content": [{"type": "text",
+                                                                               "text": inner}]}})
+
+    _sendref = _wrap37(_j37.dumps({"retcode": 10015, "retcode_details": "Invalid price"}))
+    check("the bare-retcode send reply is a refusal, not a shrug",
+          _sm33.parse_send_result(_sendref)["rejected"] is True, "")
+    check("...and its words survive into the reason",
+          _sm33.parse_send_result(_sendref)["details"] == "Invalid price",
+          repr(_sm33.parse_send_result(_sendref)["details"]))
+    for _code, _name in ((10016, "Invalid stops"), (10018, "Trade disabled"), (10021, "No prices")):
+        check("%d (%s) counts as a refusal too" % (_code, _name),
+              _sm33.parse_send_result(_wrap37(_j37.dumps({"retcode": _code,
+                                                           "retcode_details": _name})))["rejected"] is True, "")
+    check("10009 with an order id is a success",
+          _sm33.parse_send_result(_wrap37(_j37.dumps({"retcode": 10009, "order": 59401583524})))["ok"] is True, "")
+    check("10008 with an order id is a success too (a placed pending order is not a failure)",
+          _sm33.parse_send_result(_wrap37(_j37.dumps({"retcode": 10008, "order": 59401583525})))["ok"] is True,
+          "the ticket, not the code, is what makes it real")
+    check("an accepted reply with an id never becomes a refusal",
+          _sm33.parse_send_result(_wrap37(_j37.dumps({"retcode": 10008, "order": 59401583525})))["rejected"] is False,
+          "")
+    check("a reply with no retcode at all stays unjudged (a margin answer is not an order answer)",
+          _sm33.parse_send_result(_wrap37(_j37.dumps({"ok": True, "margin": 11.0, "currency": "USD"})))["rejected"]
+          is False, "")
+    check("empty output is not a rejection (it is an unreadable one — reconcile decides)",
+          _sm33.parse_send_result("")["rejected"] is False
+          and _sm33.parse_send_result("")["ok"] is False, "")
+    check("the ok:false shape that was already handled still is",
+          _sm33.parse_send_result(_wrap37(_j37.dumps({"ok": False, "result": {"retcode": 10015}})))["rejected"]
+          is True, "")
+    _src37 = open(_PROD33).read()
+    _i37 = _src37.index('d["ok"] = (not d["rejected"])')
+    check("the refusal rule sits before the ok rule, so ok can never be earned by a refused reply",
+          _src37.rindex("d[\"retcode\"] not in (None, 0, SEND_OK_RETCODE)", 0, _i37) < _i37
+          and _src37.count("not in (None, 0, SEND_OK_RETCODE)") == 1, "")
 
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

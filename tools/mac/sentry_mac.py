@@ -547,8 +547,10 @@ def fmt_px(sym, v):
     refuses it outright with retcode 10015 Invalid price, and it refuses the CHECK call, before an
     order exists, so the candidate simply evaporates.  Candidate levels come out of arithmetic
     (pivot * factor, last - 2*ATR) and keep every binary float digit: 1.3165645839210065, not
-    1.31656.  The journal already printed them rounded, which is why 79 refused XAUUSD
-    candidates sat beside 26 fills for a week looking like broker flakiness.
+    1.31656.  The journal printed them through rnd(), so the desk read a clean 1.31656 while the
+    terminal had been handed 1.3165645839210065 — the log and the order disagreed, which is why
+    this took a payload test to see.  It was NOT the cause of the refusals: a digit-clean sell stop
+    above the market is refused just the same.  See pending_geom for what actually was.
 
     Every number this build submits as a price goes through here, so what the desk journals and
     what the desk sends are the same number.  Volumes never pass through it — formatting, not
@@ -560,6 +562,57 @@ def fmt_px(sym, v):
         return '%.*f' % (int(DIGITS.get(sym, 5)), float(v))
     except Exception:
         return v
+
+# --- pending-order geometry: which side of the market the terminal insists the entry sits on. ---
+# Found the hard way, while answering "sentry down?": 90 journal lines read
+# "CHECK/SEND FAILED ... retcode 10015 Invalid price", which looks like a price-format problem and is
+# mostly NOT one.  Probed against the live terminal, three calls differing only in type/price:
+#     sell stop  0.26 GBPUSD at 1.31256 (below the market)  ->  ok, retcode 0 Done
+#     sell limit 0.26 GBPUSD at 1.31656 (above the market) ->  ok, retcode 0 Done
+#     sell stop  0.26 GBPUSD at 1.31656 (ABOVE the market) ->  retcode 10015 Invalid price
+# A stop joins a move, so it must start on the far side of the price from the trade it opens; a limit
+# waits for a pullback and must start on the near side.  Candidates here are computed from
+# CLOSED-candle structure, so between the scan and the terminal the market can cross the level, and
+# the order then describes something the book does not accept.  The build used to learn that from a
+# broker error code, retry the same frozen level every cycle (entry #37 at 23:22 and again at 23:39),
+# and say nothing about it.  Now it says so here, in words, before spending the call.
+#
+# Deliberately NOT done: re-pricing the entry, or flipping stop<->limit.  A sell stop that has become
+# a sell limit is a different trade — a breakdown entry versus a fade of the rally — and this build
+# does not invent trades it was not signalled.  So a crossed level simply does not get sent, which is
+# exactly what happens today anyway, plus a reason and a counter.
+GEOM = {"buy stop": "above", "sell stop": "below", "buy limit": "below", "sell limit": "above"}
+
+
+def pending_geom(sym, otype, entry, sl, tp, bid, ask):
+    """(ok, reason).  Says nothing when it cannot see the market: a missing or unparseable quote must
+    never become the reason a signalled trade was not sent — that way lies a silent strategy."""
+    side = GEOM.get(otype)
+    if side is None:                       # market order, or a type this build does not use
+        return True, ""
+    try:
+        entry = float(entry); sl = float(sl or 0); tp = float(tp or 0)
+        bid = float(bid); ask = float(ask)
+    except (TypeError, ValueError):
+        return True, ""
+    if bid <= 0 or ask <= 0 or entry <= 0:
+        return True, ""
+    e = fmt_px(sym, entry); s_ = fmt_px(sym, sl) if sl else "0"
+    if side == "above" and entry <= ask:
+        return False, ("%s at %s is not beyond the ask %s — the level has been crossed since it was "
+                       "drawn; the terminal answers 10015 Invalid price" % (otype, e, fmt_px(sym, ask)))
+    if side == "below" and entry >= bid:
+        return False, ("%s at %s is not beyond the bid %s — the level has been crossed since it was "
+                       "drawn; the terminal answers 10015 Invalid price" % (otype, e, fmt_px(sym, bid)))
+    long_ = otype.startswith("buy")
+    if sl and ((sl >= entry) if long_ else (sl <= entry)):
+        return False, ("stop-loss %s is on the wrong side of the %s entry %s"
+                       % (s_, otype, e))
+    if tp and ((tp <= entry) if long_ else (tp >= entry)):
+        return False, ("take-profit %s is on the wrong side of the %s entry %s"
+                       % (fmt_px(sym, tp), otype, e))
+    return True, ""
+
 
 def sz(sym, stop_dist, risk=None):
     """Size from risk alone, with no knowledge of the account.
@@ -609,6 +662,18 @@ def parse_send_result(out):
             d["ticket"], d["ticket_key"] = m.group(1), k
             break
     d["keys"] = sorted(set(re.findall(r'\\?"([a-z_]{3,20})\\?"\s*:', t)))[:24]
+    # A reply can be a bare retcode with no "ok" field anywhere — that is the shape the SEND call
+    # answers with ("retcode": 10015, "retcode_details": "Invalid price").  Read literally that is
+    # neither accepted nor refused, and this parser said so: rejected stayed False, so send_order fell
+    # past the refusal branch and the reply was only ever explained by the fallthrough line.  No live
+    # trade is lost either way (ok was already False, so nothing was recorded as sent) — this is about
+    # the word "rejected" meaning what it says, because that is the flag the CHECK/SEND FAILED line, the
+    # only refusal the desk can see, is keyed on.  Measured before writing it: SEND REFUSED appears 0
+    # times in today's journal, CHECK/SEND FAILED 91 times; the 148 bare reply dumps are all 11-13,
+    # from an "UNPARSED send result" line this build no longer has.  A ticket still wins, so a build
+    # that answers a placed pending order with 10008 plus an id cannot be misread as a failure.
+    if not d["rejected"] and d["retcode"] not in (None, 0, SEND_OK_RETCODE) and d["ticket"] is None:
+        d["rejected"] = True
     d["ok"] = (not d["rejected"]) and (d["retcode"] == SEND_OK_RETCODE or d["ticket"] is not None)
     return d
 
@@ -1285,6 +1350,25 @@ def main():
                         journal_alert(f"NOTE — {sym} {skill}: {rep['why']}")
                     if rep["verdict"] == "round_up_to_min_lot":
                         journal_alert(f"NOTE — {sym} {skill}: {rep['why']}")
+                    # Costs nothing to check and refuses nothing that would have been sent: the
+                    # terminal declines this order anyway, so all that changes is that we say why, once,
+                    # and the day's count of held candidates becomes visible instead of 90 lines of
+                    # "Invalid price".  The candidate itself stays un-burnt — fired_today is NOT marked,
+                    # because if the market pulls back the level becomes valid again and the signal was
+                    # real; only the journalling is deduplicated per level.
+                    gok, gwhy = pending_geom(sym, otype, entry, sl, tp, bid, ask)
+                    if not gok:
+                        _gkey = f"{sym}|{skill}|{otype}|{entry:.5f}"
+                        _gseen = state.setdefault("geom_seen", [])
+                        state["geom_held"] = int(state.get("geom_held") or 0) + 1
+                        if _gkey not in _gseen:
+                            _gseen.append(_gkey); del _gseen[:-200]
+                            tl_log({"rid": f"{sym}|{skill}|{entry:.5f}", "sym": sym, "skill": skill,
+                                    "otype": otype, "entry": entry, "sl": sl, "tp": tp, "score": score,
+                                    "risk": risk, "fired": False, "vol": v,
+                                    "refuse": "level_crossed_before_send", "why": gwhy})
+                            journal_alert(f"HELD — {sym} {skill}: {gwhy}")
+                        return
                     ok = bool(v) and send_order(state, sym, otype, v, entry, sl, tp, skill, risk)
                     tid = ok if isinstance(ok, str) else None
                     ok = bool(ok)
