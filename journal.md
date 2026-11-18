@@ -692,3 +692,20 @@
 - **11-18 15:54 UTC** NOTE — LINK/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
 - **11-18 15:54 UTC** NOTE — AVAX/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
 - **11-18 15:54 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 2 new · 3 pendings · 3 positions equity $99393.30 · 12s · venue fees $138.07 to date @ 0.02/0.05%
+- **11-18 16:03 UTC** FILL — BTC/USD S18-ma-revert-long 0.1545672138270428@62972.71 sl62547.97419989 tp64315.68289002
+- **11-18 16:03 UTC** SKIP — XRP/USD S23-spring-long: already have pending/position in play
+- **11-18 16:03 UTC** SKIP — DOGE/USD S10-ma-cross-short: already have pending/position in play
+- **11-18 16:03 UTC** SKIP — DOGE/USD S23-spring-long: already have pending/position in play
+- **11-18 16:03 UTC** SKIP — DOGE/USD C-H1-bear-harami: already have pending/position in play
+- **11-18 16:03 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-bear-engulfing sell_stop 0.15142661 sl0.15473347 tp0.14646633 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-three-outside-down sell_stop 0.15142661 sl0.15473347 tp0.14646633 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — LINK/USD S13-ichimoku-short sell_stop 8.99369457 sl9.19511086 tp8.79818705 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** NOTE — LTC/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — BCH/USD S13-ichimoku-short sell_stop 206.28354622 sl209.70290755 tp202.23201128 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — BCH/USD S3-momentum-short sell_stop 205.91236415 sl209.8152717 tp198.3041849 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.94499364 sl7.15651272 tp6.76724005 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — AVAX/USD S21-pivot-S1-short sell_stop 6.97032909 sl7.146 tp6.645 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-bear-engulfing sell_stop 6.94832909 sl7.06467727 tp6.77380683 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-tweezer-top sell_stop 6.94832909 sl7.06467727 tp6.77380683 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-three-outside-down sell_stop 6.94832909 sl7.06467727 tp6.77380683 — paper-graded (spot can't short)
+- **11-18 16:03 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 2 pendings · 4 positions equity $99370.14 · 8s · venue fees $142.93 to date @ 0.02/0.05%
