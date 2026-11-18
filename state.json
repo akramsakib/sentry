@@ -114,7 +114,8 @@
   "FIRE|ADA/USD|C-M15-bull-engulfing|2026-11-18",
   "FIRE|ADA/USD|C-M15-three-outside-up|2026-11-18",
   "FIRE|LINK/USD|C-H1-morning-star|2026-11-18",
-  "FIRE|LINK/USD|C-M15-three-outside-up|2026-11-18"
+  "FIRE|LINK/USD|C-M15-three-outside-up|2026-11-18",
+  "FIRE|LINK/USD|C-M15-tweezer-bottom|2026-11-18"
  ],
  "open_cids": {
   "sentryETHUSD1795015735014n41": {
@@ -165,7 +166,7 @@
    "skill": "S16-inside-long",
    "be": 0.95972892,
    "sent_sl": 0.95972892,
-   "last_price": 0.9716
+   "last_price": 0.9642
   },
   "SOL/USD": {
    "side": "long",
@@ -177,7 +178,7 @@
    "skill": "S4-band-fade-long",
    "be": 72.53,
    "sent_sl": 72.53,
-   "last_price": 73.35
+   "last_price": 72.8
   },
   "DOGE/USD": {
    "side": "long",
@@ -189,18 +190,12 @@
    "skill": "S4-band-fade-long",
    "be": 0.05807,
    "sent_sl": 0.05807,
-   "last_price": 0.05877
+   "last_price": 0.05841
   }
  },
  "cid_seq": 47,
- "last_cycle": 1795028889.6343493,
+ "last_cycle": 1795033919.0693007,
  "seen_candles": [
-  "LTC/USD|H1|tweezer-bottom|2026-11-16T06:00:00Z",
-  "LTC/USD|M15|marubozu|2026-11-16T08:00:00Z",
-  "LTC/USD|M15|evening-star|2026-11-16T08:00:00Z",
-  "BCH/USD|H1|tweezer-bottom|2026-11-16T06:00:00Z",
-  "BCH/USD|M15|marubozu|2026-11-16T08:00:00Z",
-  "BCH/USD|M15|three-outside-down|2026-11-16T08:00:00Z",
   "AVAX/USD|M15|marubozu|2026-11-16T08:00:00Z",
   "AVAX/USD|M15|three-outside-down|2026-11-16T08:00:00Z",
   "LTC/USD|M15|marubozu|2026-11-16T08:15:00Z",
@@ -494,6 +489,12 @@
   "LTC/USD|M15|marubozu|2026-11-18T18:30:00Z",
   "AVAX/USD|H1|bull-engulfing|2026-11-18T17:00:00Z",
   "AVAX/USD|M15|tweezer-bottom|2026-11-18T18:30:00Z",
-  "AVAX/USD|M15|three-inside-up|2026-11-18T18:30:00Z"
+  "AVAX/USD|M15|three-inside-up|2026-11-18T18:30:00Z",
+  "ETH/USD|M15|tweezer-bottom|2026-11-18T20:00:00Z",
+  "SOL/USD|M15|tweezer-bottom|2026-11-18T20:00:00Z",
+  "SOL/USD|M15|bull-harami|2026-11-18T20:00:00Z",
+  "LINK/USD|M15|tweezer-bottom|2026-11-18T20:00:00Z",
+  "LTC/USD|H1|marubozu|2026-11-18T18:00:00Z",
+  "LTC/USD|M15|piercing|2026-11-18T20:00:00Z"
  ]
 }
