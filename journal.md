@@ -625,3 +625,22 @@
 - **11-18 02:38 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-marubozu sell_stop 7.23339545 sl7.31901136 tp7.10497159 — paper-graded (spot can't short)
 - **11-18 02:38 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-bear-harami sell_stop 7.23339545 sl7.31901136 tp7.10497159 — paper-graded (spot can't short)
 - **11-18 02:38 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99768.05 · 10s · venue fees $129.07 to date @ 0.02/0.05%
+- **11-18 03:46 UTC** BE +1R: XRP/USD stop -> entry 0.95972892
+- **11-18 03:46 UTC** SKIP — BTC/USD C-H1-marubozu: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — BTC/USD C-M15-hammer/takuri: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — BTC/USD C-M15-tweezer-top: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — ETH/USD C-H1-marubozu: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — ETH/USD C-H1-evening-star: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — XRP/USD C-H1-marubozu: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — XRP/USD C-M15-bear-harami: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — SOL/USD C-H1-marubozu: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — SOL/USD C-H1-evening-star: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — DOGE/USD C-M15-hammer/takuri: already have pending/position in play
+- **11-18 03:46 UTC** SKIP — DOGE/USD C-M15-bear-harami: already have pending/position in play
+- **11-18 03:46 UTC** NOTE — LINK/USD C-M15-dragonfly: soft cap on open items (6) — advisory, skipping
+- **11-18 03:46 UTC** NOTE — LTC/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
+- **11-18 03:46 UTC** NOTE — LTC/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-18 03:46 UTC** NOTE — BCH/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-18 03:46 UTC** NOTE — AVAX/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-18 03:46 UTC** NOTE — AVAX/USD C-M15-dragonfly: soft cap on open items (6) — advisory, skipping
+- **11-18 03:46 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99900.86 · 11s · venue fees $129.07 to date @ 0.02/0.05%
