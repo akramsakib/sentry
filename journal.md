@@ -735,3 +735,9 @@
 - **11-18 16:34 UTC** ORDER BOOKED — BCH/USD S16-inside-long (score 3/5) stop buy_stop qty 27.427781 @ 207.43763585 sl205.39591037 tp210.20453776 · risk $56.00 · fees ~$5.66 (0.10R)
 - **11-18 16:34 UTC** CANDIDATE(score 4/5) — BCH/USD S16-inside-short sell_stop 205.69236415 sl207.73408963 tp202.92546224 — paper-graded (spot can't short)
 - **11-18 16:34 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 3 new · 4 pendings · 2 positions equity $98993.57 · 9s · venue fees $171.41 to date @ 0.02/0.05%
+- **11-18 16:51 UTC** CLOSED BTC/USD — graded loss (-1.69R net of 0.21R in venue fees) from exit 62448.76
+- **11-18 16:51 UTC** FILL — SOL/USD S4-band-fade-long 108.48599330560018@72.53 sl72.27380433 tp74.428
+- **11-18 16:51 UTC** FILL — DOGE/USD S4-band-fade-long 157866.5463873943@0.05807 sl0.05790527 tp0.0593965
+- **11-18 16:51 UTC** CANDIDATE(score 4/5) — LINK/USD S21-pivot-S1-short sell_stop 8.95279638 sl9.16066667 tp8.56566667 — paper-graded (spot can't short)
+- **11-18 16:51 UTC** ORDER BOOKED — AVAX/USD S18-ma-revert-long (score 3/5) limit buy_limit qty 576.640944 @ 6.896 sl6.80929093 tp7.11473454 · risk $50.00 · fees ~$3.95 (0.08R)
+- **11-18 16:51 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 3 pendings · 3 positions equity $98950.93 · 10s · venue fees $176.00 to date @ 0.02/0.05%
