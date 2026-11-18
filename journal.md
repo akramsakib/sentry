@@ -760,3 +760,4 @@
 - **11-18 19:08 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 3 pendings · 3 positions equity $99253.09 · 9s · venue fees $176.00 to date @ 0.02/0.05%
 - **11-18 20:31 UTC** NOTE — LINK/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-18 20:31 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 3 pendings · 3 positions equity $99053.63 · 10s · venue fees $176.00 to date @ 0.02/0.05%
+- **11-18 20:38 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 3 pendings · 3 positions equity $99094.03 · 9s · venue fees $176.00 to date @ 0.02/0.05%
