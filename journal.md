@@ -709,3 +709,6 @@
 - **11-18 16:03 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-tweezer-top sell_stop 6.94832909 sl7.06467727 tp6.77380683 — paper-graded (spot can't short)
 - **11-18 16:03 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-three-outside-down sell_stop 6.94832909 sl7.06467727 tp6.77380683 — paper-graded (spot can't short)
 - **11-18 16:03 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 2 pendings · 4 positions equity $99370.14 · 8s · venue fees $142.93 to date @ 0.02/0.05%
+- **11-18 16:11 UTC** FILL — BTC/USD S4-band-fade-long 0.25761202304153163@62879.25 sl62742.06451993 tp64364.375
+- **11-18 16:11 UTC** SKIP — BTC/USD S13-ichimoku-short: already have pending/position in play
+- **11-18 16:11 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 4 positions equity $99313.72 · 11s · venue fees $151.03 to date @ 0.02/0.05%
