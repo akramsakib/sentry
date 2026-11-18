@@ -96,7 +96,7 @@
    "skill": "S16-inside-long",
    "be": 0.95972892,
    "sent_sl": 0.95972892,
-   "last_price": 0.9832
+   "last_price": 0.9811
   },
   "SOL/USD": {
    "side": "long",
@@ -107,8 +107,8 @@
    "qty": 54.34577394327491,
    "skill": "S16-inside-long",
    "be": 71.39858632,
-   "sent_sl": 72.33237453,
-   "last_price": 73.99
+   "sent_sl": 72.10237453,
+   "last_price": 73.76
   },
   "DOGE/USD": {
    "side": "long",
@@ -120,7 +120,7 @@
    "skill": "C-M15-bull-engulfing",
    "be": null,
    "sent_sl": 0.05820127,
-   "last_price": 0.05901
+   "last_price": 0.05884
   },
   "BTC/USD": {
    "side": "long",
@@ -132,7 +132,7 @@
    "skill": "S16-inside-long",
    "be": null,
    "sent_sl": 63355.20048602,
-   "last_price": 63502.26
+   "last_price": 63436.61
   },
   "ADA/USD": {
    "side": "long",
@@ -144,11 +144,11 @@
    "skill": "S18-rsi2-long",
    "be": null,
    "sent_sl": 0.1510798,
-   "last_price": 0.15212
+   "last_price": 0.15183
   }
  },
  "cid_seq": 41,
- "last_cycle": 1795016208.563841,
+ "last_cycle": 1795016325.413845,
  "seen_candles": [
   "LTC/USD|H1|bear-engulfing|2026-11-15T21:00:00Z",
   "LTC/USD|H1|tweezer-top|2026-11-15T21:00:00Z",
