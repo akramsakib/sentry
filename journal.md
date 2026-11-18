@@ -670,3 +670,14 @@
 - **11-18 15:28 UTC** CANDIDATE(score 4/5) — LTC/USD S13-ichimoku-short sell_stop 43.7488414 sl44.66731721 tp42.91300715 — paper-graded (spot can't short)
 - **11-18 15:28 UTC** CANDIDATE(score 4/5) — BCH/USD S1-pullback-short sell_limit 208.55811073 sl210.09998112 tp206.24530513 — paper-graded (spot can't short)
 - **11-18 15:28 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $99600.66 · 7s · venue fees $130.92 to date @ 0.02/0.05%
+- **11-18 15:36 UTC** SKIP — SOL/USD S22-rsi-bear-div: already have pending/position in play
+- **11-18 15:36 UTC** SKIP — DOGE/USD S22-rsi-bear-div: already have pending/position in play
+- **11-18 15:36 UTC** SKIP — ADA/USD C-M15-tweezer-top: already have pending/position in play
+- **11-18 15:36 UTC** CANDIDATE(score 4/5) — LINK/USD S22-rsi-bear-div sell_stop 9.06187559 sl9.19681102 tp8.85947244 — paper-graded (spot can't short)
+- **11-18 15:36 UTC** CANDIDATE(score 4/5) — LINK/USD C-M15-bear-harami sell_stop 9.06187559 sl9.14981102 tp8.92997244 — paper-graded (spot can't short)
+- **11-18 15:36 UTC** CANDIDATE(score 4/5) — LTC/USD S22-rsi-bear-div sell_stop 43.8492276 sl44.57193101 tp42.76517249 — paper-graded (spot can't short)
+- **11-18 15:36 UTC** CANDIDATE(score 5/5) — LTC/USD C-M15-bear-engulfing sell_stop 43.8492276 sl44.28193101 tp43.20017249 — paper-graded (spot can't short)
+- **11-18 15:36 UTC** CANDIDATE(score 5/5) — LTC/USD C-M15-tweezer-top sell_stop 43.8492276 sl44.28193101 tp43.20017249 — paper-graded (spot can't short)
+- **11-18 15:36 UTC** CANDIDATE(score 4/5) — BCH/USD S2-breakdown-short sell_stop 206.42001888 sl210.09998112 tp200.90007551 — paper-graded (spot can't short)
+- **11-18 15:36 UTC** CANDIDATE(score 4/5) — BCH/USD S22-rsi-bear-div sell_stop 206.78400755 sl209.90998112 tp202.09504719 — paper-graded (spot can't short)
+- **11-18 15:36 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99622.64 · 10s · venue fees $130.92 to date @ 0.02/0.05%
