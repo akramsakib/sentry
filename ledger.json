@@ -1048,6 +1048,18 @@
    "stop_price": 72.33237453,
    "status": "open",
    "placed_at": 1795016208
+  },
+  {
+   "id": "1795016325209",
+   "client_order_id": "sentryprot1795016325",
+   "symbol": "SOL/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 54.34577394327491,
+   "limit_price": null,
+   "stop_price": 72.10237453,
+   "status": "open",
+   "placed_at": 1795016325
   }
  ],
  "positions": [
@@ -1058,7 +1070,7 @@
    "cid": "sentryXRPUSD1794687006293n9",
    "fees": 2.65438049,
    "opened": 1794717219,
-   "current_price": 0.9832
+   "current_price": 0.9811
   },
   {
    "symbol": "XRP/USD",
@@ -1067,7 +1079,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9832
+   "current_price": 0.9811
   },
   {
    "symbol": "LTC/USD",
@@ -1076,7 +1088,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 43.904
+   "current_price": 43.801
   },
   {
    "symbol": "XRP/USD",
@@ -1085,7 +1097,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9832
+   "current_price": 0.9811
   },
   {
    "symbol": "SOL/USD",
@@ -1094,7 +1106,7 @@
    "cid": "sentrySOLUSD1794848491576n30",
    "fees": 1.94010572,
    "opened": 1794848491,
-   "current_price": 73.96
+   "current_price": 73.76
   },
   {
    "symbol": "DOGE/USD",
@@ -1103,7 +1115,7 @@
    "cid": "sentryDOGEUSD1794941818530n39",
    "fees": 1.62354953,
    "opened": 1794948298,
-   "current_price": 0.05901
+   "current_price": 0.05884
   },
   {
    "symbol": "BTC/USD",
@@ -1112,7 +1124,7 @@
    "cid": "sentryBTCUSD1794938063037n37",
    "fees": 2.91798251,
    "opened": 1794952739,
-   "current_price": 63502.26
+   "current_price": 63429.15
   },
   {
    "symbol": "ADA/USD",
@@ -1121,7 +1133,7 @@
    "cid": "sentryADAUSD1794952740058n40",
    "fees": 1.58530287,
    "opened": 1794952740,
-   "current_price": 0.15212
+   "current_price": 0.15183
   }
  ],
  "fees_paid": 130.91631449
