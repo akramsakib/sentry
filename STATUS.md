@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-17 22:27 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $58,427.35 · equity $99,697.76
+**2026-11-18 02:38 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $58,427.35 · equity $99,768.05
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$129.07 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -14,29 +14,29 @@ _None. Every symbol is scanned each cycle; a resting entry above is a trigger wa
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| ADA/USD | 20659.4 | 0.15347 | 0.15408 | $12.60 | 0.1510798 | 0.15652524 | +0.25R |
-| BTC/USD | 0.0909312 | 64180 | 64488.47 | $28.05 | 63355.2 | 65042.397 | +0.37R |
-| DOGE/USD | 54931.8 | 0.05911149 | 0.0594 | $15.85 | 0.05820127 | 0.06047682 | +0.32R |
-| ETH/USD | 2.07483 | 1800.05 | 1805.4 | $11.10 | 1775.9517 | 1813.9158 | +0.22R |
-| SOL/USD | 54.3458 | 71.398586 | 73.64 | $121.81 | 70.018534 | 72.918795 | +1.62R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9694 | $44.91 | 0.94357771 | 0.97833374 | +0.60R |
+| ADA/USD | 20659.4 | 0.15347 | 0.15273 | $-15.29 | 0.1510798 | 0.15652524 | -0.31R |
+| BTC/USD | 0.0909312 | 64180 | 64392.04 | $19.28 | 63355.2 | 65042.397 | +0.26R |
+| DOGE/USD | 54931.8 | 0.05911149 | 0.05929 | $9.81 | 0.05820127 | 0.06047682 | +0.20R |
+| ETH/USD | 2.07483 | 1800.05 | 1805.24 | $10.77 | 1775.9517 | 1813.9158 | +0.22R |
+| SOL/USD | 54.3458 | 71.398586 | 74.55 | $171.27 | 70.018534 | 72.918795 | +2.28R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9751 | $71.38 | 0.94357771 | 0.97833374 | +0.95R |
 
-## Last 12 signals (330 ever logged)
+## Last 12 signals (345 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
-| 11-17 22:03 | BTC/USD | C-H1-morning-star | 3/5 | 64127.145 | 63504.388 | 65061.281 | $50.00 | not fired (guard/duplicate) |
-| 11-17 22:03 | BTC/USD | C-H1-tweezer-bottom | 3/5 | 64127.145 | 63504.388 | 65061.281 | $50.00 | not fired (guard/duplicate) |
-| 11-17 21:59 | ADA/USD | S18-rsi2-long | 4/5 | 0.1535 | 0.1510798 | 0.15652524 | $50.00 | order placed |
-| 11-17 21:59 | DOGE/USD | C-M15-three-outside-up | 4/5 | 0.05975965 | 0.05895587 | 0.06096533 | $50.00 | not fired (guard/duplicate) |
-| 11-17 21:59 | DOGE/USD | S18-rsi2-long | 4/5 | 0.05927 | 0.05843418 | 0.06031478 | $50.00 | not fired (guard/duplicate) |
-| 11-17 21:59 | XRP/USD | C-H1-three-outside-up | 4/5 | 0.9678133 | 0.95311675 | 0.98985812 | $50.00 | not fired (guard/duplicate) |
-| 11-17 21:59 | XRP/USD | S18-rsi2-long | 4/5 | 0.9689 | 0.9555404 | 0.9855995 | $50.00 | not fired (guard/duplicate) |
-| 11-17 21:59 | ETH/USD | C-M15-three-outside-up | 4/5 | 1813.2437 | 1790.7856 | 1846.9309 | $50.00 | not fired (guard/duplicate) |
-| 11-17 21:59 | ETH/USD | C-M15-tweezer-bottom | 4/5 | 1813.2437 | 1790.7856 | 1846.9309 | $50.00 | not fired (guard/duplicate) |
-| 11-17 20:44 | LINK/USD | C-M15-tweezer-top | 4/5 | 9.0677326 | 9.1451685 | 8.9515787 | $50.00 | paper-graded (spot cannot short) |
-| 11-17 20:44 | DOGE/USD | C-M15-tweezer-top | 4/5 | 0.05877984 | 0.05925541 | 0.05806648 | $50.00 | not fired (guard/duplicate) |
-| 11-17 20:20 | AVAX/USD | C-H1-tweezer-top | 4/5 | 7.0410079 | 7.1629803 | 6.8580493 | $50.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | AVAX/USD | C-H1-bear-harami | 5/5 | 7.2333954 | 7.3190114 | 7.1049716 | $62.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | AVAX/USD | C-H1-marubozu | 5/5 | 7.2333954 | 7.3190114 | 7.1049716 | $62.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | BCH/USD | C-H1-bear-harami | 4/5 | 210.58099 | 212.94754 | 207.03116 | $50.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | BCH/USD | C-H1-marubozu | 4/5 | 210.58099 | 212.94754 | 207.03116 | $50.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | LTC/USD | C-H1-tweezer-top | 4/5 | 44.663199 | 45.457002 | 43.472495 | $50.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | LTC/USD | C-H1-marubozu | 4/5 | 44.663199 | 45.457002 | 43.472495 | $50.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | LINK/USD | C-H1-marubozu | 5/5 | 9.2316333 | 9.3504168 | 9.0534579 | $62.00 | paper-graded (spot cannot short) |
+| 11-18 02:38 | ADA/USD | C-H1-marubozu | 5/5 | 0.15370354 | 0.15579116 | 0.15057211 | $62.00 | not fired (guard/duplicate) |
+| 11-18 02:38 | DOGE/USD | C-H1-marubozu | 5/5 | 0.05963248 | 0.06026881 | 0.05867798 | $62.00 | not fired (guard/duplicate) |
+| 11-18 02:38 | DOGE/USD | S13-ichimoku-long | 3/5 | 0.05940128 | 0.05869743 | 0.0607855 | $50.00 | not fired (guard/duplicate) |
+| 11-18 02:38 | SOL/USD | S13-ichimoku-long | 3/5 | 74.66824 | 73.048519 | 76.69419 | $50.00 | not fired (guard/duplicate) |
+| 11-18 02:38 | XRP/USD | S13-ichimoku-long | 3/5 | 0.97660397 | 0.96474205 | 0.99852497 | $50.00 | not fired (guard/duplicate) |
 
 ## Accuracy so far
 
