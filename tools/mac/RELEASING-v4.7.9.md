@@ -1,0 +1,79 @@
+# v4.7.9 — what shipped, and the one step still on you
+
+Shipped 2026-11-18 as `41c94a71` + `8d722ef9` on `akramsakib/sentry:main` (CI `sentry-cycle` green on both;
+26 files verified byte-equal, then the switch kit added as a 27th and the CCTV URL helper as a 28th).
+`tools/mac/sentry_mac.py` and `tools/mac/account_switch.sh` are now IN the release — before this the resident
+every figure came from was not. All Mac files verified **byte-identical** between the repo and `~/hermes_sentry/`:
+
+Two repairs landed on the resident after that first row was written, both found while answering "sentry down?",
+both mine, both now pinned by a test:
+
+1. **`chart_thin = {}` was deleted by my own splice** (`_pmargin2.py` used a replace where an insert belonged).
+   `publish_watch` then raised `NameError` every cycle for ~17 hours — the per-cycle `try/except` swallowed it,
+   so the desk looked healthy and only the forex watch was dead. Now `test_data.py` §34 checks the line order
+   (init < use < publish call) rather than trusting a grep.
+2. **`retcode 10015 Invalid price` was not the broker being flaky.** 213 journal lines, 79 of them XAUUSD
+   against 26 gold fills ever. `send_order` substituted the raw Python float into the JSON
+   (`1.3165645839210065` for a 5-digit symbol; `154.13837845882833` for a 2-digit one), and MT5 refuses that
+   on `trade_check_pending_order` — before an order exists, so the candidate just vanished while the journal,
+   which printed through `rnd()`, looked fine. New: `fmt_px(sym, v)` applied at the one place the payload is
+   filled in, and at the two chandelier-trail sites that hardcoded 5 digits. Volumes never pass through it —
+   formatting, not sizing. `test_data.py` §35 calls the shipped `send_order` with the terminal stubbed and
+   reads back the curl payload; suite is at **537 PASS / 0 failed**.
+
+| file | md5 | bytes |
+|---|---|---|
+| `sentry_mac.py` (the resident — now in the repo too) | `0772e0e626da2f42a0e3d6216b650caa` | 101,940 |
+| `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
+| `account_switch.sh` (switch kit) | `ef3dcf53b2ef4f5d632e1a8275d8ced3` | 15,339 |
+| `trade_radar.py` (radar page) | `1cd8a0726257173bd789fc506f316d34` | 68,124 |
+
+## The two things it could not do before
+
+1. **It could not see the account it trades.** Sizing came from a fixed $50–$200 risk band with no knowledge of
+   equity, and a size under the broker's 0.01 minimum returned `0` — an order too small for the account simply
+   vanished, with nothing journalled. `size_report()` now reads the account every cycle and returns a verdict:
+   `ok` / `round_up_to_min_lot` / `min_lot_too_big` / `over_max_lot` / `no_stop`. The 10%-of-equity ceiling
+   clamps the *requested* risk, not just the broker's floor. `desk_mode.json` key
+   `"risk_max_frac_of_equity"` (0 = guard off).
+
+2. **It could not tell whether its own trades won.** `mcp_call()` ended in `head -c 300`, so the position-history
+   reply was always truncated and `except Exception: pass` hid it. Result: **94 sent rows, 0 grades**, while the
+   paper track (which grades *rejected* candidates at ±1R) was what the desk quoted as a win rate. Grading now
+   joins on the order comment `Sentry <skill>` (at the terminal's 31-char limit), or on the venue ticket when we
+   have one; 6-hour window for a comment match, 10 days for a ticket; one close settles one row; rows with no
+   close stay **ungraded on purpose**.
+
+## Measured on your live account (login 5058788329, MetaQuotes-Demo, 101,155.96 USD, *demo*)
+
+* `capped_today: 0`, `refused_today: {}`, EURUSD still 0.17 lots / $76.50 → **the guard changed nothing here**, which was the requirement.
+* `0` lines matching `REFUSED` in the whole 2,900-line journal.
+* Live record now on both pages: **94 sent, 61 graded from the terminal's own closes, 40W/21L, +14.52R, +$1,659.23 USD, 33 ungraded.** The paper track is quoted beside it as its own number (-12.48R) — the two are not the same measurement and must never be summed.
+* `bash account_switch.sh status` prints the same live record, the sizing verdicts, and 63 `OUTCOME` journal lines exist where there were 0 grades. Desk pill says `demo account … (reported by the terminal this cycle)`. It used to be inferred by grepping the
+  resident's *header comment* for the words "demo account" — which is how the card could print a confident claim
+  that nothing on the desk had actually measured. That is fixed, and the fallback is now labelled as an inference.
+
+## Still yours to do: the $50 demo
+
+No API can open an account (no MCP tool, no URL scheme, `accounts.dat` is encrypted), so this is a click:
+
+1. On the Mac, MetaTrader 5 → **File → Open an Account → MetaQuotes → MetaQuotes-Demo → Create a demo account**
+   * email `akramhossainsakib@gmail.com`, phone `+60183560937`, currency **USD**, deposit **50**
+     (if the form refuses 50, take 100 — per-trade risk then halves to ~3.5% instead of ~7%)
+   * hedging, 1:100
+2. Copy the **master password** out of the confirmation dialog, then:
+   ```
+   bash ~/mac_connect.sh 'cd ~/hermes_sentry && bash account_switch.sh fresh <LOGIN> <PASSWORD> "MetaQuotes-Demo"'
+   bash ~/mac_connect.sh 'cd ~/hermes_sentry && bash account_switch.sh verify'   # want: balance == 50.00
+   ```
+3. Phone MT5 → *My existing account* → server `MetaQuotes-Demo` → login + **investor** password
+   (`account_switch.sh handoff` prints them for you to copy; nothing is persisted on the desk).
+
+**Margin, measured from your broker (not assumed):** `trade_order_calc_margin` answered AMD $510.63, XAUUSD $38.47, NVDA $158.71, GBPUSD $13.21, EURUSD $11.00 for ONE minimum unit. Margin follows price, not the account, so an early hand-computed $220 for AMD was wrong by more than double — which is why the resident measures it instead of deriving it from an assumed leverage (`account_info` publishes none).
+
+**What to expect on $50, from the shipped code and your broker's own numbers:** the floor is the problem, not the strategy.
+`0.01` lot of XAUUSD already risks the whole width of a normal stop (~$33 on the sizes this build uses) = 67% of
+$50 → **gold is refused**. EURUSD/GBPUSD become placeable at 0.01 lot with risk capped to ~$5. The replay of
+your 79 real fills said the same thing: as-coded **$50.00, 0 of 79 trades placeable**; forced to the broker
+minimum **$22.65 (−54.7%)**; 5%-of-equity risk **$60.83**. A coherent base for this build's own $50–$200 band is
+**$5k–$10k** — that number is arithmetic on your fills, not advice.
