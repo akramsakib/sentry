@@ -66,13 +66,23 @@ both mine, both now pinned by a test:
    A real account also stops inheriting the demo's ceiling: with no `risk_max_frac_of_equity` chosen, the
    per-trade cap is 1 % of equity instead of 10 % — measured on the live deployment the demo still reads
    `max_frac 0.1`, `type 'demo'`, zero live-guard refusals, so the rehearsal is untouched.
-   `test_data.py` §39 (17 checks).  Suite: **602 PASS / 0 failed**.
+   `test_data.py` §39 (17 checks).  Then, when he said he wants the live account traded as it trades today,
+   `desk_mode.json` was pinned to `{ entries_enabled: true, live_confirmed: true, risk_max_frac_of_equity: 0.1 }`
+   — the 0.10 is the demo's own number written down, not inherited, so nothing about the sizing changes when
+   the login changes.  Proven against the deployed file with the terminal stubbed: account type `real` now
+   reaches the terminal and returns a ticket; `sizing.max_frac` on the live demo still reads 0.1.
+   **Two bugs found in the switch kit while doing it** (§40, 7 checks, running the shipped script in a throwaway
+   HOME): `fresh` wrote a two-key `desk_mode.json`, silently dropping `live_confirmed` and the risk ceiling;
+   and because it left no stamped backup of its own, `resume` after `fresh` restored a *paused* file — press
+   resume, stay paused, no explanation.  `fresh` now carries every desk choice across, writes the stamped
+   backup with `entries_enabled: true` while opening the live file paused, and the original is still archived
+   verbatim.  Suite: **609 PASS / 0 failed**.
 
 | file | md5 | bytes |
 |---|---|---|
 | `sentry_mac.py` (the resident — now in the repo too) | `4b907b9e6ad9c4eb1d6542cc4d539be5` | 111,638 |
 | `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
-| `account_switch.sh` (switch kit) | `ef3dcf53b2ef4f5d632e1a8275d8ced3` | 15,339 |
+| `account_switch.sh` (switch kit) | `f1d01f716af6a4d08b8b510d71b2e35d` | 17,827 |
 | `trade_radar.py` (radar page) | `d29d7cf10cfcd0b62aa57b8b46fe54de` | 74,062 |
 
 ## The two things it could not do before

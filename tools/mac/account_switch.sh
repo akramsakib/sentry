@@ -14,8 +14,13 @@
 #   fresh     start a clean book for the newly-logged-in account (archive first, revert-able)
 #   revert    put the archived state.json + trades_log.jsonl back exactly as they were
 #
-# Nothing here touches money: every account this build can reach is a demo account,
-# and no crypto venue key exists on this machine.
+# Nothing here MOVES money -- there is no deposit, withdrawal or transfer path in any of this, and no
+# crypto venue key exists on this machine.  But be clear about what it does arm: as of 2026-11-19 the
+# resident can be pointed at a REAL MT5 account (desk_mode.json "live_confirmed": true), and then every
+# order it sends is real.  So the order of operations matters: `pause` BEFORE you change the login,
+# `verify` after, and `status` whenever you want the terminal's own answer rather than the desk's.
+# The guard is one-way on purpose -- `pause` outranks `live_confirmed`, and `fresh` carries the desk's
+# choices across so a clean book never silently disarms or re-arms the account it was handed.
 
 set -u
 D="$HOME/hermes_sentry"
@@ -217,7 +222,39 @@ for k in ("positions", "orders"):
     done
     mcp get_trading_account_info '{}' > "$ARC/pre-$S2/account.json" 2>/dev/null
     echo "$S2" > "$STAMPF"
-    printf '{ "entries_enabled": false, "paused_by": "account_switch.sh fresh", "paused_at": "%s" }\n' "$S2" > "$MODE"
+    # A new book must not quietly lose the desk's own choices.  `fresh` used to write a two-key file, which
+    # dropped live_confirmed and risk_max_frac_of_equity -- so anyone who armed the build for a real account,
+    # switched accounts, and then ran `resume` got either a loud failure or, worse, some OLDER pause backup
+    # restored, and the live guard then refuses every order on an account he deliberately armed.  Only
+    # entries_enabled is forced here (to false); everything else in the file is carried across.  The moved-
+    # aside copy is also published under the stamp, so `resume` restores this exact pre-fresh file.
+    /usr/bin/python3 - "$ARC/pre-$S2/desk_mode.json" "$MODE" "$S2" "$ARC/desk_mode.$S2.json" <<'PYFRESH'
+import json, sys
+src, dst, stamp, backup = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+try:
+    d = json.load(open(src))
+    if not isinstance(d, dict):
+        d = {}
+except Exception:
+    d = {}
+carried = {k: v for k, v in d.items() if k != "entries_enabled"}
+# Two files, and the difference between them is the whole point.  The LIVE desk file opens the new book
+# PAUSED (fresh has always meant "clean book, nothing sends until you say resume").  The stamped BACKUP is
+# what `resume` restores, so it has to be the same book with entries ON and the pause provenance dropped --
+# a resume that restored the paused file was the bug this fixes: pressing "resume" and getting "still
+# paused, and no explanation" is indistinguishable from a guard that refuses to trade.
+live = dict(carried, entries_enabled=False, paused_by="account_switch.sh fresh", paused_at=stamp)
+restore = dict(carried, entries_enabled=True)
+with open(dst, "w") as f:
+    json.dump(live, f, indent=1)
+    f.write("\n")
+with open(backup, "w") as f:
+    json.dump(restore, f, indent=1)
+    f.write("\n")
+kept = sorted(carried)
+print("  desk choices carried to the new book: " + (", ".join(kept) if kept else "(none were set)"))
+print("  new book is PAUSED; `resume` will restore it with entries_enabled=true")
+PYFRESH
     echo "$S2" > "$ARC/.book-opened"
     # The resident recreates state.json from nothing (load_state: except -> {}), and
     # skill_acc returns a neutral 0.5 with no log, so self_size starts at base risk.

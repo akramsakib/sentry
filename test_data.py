@@ -2940,5 +2940,69 @@ else:
         _sm33.STATE_F, _sm33.mac, _sm33.JOURNAL_F, _sm33.ACCT_KIND = _osave39
         _sh39.rmtree(_d39, ignore_errors=True)
 
+
+# 40 — the switch kit, run for real.  He is moving this build onto a live MT5 account, and the two files the
+# switch touches are desk_mode.json (the only thing that ever stops an order) and the book itself.  `fresh`
+# used to write a two-key desk_mode, which silently dropped live_confirmed and risk_max_frac_of_equity, and
+# `resume` then either failed loudly or restored some older pause backup — so the plausible outcome of
+# "switch account, resume" was a live account that refuses every order with no explanation.  Two real bugs,
+# both found by executing the tool in a temp HOME rather than by reading it.
+print("\n== 40: the account switch keeps the desk's own choices")
+_KIT40 = _asset("account_switch.sh") or _asset("tools/mac/account_switch.sh")
+if not _KIT40 or not _os32.path.exists("/bin/bash"):
+    check("the switch kit or bash is not available here, so it is exercised on the Mac instead (skipped)",
+          True, "skipped: no account_switch.sh next to the repo")
+else:
+    import subprocess as _sp40, tempfile as _tf40, shutil as _sh40
+    _d40 = _tf40.mkdtemp(prefix="kit40")
+    _desk40 = os.path.join(_d40, "hermes_sentry")
+    os.makedirs(_desk40)
+    _kit40 = os.path.join(_d40, "kit.sh")
+    # neuter the launchd branch: a test must never be able to restart a real job, wherever it runs
+    _src40 = open(_KIT40).read().replace('JOB="com.hermes.sentry"', 'JOB="com.hermes.nosuchjob40"')
+    open(_kit40, "w").write(_src40)
+    _armed = '{\n "entries_enabled": true,\n "live_confirmed": true,\n "risk_max_frac_of_equity": 0.1\n}\n'
+    with open(os.path.join(_desk40, "desk_mode.json"), "w") as f:
+        f.write(_armed)
+    for nm, body in (("state.json", '{"day":"11-19"}\n'), ("trades_log.jsonl", ""),
+                     ("sentry_journal.md", "- **11-19 00:00 KL** scan ok\n")):
+        with open(os.path.join(_desk40, nm), "w") as f:
+            f.write(body)
+    _env40 = dict(os.environ, HOME=_d40, PATH="/bin:/usr/bin:/usr/local/bin")
+
+    def _run40(*args):
+        return _sp40.run(["/bin/bash", _kit40] + list(args), cwd=_desk40, env=_env40,
+                         capture_output=True, text=True, timeout=90)
+
+    def _mode40():
+        import json as _j40
+        return _j40.load(open(os.path.join(_desk40, "desk_mode.json")))
+
+    _r40 = _run40("fresh")
+    check("fresh runs clean (no traceback, exit 0)", _r40.returncode == 0 and "Traceback" not in _r40.stderr,
+          _r40.stderr[-140:])
+    _after40 = _mode40()
+    check("fresh opens a PAUSED book -- a new account never starts trading on its own",
+          _after40.get("entries_enabled") is False, str(_after40))
+    check("...and it carries the desk's own choices across instead of dropping them",
+          _after40.get("live_confirmed") is True and _after40.get("risk_max_frac_of_equity") == 0.1,
+          str(_after40))
+    check("the old book is archived, not deleted",
+          os.path.isdir(os.path.join(_desk40, "archive"))
+          and any(open(os.path.join(dp, fn)).read().strip() == '{"day":"11-19"}'
+                  for dp, _dn, fns in os.walk(os.path.join(_desk40, "archive")) for fn in fns), "")
+    _r40b = _run40("resume")
+    _res40 = _mode40()
+    check("resume after fresh actually RESUMES (this is the pair that used to restore a paused file)",
+          _res40.get("entries_enabled") is True, "%s | %s" % (str(_res40), _r40b.stdout[-120:]))
+    check("...and what it resumes to is still armed for the account it was handed",
+          _res40.get("live_confirmed") is True and _res40.get("risk_max_frac_of_equity") == 0.1,
+          str(_res40))
+    _r40c = _run40("status")
+    check("status runs against a terminal that is not there and says so, rather than lying",
+          _r40c.returncode == 0 and ("NOT REACHABLE" in _r40c.stdout or "not reachable" in _r40c.stdout.lower()),
+          _r40c.stdout[:120])
+    _sh40.rmtree(_d40, ignore_errors=True)
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
