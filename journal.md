@@ -605,3 +605,23 @@
 - **11-17 22:03 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99547.72 · 7s · venue fees $129.07 to date @ 0.02/0.05%
 - **11-17 22:04 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99532.65 · 11s · venue fees $129.07 to date @ 0.02/0.05%
 - **11-17 22:27 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99697.76 · 10s · venue fees $129.07 to date @ 0.02/0.05%
+- **11-18 02:38 UTC** SKIP — BTC/USD C-M15-bull-harami: already have pending/position in play
+- **11-18 02:38 UTC** SKIP — ETH/USD C-H1-bear-harami: already have pending/position in play
+- **11-18 02:38 UTC** SKIP — ETH/USD C-M15-bull-harami: already have pending/position in play
+- **11-18 02:38 UTC** SKIP — XRP/USD S13-ichimoku-long: already have pending/position in play
+- **11-18 02:38 UTC** SKIP — SOL/USD S13-ichimoku-long: already have pending/position in play
+- **11-18 02:38 UTC** SKIP — DOGE/USD S13-ichimoku-long: already have pending/position in play
+- **11-18 02:38 UTC** SKIP — DOGE/USD C-H1-marubozu: already have pending/position in play
+- **11-18 02:38 UTC** SKIP — ADA/USD C-H1-marubozu: already have pending/position in play
+- **11-18 02:38 UTC** NOTE — LINK/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-18 02:38 UTC** CANDIDATE(score 5/5) — LINK/USD C-H1-marubozu sell_stop 9.23163327 sl9.35041683 tp9.05345792 — paper-graded (spot can't short)
+- **11-18 02:38 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-marubozu sell_stop 44.66319915 sl45.45700212 tp43.4724947 — paper-graded (spot can't short)
+- **11-18 02:38 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-tweezer-top sell_stop 44.66319915 sl45.45700212 tp43.4724947 — paper-graded (spot can't short)
+- **11-18 02:38 UTC** NOTE — BCH/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-18 02:38 UTC** CANDIDATE(score 4/5) — BCH/USD C-H1-marubozu sell_stop 210.58098528 sl212.94753679 tp207.03115803 — paper-graded (spot can't short)
+- **11-18 02:38 UTC** CANDIDATE(score 4/5) — BCH/USD C-H1-bear-harami sell_stop 210.58098528 sl212.94753679 tp207.03115803 — paper-graded (spot can't short)
+- **11-18 02:38 UTC** NOTE — BCH/USD C-M15-bull-harami: soft cap on open items (6) — advisory, skipping
+- **11-18 02:38 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-18 02:38 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-marubozu sell_stop 7.23339545 sl7.31901136 tp7.10497159 — paper-graded (spot can't short)
+- **11-18 02:38 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-bear-harami sell_stop 7.23339545 sl7.31901136 tp7.10497159 — paper-graded (spot can't short)
+- **11-18 02:38 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $99768.05 · 10s · venue fees $129.07 to date @ 0.02/0.05%
