@@ -682,3 +682,13 @@
 - **11-18 15:36 UTC** CANDIDATE(score 4/5) — BCH/USD S22-rsi-bear-div sell_stop 206.78400755 sl209.90998112 tp202.09504719 — paper-graded (spot can't short)
 - **11-18 15:36 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99622.64 · 10s · venue fees $130.92 to date @ 0.02/0.05%
 - **11-18 15:38 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99542.19 · 9s · venue fees $130.92 to date @ 0.02/0.05%
+- **11-18 15:54 UTC** CLOSED BTC/USD — graded loss (-0.98R net of 0.08R in venue fees) from exit 63436.61
+- **11-18 15:54 UTC** CLOSED ADA/USD — graded loss (-0.74R net of 0.06R in venue fees) from exit 0.15183
+- **11-18 15:54 UTC** RE-ANCHORED — BTC/USD S4-band-fade-long: trigger 63654.84441 is already through the tape 63033.2 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-18 15:54 UTC** ORDER BOOKED — BTC/USD S4-band-fade-long (score 3/5) limit buy_limit qty 0.257612 @ 62938.650200000004 (collar on 63033.2) sl62742.06451993 tp64364.375 · risk $75.00 · fees ~$16.20 (0.22R)
+- **11-18 15:54 UTC** ORDER BOOKED — BTC/USD S18-ma-revert-long (score 3/5) limit buy_limit qty 0.154567 @ 63033.2 sl62547.97419989 tp64315.68289002 · risk $75.00 · fees ~$9.71 (0.13R)
+- **11-18 15:54 UTC** SKIP — SOL/USD C-M15-evening-star: already have pending/position in play
+- **11-18 15:54 UTC** NOTE — ADA/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-18 15:54 UTC** NOTE — LINK/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-18 15:54 UTC** NOTE — AVAX/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-18 15:54 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 2 new · 3 pendings · 3 positions equity $99393.30 · 12s · venue fees $138.07 to date @ 0.02/0.05%
