@@ -1,5 +1,5 @@
 {
- "cash": 66662.39363305968,
+ "cash": 50455.843607825445,
  "realized": -740.4510616635766,
  "orders": [
   {
@@ -1082,8 +1082,11 @@
    "qty": 0.25761202304153163,
    "limit_price": 62938.650200000004,
    "stop_price": null,
-   "status": "open",
-   "placed_at": 1795017269
+   "status": "filled",
+   "placed_at": 1795017269,
+   "filled_avg_price": 62879.25,
+   "filled_qty": 0.25761202304153163,
+   "filled_at": 1795018291
   },
   {
    "id": "1795017269998",
@@ -1111,6 +1114,18 @@
    "stop_price": 71.39858632,
    "status": "open",
    "placed_at": 1795017818
+  },
+  {
+   "id": "1795018291579",
+   "client_order_id": "sentryprot1795018291",
+   "symbol": "BTC/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 0.25761202304153163,
+   "limit_price": null,
+   "stop_price": 62547.97419989,
+   "status": "open",
+   "placed_at": 1795018291
   }
  ],
  "positions": [
@@ -1121,7 +1136,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.976
+   "current_price": 0.9739
   },
   {
    "symbol": "LTC/USD",
@@ -1130,7 +1145,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 43.68
+   "current_price": 43.587
   },
   {
    "symbol": "XRP/USD",
@@ -1139,7 +1154,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.976
+   "current_price": 0.9739
   },
   {
    "symbol": "SOL/USD",
@@ -1148,7 +1163,7 @@
    "cid": "sentrySOLUSD1794848491576n30",
    "fees": 1.94010572,
    "opened": 1794848491,
-   "current_price": 73.22
+   "current_price": 73.3
   },
   {
    "symbol": "DOGE/USD",
@@ -1157,7 +1172,7 @@
    "cid": "sentryDOGEUSD1794941818530n39",
    "fees": 1.62354953,
    "opened": 1794948298,
-   "current_price": 0.05866
+   "current_price": 0.05858
   },
   {
    "symbol": "BTC/USD",
@@ -1166,8 +1181,17 @@
    "cid": "sentryBTCUSD1795017269998n43",
    "fees": 4.86675817,
    "opened": 1795017818,
-   "current_price": 62972.71
+   "current_price": 62879.16
+  },
+  {
+   "symbol": "BTC/USD",
+   "qty": 0.25761202304153163,
+   "entry": 62879.25,
+   "cid": "sentryBTCUSD1795017269617n42",
+   "fees": 8.0992254,
+   "opened": 1795018291,
+   "current_price": 62879.16
   }
  ],
- "fees_paid": 142.9318805
+ "fees_paid": 151.0311059
 }
