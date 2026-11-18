@@ -712,3 +712,26 @@
 - **11-18 16:11 UTC** FILL — BTC/USD S4-band-fade-long 0.25761202304153163@62879.25 sl62742.06451993 tp64364.375
 - **11-18 16:11 UTC** SKIP — BTC/USD S13-ichimoku-short: already have pending/position in play
 - **11-18 16:11 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 4 positions equity $99313.72 · 11s · venue fees $151.03 to date @ 0.02/0.05%
+- **11-18 16:34 UTC** CLOSED SOL/USD — graded win (+1.33R net of 0.05R in venue fees) from exit 73.3
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1794861594 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1794916786 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1794954459 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1794973589 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1794998550 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1795015734 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1795016208 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1795016325 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1795017269 after close
+- **11-18 16:34 UTC** CANCEL leftover SOL/USD order sentryprot1795017818 after close
+- **11-18 16:34 UTC** CLOSED DOGE/USD — graded loss (-0.65R net of 0.07R in venue fees) from exit 0.05858
+- **11-18 16:34 UTC** EXIT BTC/USD: price crossed stop 62742.06451993 (cur 62448.76) — market close
+- **11-18 16:34 UTC** SKIP — BTC/USD C-M15-marubozu: already have pending/position in play
+- **11-18 16:34 UTC** SKIP — BTC/USD C-M15-three-crows: already have pending/position in play
+- **11-18 16:34 UTC** RE-ANCHORED — SOL/USD S4-band-fade-long: trigger 73.2607708 is already through the tape 72.79 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-18 16:34 UTC** ORDER BOOKED — SOL/USD S4-band-fade-long (score 3/5) limit buy_limit qty 108.485993 @ 72.68081500000001 (collar on 72.79) sl72.27380433 tp74.428 · risk $56.00 · fees ~$7.87 (0.14R)
+- **11-18 16:34 UTC** RE-ANCHORED — DOGE/USD S4-band-fade-long: trigger 0.05882026 is already through the tape 0.05826 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-18 16:34 UTC** ORDER BOOKED — DOGE/USD S4-band-fade-long (score 3/5) limit buy_limit qty 157866.546387 @ 0.05817261 (collar on 0.05826) sl0.05790527 tp0.0593965 · risk $56.00 · fees ~$9.17 (0.16R)
+- **11-18 16:34 UTC** CANDIDATE(score 4/5) — LTC/USD S21-pivot-S1-short sell_stop 43.5711161 sl44.62666667 tp41.58666667 — paper-graded (spot can't short)
+- **11-18 16:34 UTC** ORDER BOOKED — BCH/USD S16-inside-long (score 3/5) stop buy_stop qty 27.427781 @ 207.43763585 sl205.39591037 tp210.20453776 · risk $56.00 · fees ~$5.66 (0.10R)
+- **11-18 16:34 UTC** CANDIDATE(score 4/5) — BCH/USD S16-inside-short sell_stop 205.69236415 sl207.73408963 tp202.92546224 — paper-graded (spot can't short)
+- **11-18 16:34 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 3 new · 4 pendings · 2 positions equity $98993.57 · 9s · venue fees $171.41 to date @ 0.02/0.05%
