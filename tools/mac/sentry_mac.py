@@ -540,6 +540,27 @@ def trend(hi, lo):
 
 def rnd(sym, x): return round(x, DIGITS[sym])
 
+def fmt_px(sym, v):
+    """One price, one shape, everywhere the terminal is asked to believe it.
+
+    A price carrying more decimals than the symbol has digits is not 'loosely rounded' — MT5
+    refuses it outright with retcode 10015 Invalid price, and it refuses the CHECK call, before an
+    order exists, so the candidate simply evaporates.  Candidate levels come out of arithmetic
+    (pivot * factor, last - 2*ATR) and keep every binary float digit: 1.3165645839210065, not
+    1.31656.  The journal already printed them rounded, which is why 79 refused XAUUSD
+    candidates sat beside 26 fills for a week looking like broker flakiness.
+
+    Every number this build submits as a price goes through here, so what the desk journals and
+    what the desk sends are the same number.  Volumes never pass through it — formatting, not
+    sizing.  Falls back to 5 digits for a symbol the catalog has not described yet, and hands
+    back anything it cannot read as a number untouched (a None TP is the senders problem, as
+    before, not one this function invents a price for).
+    """
+    try:
+        return '%.*f' % (int(DIGITS.get(sym, 5)), float(v))
+    except Exception:
+        return v
+
 def sz(sym, stop_dist, risk=None):
     """Size from risk alone, with no knowledge of the account.
 
@@ -1034,6 +1055,11 @@ echo "@@SEND"
 curl -sS --compressed -o /tmp/sn_s1 -X POST "$U" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "MCP-Protocol-Version: 2025-06-18" -H "Mcp-Session-Id: $SID" -H "Authorization: Bearer $K" -d "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"trade_send_pending_order\",\"arguments\":{\"symbol\":\"__SYM__\",\"type\":\"__TYPE__\",\"volume\":__VOL__,\"price\":__PRICE__,\"sl\":__SL__,\"tp\":__TP__,\"comment\":\"__COMMENT__\"}}}"
 sed "s/^data: *//" /tmp/sn_s1 | head -c 1600
 '''
+    # The 10015 guard.  Rebound here — between the check call and the send call there is no
+    # other place a price can be shaped, and no way for the two calls to disagree.  This runs
+    # AFTER the entries_enabled gate on purpose: a candidate that was never going to be sent
+    # is journalled with its own digits, not the terminals.
+    price, sl, tp = fmt_px(sym, price), fmt_px(sym, sl), fmt_px(sym, tp)
     cmd = (chk.replace("__SYM__", sym).replace("__TYPE__", otype_api)
            .replace("__VOL__", str(volume)).replace("__PRICE__", str(price))
            .replace("__SL__", str(sl)).replace("__TP__", str(tp)).replace("__COMMENT__", comment))
@@ -1509,8 +1535,8 @@ def main():
                     if p["action"] == "buy" and p["last"] >= p["open"] + 1.5 * r_dist:
                         new_sl = p["last"] - 2 * aa
                         if new_sl > p["sl"]:
-                            j = mcp_call("trade_modify_sl_tp", '{"symbol": "%s", "position_ticket": "%s", "sl": %s}' % (p["sym"], p["id"], round(new_sl, 5)))
-                            journal_alert(f"TRAIL 2xATR: {p['sym']} buy {p['id']} SL->{round(new_sl,5)} | {j[-60:]}")
+                            j = mcp_call("trade_modify_sl_tp", '{"symbol": "%s", "position_ticket": "%s", "sl": %s}' % (p["sym"], p["id"], fmt_px(p["sym"], new_sl)))
+                            journal_alert(f"TRAIL 2xATR: {p['sym']} buy {p['id']} SL->{fmt_px(p['sym'], new_sl)} | {j[-60:]}")
                 except Exception:
                     pass
                 try:
@@ -1519,8 +1545,8 @@ def main():
                     if p["action"] == "sell" and p["last"] <= p["open"] - 1.5 * r_dist:
                         new_sl = p["last"] + 2 * aa
                         if new_sl < p["sl"]:
-                            j = mcp_call("trade_modify_sl_tp", '{"symbol": "%s", "position_ticket": "%s", "sl": %s}' % (p["sym"], p["id"], round(new_sl, 5)))
-                            journal_alert(f"TRAIL 2xATR: {p['sym']} sell {p['id']} SL->{round(new_sl,5)} | {j[-60:]}")
+                            j = mcp_call("trade_modify_sl_tp", '{"symbol": "%s", "position_ticket": "%s", "sl": %s}' % (p["sym"], p["id"], fmt_px(p["sym"], new_sl)))
+                            journal_alert(f"TRAIL 2xATR: {p['sym']} sell {p['id']} SL->{fmt_px(p['sym'], new_sl)} | {j[-60:]}")
                 except Exception:
                     pass
             # T11: day-scope equity flat at window end (backoff: max 3 attempts per ticket per day)

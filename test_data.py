@@ -2498,5 +2498,115 @@ else:
     check("the resident is not next to the repo, so the splice guard runs on the Mac (skipped here)", True,
           "skipped: no sentry_mac.py")
 
+
+# 35 — a price with too many decimals is a REFUSAL, not a rounding preference (retcode 10015).
+# Found while answering "sentry down?": the watch had been dead 17 hours (see 34) and, next to it,
+# 213 journal lines said "CHECK/SEND FAILED ... retcode 10015 Invalid price" — 79 of them XAUUSD,
+# against 26 gold fills ever. Nothing in the build was wrong with size or signal: fire() hands the
+# entry/sl/tp straight through from arithmetic, so the payload carried values like
+# 1.3165645839210065 for a five-digit symbol, and MT5 answers that with "Invalid price" on the
+# trade_check_pending_order call, before an order number exists. The journal printed the same order
+# through rnd(), which is why every one of them looked fine on paper. The fix is one formatter,
+# fmt_px, applied at the single place the payload is built and at the two trail sites, which had
+# hardcoded five digits and so were wrong for gold and for the equity symbols.
+print("\n== 35: what the terminal is actually sent (10015 / digits)")
+if _PROD33 is None:
+    check("the producer is not next to the repo, so the price-shape checks run on the Mac (skipped here)",
+          True, "skipped: no sentry_mac.py")
+else:
+    import re as _re35
+    import json as _json35
+
+    def _dec35(s):
+        return len(s.split(".")[1]) if "." in s else 0
+
+    # the formatter itself, on the exact values the journal shows failing
+    check("fmt_px clips a live offender to the symbols digits",
+          _sm33.fmt_px("GBPUSD", 1.3165645839210065) == "%.*f" % (_sm33.DIGITS["GBPUSD"], 1.3165645839210065),
+          repr(_sm33.fmt_px("GBPUSD", 1.3165645839210065)))
+    _bad35 = []
+    for _s35 in _sm33.SYMS[:]:
+        _d35 = _sm33.DIGITS[_s35]
+        for _k35 in range(7):
+            _v35 = 1.3165645839210065 * (1 + _k35) if _s35 in ("EURUSD", "GBPUSD") else \
+                   (2613.4150000000001 + _k35) if _s35 == "XAUUSD" else (154.13837845882833 + _k35)
+            _o35 = _sm33.fmt_px(_s35, _v35)
+            if _dec35(_o35) > _d35:
+                _bad35.append("%s -> %s (digits %d)" % (_s35, _o35, _d35))
+            if float(_o35) > _v35 and _o35 != repr(_v35):
+                pass                      # either direction is legal; only precision is asserted
+    check("no symbol in the classic five can produce a price with more decimals than it has digits",
+          not _bad35, "; ".join(_bad35[:4]))
+    check("a value fmt_px cannot read stays unread (a missing TP never becomes 0.00)",
+          _sm33.fmt_px("EURUSD", None) is None, repr(_sm33.fmt_px("EURUSD", None)))
+    check("a symbol the catalog has not described yet gets the documented five-digit default, not a pass-through",
+          _sm33.fmt_px("NOSUCH", 1.23456789) == "1.23457", repr(_sm33.fmt_px("NOSUCH", 1.23456789)))
+
+    # the shipped path, not a re-implementation: call send_order with the terminal stubbed out and
+    # read back the curl payload it built.
+    import tempfile as _tf35
+    _tmp35 = _tf35.mkdtemp(prefix="s35desk")
+    _old_state35, _old_mac35, _old_j35 = _sm33.STATE_F, _sm33.mac, _sm33.JOURNAL_F
+    with open(os.path.join(_tmp35, "desk_mode.json"), "w") as _f35:
+        _json35.dump({"entries_enabled": True}, _f35)
+    _cap35 = {}
+
+    def _stub35(cmd, timeout=120):
+        _cap35["cmd"] = cmd
+        return _json35.dumps({"result": {"isError": False,
+                                         "content": [{"text": _json35.dumps({"retcode": 10009,
+                                                                             "order": 59401583433})}]}})
+
+    try:
+        _sm33.STATE_F = os.path.join(_tmp35, "state.json")
+        _sm33.mac = _stub35
+        _sm33.JOURNAL_F = os.path.join(_tmp35, "sentry_journal.md")
+        _st35 = {"orders": [], "logs": [], "theme_risk": {}, "day": "11-18"}
+        _sm33.send_order(_st35, "GBPUSD", "sell stop", 0.28,
+                         1.3165645839210065, 1.3195700000000001, 1.3109599999999995, "S21-pivot")
+        _c35 = _cap35.get("cmd", "")
+        _prices35 = _re35.findall(r"price\\*\"\s*:\s*([0-9]+\.[0-9]+)", _c35)
+        check("the payload send_order builds carries a price at all (the stub was really called)",
+              len(_prices35) >= 2, "%d price fields" % len(_prices35))
+        check("...and every price in it fits inside the symbols digits",
+              _prices35 and all(_dec35(x) <= _sm33.DIGITS["GBPUSD"] for x in _prices35),
+              str(_prices35[:4]))
+        check("the value that MT5 refused is nowhere in what is sent",
+              "1.3165645839210065" not in _c35 and "1.310959999999999" not in _c35, "")
+        check("volume is NOT reformatted — this is a digits fix, not a sizing one",
+              '"volume\\":0.28' in _c35.replace("\\\\", "\\") or "0.28" in _c35, "")
+        _jl35 = ""
+        if os.path.exists(_sm33.JOURNAL_F):
+            _jl35 = open(_sm33.JOURNAL_F).read()
+        check("the journal line shows the number that was sent, not the raw float",
+              "1.3165645839210065" not in _jl35 and ("1.31656" in _jl35 or not _jl35),
+              _jl35[-120:].replace("\n", " "))
+        # and the same call with the gate shut must not reach the terminal at all
+        with open(os.path.join(_tmp35, "desk_mode.json"), "w") as _f35:
+            _json35.dump({"entries_enabled": False}, _f35)
+        _cap35.clear()
+        _sm33.send_order(_st35, "GBPUSD", "sell stop", 0.28, 1.3165645839210065, 1.31957, 1.31096, "S21")
+        check("with entries_enabled false nothing is sent, digits fixed or not",
+              "cmd" not in _cap35, str(_cap35)[:90])
+    finally:
+        _sm33.STATE_F, _sm33.mac, _sm33.JOURNAL_F = _old_state35, _old_mac35, _old_j35
+        import shutil as _sh35
+        _sh35.rmtree(_tmp35, ignore_errors=True)
+
+    # the trail had the same bug in a different file: a hardcoded 5, right or wrong for one symbol only
+    _src35 = open(_PROD33).read()
+    check("no site still hardcodes five digits on a stop it sends",
+          "round(new_sl, 5)" not in _src35 and "round(new_sl,5)" not in _src35, "")
+    _i35 = _src35.index("def send_order")
+    _j35 = _src35.index("def ", _i35 + 10)
+    _body35 = _src35[_i35:_j35]
+    # the raw template is written ABOVE the guard on purpose, so the anchor is where the template is
+    # filled in, not where the placeholder appears: shape the price, then substitute, then call curl.
+    check("the rounding happens once, after the entries gate and before the payload is filled in",
+          0 < _body35.count("fmt_px(sym, price)") == 1
+          and _body35.index("entries_enabled") < _body35.index("fmt_px(sym, price)")
+          < _body35.index('.replace("__PRICE__"'),
+          "count=%d" % _body35.count("fmt_px(sym, price)"))
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)
