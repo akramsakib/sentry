@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-18 19:08 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $66,291.66 · equity $99,253.09
+**2026-11-18 20:31 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $66,291.66 · equity $99,053.63
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$176.00 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,9 +10,9 @@ _Venue cost: 0.02 % maker / 0.05 % taker per side · **$176.00 paid on this book
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| AVAX/USD | buy_limit | 6.896 | 576.641 | $3,977 | $50.00 | 7.003 | -1.53% | 136 min |
-| BCH/USD | buy_stop | 207.43764 | 27.4278 | $5,690 | $56.00 | 208.38 | -0.45% | 154 min |
-| ETH/USD | buy_stop | 1778.1605 | 1.77043 | $3,148 | $50.00 | 1769.27 | +0.50% | 219 min |
+| AVAX/USD | buy_limit | 6.896 | 576.641 | $3,977 | $50.00 | 6.929 | -0.48% | 220 min |
+| BCH/USD | buy_stop | 207.43764 | 27.4278 | $5,690 | $56.00 | 206.03 | +0.68% | 238 min |
+| ETH/USD | buy_stop | 1778.1605 | 1.77043 | $3,148 | $50.00 | 1749.47 | +1.64% | 303 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -20,9 +20,9 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| DOGE/USD | 157867 | 0.05807 | 0.05877 | $110.51 | 0.05790527 | 0.0593965 | +1.97R |
-| SOL/USD | 108.486 | 72.53 | 73.35 | $88.96 | 72.273804 | 74.428 | +1.59R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9716 | $55.12 | 0.94357771 | 0.97833374 | +0.73R |
+| DOGE/USD | 157867 | 0.05807 | 0.05841 | $53.67 | 0.05790527 | 0.0593965 | +0.96R |
+| SOL/USD | 108.486 | 72.53 | 72.8 | $29.29 | 72.273804 | 74.428 | +0.52R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9642 | $20.76 | 0.94357771 | 0.97833374 | +0.28R |
 
 ## Last 12 signals (424 ever logged)
 
