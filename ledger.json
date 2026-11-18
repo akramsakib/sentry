@@ -1229,7 +1229,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9716
+   "current_price": 0.9642
   },
   {
    "symbol": "LTC/USD",
@@ -1238,7 +1238,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 43.691
+   "current_price": 43.67
   },
   {
    "symbol": "XRP/USD",
@@ -1247,7 +1247,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9716
+   "current_price": 0.9642
   },
   {
    "symbol": "SOL/USD",
@@ -1256,7 +1256,7 @@
    "cid": "sentrySOLUSD1795019663510n44",
    "fees": 3.93424455,
    "opened": 1795019663,
-   "current_price": 73.35
+   "current_price": 72.8
   },
   {
    "symbol": "DOGE/USD",
@@ -1265,7 +1265,7 @@
    "cid": "sentryDOGEUSD1795019663767n45",
    "fees": 4.58365517,
    "opened": 1795020701,
-   "current_price": 0.05877
+   "current_price": 0.05841
   }
  ],
  "fees_paid": 175.99729442
