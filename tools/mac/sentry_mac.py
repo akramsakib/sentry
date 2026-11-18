@@ -870,15 +870,48 @@ def has_ungraded_sent(rows=None):
     """True when a trade we sent is still waiting for its outcome — the only reason to pull the history."""
     return any(r.get("fired") and not r.get("result") for r in (rows if rows is not None else tl_rows()))
 
+LIVE_FLOOR_FRAC = 0.01      # the per-trade ceiling a REAL account gets until the desk chooses another one
+ACCT_KIND = ""              # the terminal's own account type, mirrored so the send path can see it
+
+
+def note_account_kind(a):
+    """Remember what kind of money the terminal says this is, module-wide.
+
+    Two places need the answer and neither is allowed to guess: send_order, which must not put a real
+    account's money to work on the strength of a file written for rehearsal, and risk_max_frac, which
+    must not carry the demo's 10 % ceiling over a balance that can actually be overdrawn.  Anything that
+    is not POSITIVELY a demo counts as real — including "unknown", because a build that could not read its
+    own account is in no position to assume it is safe to trade.  That costs a cycle at startup, and it is
+    the only direction this can be wrong in that does not cost money.
+    """
+    global ACCT_KIND
+    ACCT_KIND = str((a or {}).get("type") or "").strip().lower()
+    return ACCT_KIND
+
+
+def account_is_real():
+    # Lowercased HERE as well, not left to note_account_kind: "the only writer normalises it" is exactly
+    # the kind of invariant that survives until someone sets the global from a new place, and the failure
+    # this one makes is a real account being treated as safe.  A missed demo costs a cycle; the reverse
+    # costs money.
+    k = ACCT_KIND.lower()
+    return not ("demo" in k or "trial" in k)
+
+
 def risk_max_frac():
     """The equity ceiling on one minimum-size position, from the desk's own file. Missing/bad -> default;
     0 disables the guard, which is what the main $100k demo wants (its sizes are nowhere near the floor)."""
     try:
         cfg = json.load(open(os.path.dirname(STATE_F) + "/desk_mode.json"))
         v = cfg.get("risk_max_frac_of_equity")
-        return MAX_RISK_FRAC if v is None else max(0.0, float(v))
+        if v is not None:
+            return max(0.0, float(v))        # the desk chose it: honoured, demo or not
     except Exception:
-        return MAX_RISK_FRAC
+        pass
+    # Nothing was chosen.  Then the account decides, and a real one does not inherit the demo's ceiling:
+    # $100 on a $101k rehearsal is 0.1 %, the same $100 on a $1,000 live balance is the whole 10 % guard
+    # firing every single trade.  1 % is where a live account starts, and it is one line to change.
+    return LIVE_FLOOR_FRAC if account_is_real() else MAX_RISK_FRAC
 
 def parse_margin(out, sym, ccy=None):
     """The margin the broker asked for the size we asked about, or None.
@@ -1102,6 +1135,24 @@ def send_order(state, sym, otype, volume, price, sl, tp, skill, risk=None):
     except Exception:
         journal_alert(f"CANDIDATE — {sym} {otype} {volume}@{price} sl{sl} tp{tp} ({skill}) — awaiting Arena desk decision")
         return False
+    # ---- the live-money interlock ----
+    # Everything this build has ever touched is demo money: 118 orders sent and 91 refused on 2026-11-18
+    # alone, on a five-minute cycle.  The only thing that ever stood between that loop and an account that
+    # can be overdrawn was one boolean in a file written for rehearsal, and a login change is all it takes
+    # to repoint it.  So a real account has to be told twice, HERE — not in a page header.  Worth saying
+    # out loud because it is the opposite of what people expect: the terminal's own AutoTrading switch does
+    # NOT gate this path.  That switch gates EAs.  These orders go through the terminal's MCP trade API,
+    # which the demo proved is stopped only by desk_mode.json, so flipping that button off changes nothing.
+    _la = state.get("account") or {}
+    if account_is_real() and not _cfg.get("live_confirmed"):
+        journal_alert(f"REFUSED (live guard) — {sym} {otype} {volume}@{price} sl{sl} tp{tp}: the terminal "
+                      f"answers as login {_la.get('login') or '?'} on {_la.get('server') or '?'}, type "
+                      f"'{ACCT_KIND or 'unknown'}', and this build has not been told to treat that as a "
+                      f"rehearsal. Nothing was sent. Two steps, deliberately: \"live_confirmed\": true in "
+                      f"desk_mode.json, and a risk_max_frac_of_equity chosen against the balance that is "
+                      f"actually in the account — the demo's ceiling is not a decision about your money.")
+        return False
+
     comment = f"Sentry {skill}"[:31]
     otype_api = otype.replace(" ", "_")
     chk = r'''
@@ -1234,6 +1285,7 @@ def main():
             if acc.get("equity") is not None:
                 acc["asof"] = kl_now().strftime("%Y-%m-%d %H:%M:%S KL")
                 state["account"] = acc
+                note_account_kind(acc)   # the send guard reads this, not a page
                 state["_equity"] = acc["equity"]
             elif acct_raw.strip():
                 journal(f"account reply arrived but carried no parsable equity ({len(acct_raw)} chars) — the "

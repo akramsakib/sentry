@@ -2561,6 +2561,10 @@ else:
         _sm33.STATE_F = os.path.join(_tmp35, "state.json")
         _sm33.mac = _stub35
         _sm33.JOURNAL_F = os.path.join(_tmp35, "sentry_journal.md")
+        # This section is about price shape on the demo book.  Section 39 makes "I could not read the
+        # account" mean "do not send", which is the right direction and would otherwise swallow every
+        # payload check here — so the kind these tests assume is now written down, not assumed.
+        _sm33.ACCT_KIND = "demo"
         _st35 = {"orders": [], "logs": [], "theme_risk": {}, "day": "11-18"}
         _sm33.send_order(_st35, "GBPUSD", "sell stop", 0.28,
                          1.3165645839210065, 1.3195700000000001, 1.3109599999999995, "S21-pivot")
@@ -2590,6 +2594,7 @@ else:
               "cmd" not in _cap35, str(_cap35)[:90])
     finally:
         _sm33.STATE_F, _sm33.mac, _sm33.JOURNAL_F = _old_state35, _old_mac35, _old_j35
+        _sm33.ACCT_KIND = ""
         import shutil as _sh35
         _sh35.rmtree(_tmp35, ignore_errors=True)
 
@@ -2833,6 +2838,107 @@ else:
     check("and the page prints it as queued/CAP plus a dropped count, so a stuck queue is visible on the phone",
           "d.channels.queued+'/'+" in _snip0 and "' held, '" in _snip0, "")
     _sh38.rmtree(_d38, ignore_errors=True)
+
+
+# 39 — the live-account interlock.  Added before he logs a VT Markets live account into the terminal, on
+# his question "what you say?"  Everything this build has ever touched is demo money (118 orders sent and 91
+# refused on 2026-11-18 alone, five-minute cycle), and the ONLY thing between that loop and a real balance
+# was one boolean in a file written for rehearsal — desk_mode.json.  So: a real account must be told twice,
+# at the one place an order is built, and a real account does not inherit the demo's 10 % per-trade ceiling.
+# The direction of the failure is the whole design: "could not read the account" is treated as REAL, not as
+# safe.  Costs a cycle at startup; the alternative is guessing.
+print("\n== 39: a real account has to be told twice")
+if _PROD33 is None:
+    check("no producer next to the repo, so the live guard is checked on the Mac (skipped here)",
+          True, "skipped: no sentry_mac.py")
+else:
+    import json as _j39, tempfile as _tf39, shutil as _sh39
+    _d39 = _tf39.mkdtemp(prefix="live39")
+    _osave39 = (_sm33.STATE_F, _sm33.mac, _sm33.JOURNAL_F, _sm33.ACCT_KIND)
+    _sm33.STATE_F = os.path.join(_d39, "state.json")
+    _sm33.JOURNAL_F = os.path.join(_d39, "sentry_journal.md")
+    _MODE39 = os.path.join(_d39, "desk_mode.json")
+    _cap39 = []
+    def _stub39(cmd, timeout=120):
+        _cap39.append(cmd)
+        _inner = _j39.dumps({"retcode": 10009, "order": 59990000001})
+        return _j39.dumps({"result": {"isError": False,
+                                      "content": [{"type": "text", "text": _inner}]}})
+
+    _sm33.mac = _stub39
+
+    def _desk39(**kw):
+        with open(_MODE39, "w") as f:
+            _j39.dump(kw, f)
+
+    def _send39(kind):
+        _cap39[:] = []
+        if os.path.exists(_sm33.JOURNAL_F):
+            os.remove(_sm33.JOURNAL_F)
+        _sm33.ACCT_KIND = kind
+        _st = {"orders": [], "logs": [], "theme_risk": {}, "day": "11-19",
+               "account": {"login": "77881234", "server": "VTMarkets-Live", "type": kind}}
+        return _sm33.send_order(_st, "EURUSD", "sell stop", 0.20, 1.09668, 1.09986, 1.09190, "S21-pivot")
+
+    try:
+        _desk39(entries_enabled=True)
+        _r_demo = _send39("demo")
+        check("a demo account sends exactly as it does today — the guard is invisible to it",
+              len(_cap39) == 1 and _r_demo, "reached the terminal: %d call(s)" % len(_cap39))
+        check("...and says nothing about a live guard while it is at it",
+              "live guard" not in open(_sm33.JOURNAL_F).read(), "")
+        _r_real = _send39("real")
+        check("a REAL account with no explicit yes sends NOTHING — the terminal is never called",
+              len(_cap39) == 0 and _r_real is False, "calls: %d, return %r" % (len(_cap39), _r_real))
+        _jr = open(_sm33.JOURNAL_F).read() if os.path.exists(_sm33.JOURNAL_F) else ""
+        check("...and the refusal is journalled as a refusal, naming the account it refused to trade",
+              "REFUSED (live guard)" in _jr and "77881234" in _jr and "VTMarkets-Live" in _jr, _jr[:120])
+        check("...and it names both steps, so it cannot be mistaken for a broker error",
+              "live_confirmed" in _jr and "risk_max_frac_of_equity" in _jr, "")
+        _r_unk = _send39("")
+        check("an account whose type could not be read is treated as REAL, not as safe",
+              len(_cap39) == 0 and _r_unk is False, "calls: %d" % len(_cap39))
+        _r_demo2 = _send39("Demo")
+        check("the terminal's own capital-D 'Demo' is still a demo (case does not decide money)",
+              len(_cap39) == 1 and _r_demo2 is not False, "calls %d, return %r" % (len(_cap39), _r_demo2))
+        check("'trial' counts as rehearsal too, because that is what MT5 calls its expiring demo",
+              _sm33.note_account_kind({"type": "Trial"}) == "trial" and _sm33.account_is_real() is False, "")
+        _desk39(entries_enabled=True, live_confirmed=True)
+        _r_live = _send39("real")
+        check("with the explicit second yes, a real account trades (the guard is a gate, not a ban)",
+              len(_cap39) == 1 and _r_live is not False,
+              "calls %d, return %r" % (len(_cap39), _r_live))
+        _cap39[:] = []
+        _desk39(entries_enabled=False, live_confirmed=True)
+        _send39("real")
+        check("pause still outranks live_confirmed — the old switch is not replaced by the new one",
+              len(_cap39) == 0, "calls: %d" % len(_cap39))
+
+        # the ceiling: the demo's number is untouched, a real account starts at 1 %
+        _desk39(entries_enabled=True)
+        _sm33.ACCT_KIND = "demo"
+        check("demo keeps the inherited 10 % ceiling to the byte — no sizing change on the $101k book",
+              _sm33.risk_max_frac() == _sm33.MAX_RISK_FRAC == 0.10, repr(_sm33.risk_max_frac()))
+        _sm33.ACCT_KIND = "real"
+        check("a real account with no number chosen starts at 1 % of equity, not 10 %",
+              _sm33.risk_max_frac() == 0.01, repr(_sm33.risk_max_frac()))
+        _desk39(entries_enabled=True, risk_max_frac_of_equity=0.05)
+        check("and a number the desk DID choose is honoured on a real account",
+              _sm33.risk_max_frac() == 0.05, repr(_sm33.risk_max_frac()))
+        _sm33.ACCT_KIND = "demo"
+        check("...as it is on a demo one (one key, one meaning, no account-dependent surprise)",
+              _sm33.risk_max_frac() == 0.05, repr(_sm33.risk_max_frac()))
+        check("note_account_kind survives an empty or missing account record",
+              _sm33.note_account_kind({}) == "" and _sm33.note_account_kind(None) == "", "")
+        _src39 = open(_PROD33).read()
+        _i39 = _src39.index('if account_is_real() and not _cfg.get("live_confirmed")')
+        check("the guard sits after the pause gate and before the payload is built",
+              _src39.rindex("entries_enabled", 0, _i39) < _i39 < _src39.index('cmd = (chk.replace', _i39), "")
+        check("the account mirror is fed from the one place that reads the terminal, not from a page",
+              _src39.index("note_account_kind(acc)") > _src39.index('state["account"] = acc'), "")
+    finally:
+        _sm33.STATE_F, _sm33.mac, _sm33.JOURNAL_F, _sm33.ACCT_KIND = _osave39
+        _sh39.rmtree(_d39, ignore_errors=True)
 
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

@@ -56,10 +56,21 @@ both mine, both now pinned by a test:
    Measured after the kickstart: `cap 5000`, `queued 200`, `full false`, `urgent_held 81`, `dropped 12`
    (frozen, cumulative — nothing further is discarded until 5,000 lines build up).
    Suite: **585 PASS / 0 failed** (sections 34–38 are new since the first row of this file was written).
+4. **The live-account interlock, added before he logs a VT Markets live account into the terminal.**  Up to
+   tonight the only thing between the loop and a real balance was `"entries_enabled": true` in
+   `desk_mode.json` — one boolean written for rehearsal — and the terminal's own AutoTrading switch does not
+   gate this path (it gates EAs; these sends go through the terminal's MCP trade API).  Now `send_order`
+   refuses anything while `account_is_real()` and `desk_mode.json` lacks `"live_confirmed": true`, journalling
+   both steps by name; `note_account_kind()` mirrors the type from the one place that reads the terminal, and
+   **"type unknown" is treated as real, not as safe** (costs a cycle at startup; the reverse costs money).
+   A real account also stops inheriting the demo's ceiling: with no `risk_max_frac_of_equity` chosen, the
+   per-trade cap is 1 % of equity instead of 10 % — measured on the live deployment the demo still reads
+   `max_frac 0.1`, `type 'demo'`, zero live-guard refusals, so the rehearsal is untouched.
+   `test_data.py` §39 (17 checks).  Suite: **602 PASS / 0 failed**.
 
 | file | md5 | bytes |
 |---|---|---|
-| `sentry_mac.py` (the resident — now in the repo too) | `4fde1219dd1ac7418989a027da670ea7` | 108,142 |
+| `sentry_mac.py` (the resident — now in the repo too) | `4b907b9e6ad9c4eb1d6542cc4d539be5` | 111,638 |
 | `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
 | `account_switch.sh` (switch kit) | `ef3dcf53b2ef4f5d632e1a8275d8ced3` | 15,339 |
 | `trade_radar.py` (radar page) | `d29d7cf10cfcd0b62aa57b8b46fe54de` | 74,062 |
