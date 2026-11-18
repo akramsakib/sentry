@@ -3155,8 +3155,22 @@ else:
     check("the column count and the empty-table colspan agree (a drifted colspan misaligns the whole table)",
           seg.count("<th>") == 8 and seg.count('colspan="9"') == 0
           and page.count('colspan="8"') >= 2, "%d th, %d colspan8" % (seg.count("<th>"), page.count('colspan="8"')))
-    check("the compact strip carries the same totals, so the two views cannot disagree",
-          "'trades '+" in _rd41.EMBED or "trades '+" in _rd41.EMBED, _rd41.EMBED[120:260])
+    check("money_block publishes the account leg BY NAME, as the same object as legs[0]",
+          "account_leg" in b and b["account_leg"] is b["legs"][0], sorted(b.keys()))
+    cards41 = page[page.index("card('Total trades'"):page.index("card('Alert delivery'")]
+    check("the three cards headline the account leg, not the four-leg pool",
+          "al.trades" in cards41 and "al.wins" in cards41 and "usd(al.usd)" in cards41
+          and "mny.totals.trades" not in cards41 and "mny.totals.wins" not in cards41,
+          cards41[:110])
+    check("...and the pool is still on the card, as a labelled suffix, so nothing is hidden",
+          "' · all '+mny.totals.legs+' legs '+usd(mny.totals.usd)" in cards41, "")
+    check("a card value names the account kind, so a demo profit is never read as real money on a phone",
+          "al.kind?' ['+al.kind+']'" in cards41, cards41[-230:])
+    check("the compact strip reads the same leg, so the two views cannot disagree about whose money it is",
+          "d.money.account_leg" in _rd41.EMBED and "d.money.totals" not in _rd41.EMBED,
+          _rd41.EMBED[180:320])
+    check("...and 'no close yet' is the wording on the card too, not just in the table",
+          "no close yet" in cards41, "")
     check("and the graded-record table is untouched — one ratio definition, still",
           "<th>Best skill (accuracy)</th>" in page and page.count("def record_block()") == 1, "")
 

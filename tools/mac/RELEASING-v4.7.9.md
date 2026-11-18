@@ -92,10 +92,14 @@ both mine, both now pinned by a test:
    and a second net-R headline (+4.07R over sent trades) beside the graded record's (+0.97R over every
    graded row) differs only by its denominator, which is how a dashboard gets distrusted.  The account kind
    printed next to the dollars is the terminal's own word for itself (`demo`), so a demo profit cannot be
-   read on a phone as real money.  `today` discloses `usd_n`: a graded row with no dollar figure still counts
+   read on a phone as real money.  **The three cards headline `account_leg`, not the pool** — with
+   four legs the pooled card read -$1,230.00 while the account being armed for live was at +$1,659.23, and a
+   glance at the top of the page must never mix simulated fills with his balance; the pooled figure stays in
+   the table's 'every leg' row plus an `all N legs` suffix on the card, and the strip in EMBED reads the same
+   leg so the two views cannot disagree.  `today` discloses `usd_n`: a graded row with no dollar figure still counts
    as a result, so the note says "only 2 of 3 rows carry a $ figure" instead of summing quietly.
-   Suite: **638 PASS / 0 failed** (§41, 29 checks); `fx_watch_test.py` 0 failed; `node --check` parses the
-   14,638 chars of page JS.  Measured on the deployed page after the kickstart: totals `trades 192 | W 54
+   Suite: **643 PASS / 0 failed** (§41, 34 checks); `fx_watch_test.py` 0 failed; `node --check` parses the
+   15,104 chars of page JS.  Measured on the deployed page after the kickstart: totals `trades 192 | W 54
    L 60 void 4 | $ -1230.00 (real 1659.23 / shadow -2889.23)`, MT5 leg `135 · 40W/21L · $1659.23 · demo`,
    the graded record's own line unchanged at 47.9 %, desk still `watch_error None` on the demo.
 
@@ -104,7 +108,7 @@ both mine, both now pinned by a test:
 | `sentry_mac.py` (the resident — now in the repo too) | `4b907b9e6ad9c4eb1d6542cc4d539be5` | 111,638 |
 | `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
 | `account_switch.sh` (switch kit) | `f1d01f716af6a4d08b8b510d71b2e35d` | 17,827 |
-| `trade_radar.py` (radar page) | `1b482e08e485103ed2f56f5c6b15781e` | 87,361 |
+| `trade_radar.py` (radar page) | `0d82d30ae8d46819c8cf83939a2afbd5` | 87,951 |
 
 ## The two things it could not do before
 

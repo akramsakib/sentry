@@ -392,7 +392,9 @@ def money_block(st, rows=None, books_dir=None, day=None):
         today["wins"] = sum(1 for r in g if num(r.get("R")) > 0)
         today["losses"] = sum(1 for r in g if num(r.get("R")) < 0)
         today["net_r"] = round(sum(num(r.get("R")) or 0.0 for r in g), 2) if g else 0.0
-    return {"legs": legs, "totals": tot, "today": today, "kind": fx["kind"],
+    # `account_leg` is the same dict as legs[0], named: the cards read THIS, because it is the only leg the
+    # sentry can actually send orders to. Pooling it with the shadow books is what the table's total row is for.
+    return {"legs": legs, "account_leg": fx, "totals": tot, "today": today, "kind": fx["kind"],
             "real_money": fx["real_money"], "currency": fx["currency"],
             "account_line": st.get("account_line") or ""}
 
@@ -1162,6 +1164,7 @@ async function tick(){
       '<span class="badge '+(d.sentry_alive?'b-live':'b-dead')+'">SENTRY '+(d.sentry_alive?'LIVE':'DOWN')+'</span> '+
       (d.red_window?'<span class="badge b-red">RED WINDOW — no new entries</span>':'');
     const pl = d.float_pl||0;    const mny = d.money||{};
+    const al = mny.account_leg||{};
     const usd = v => (v==null ? '—'
       : (v<0?'−$':'+$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
 
@@ -1175,18 +1178,24 @@ async function tick(){
            (d.record&&d.record.overall&&d.record.overall.win_rate>=0.5)?'up':'down')+
       card('Graded outcomes', (d.record&&d.record.overall?d.record.overall.graded:0)+' ('
             +((d.record&&d.record.overall)?(d.record.overall.decisive||0):0)+' decisive)')+
-      card('Total trades', mny.totals&&mny.totals.trades!=null?mny.totals.trades
-            +(mny.totals.graded!=null?' ('+mny.totals.graded+' graded, '+(mny.totals.ungraded||0)+' open)':'')
+      // THE ACCOUNT, not the pool: these three cards read `account_leg`, the leg the sentry can actually
+      // send orders to. The shadow crypto books are pooled only in the Money table's total row below, so a
+      // glance at 'Profit / Loss' never mixes simulated fills with his balance — and the whole desk is still
+      // one glance away, in the suffix, so nothing is hidden either.
+      card('Total trades', al.trades!=null?al.trades
+            +(al.graded!=null?' ('+al.graded+' graded, '+(al.ungraded||0)+' · no close yet)':'')
             :'—')+
       // counts only — the win-rate card above owns that ratio, for a wider population
-      card('Wins / Losses', (mny.totals&&(mny.totals.wins!=null||mny.totals.losses!=null))
-            ?((mny.totals.wins||0)+'W / '+(mny.totals.losses||0)+'L'
-              +(mny.totals.scratch?' · '+mny.totals.scratch+' void':''))
+      card('Wins / Losses', (al.wins!=null||al.losses!=null)
+            ?((al.wins||0)+'W / '+(al.losses||0)+'L'+(al.scratch?' · '+(al.scratch||0)+' void':''))
             :'—',
-           (mny.totals&&mny.totals.usd!=null)?(mny.totals.usd>0?'up':'down'):'')+
-      card('Profit / Loss', usd(mny.totals&&mny.totals.usd)+(mny.totals&&mny.totals.floating
-            ?' ('+usd(mny.totals.floating)+' open)':''),
-           (mny.totals&&mny.totals.usd>0)?'up':((mny.totals&&mny.totals.usd<0)?'down':''))+      card('Alert delivery', d.channels&&!d.channels.gmail_cfg&&!d.channels.webhook
+           (al.usd!=null)?(al.usd>0?'up':'down'):'')+
+      card('Profit / Loss', usd(al.usd)
+            +(al.floating?' ('+usd(al.floating)+' open)':'')
+            +(al.kind?' ['+al.kind+']':'')
+            +(mny.totals&&mny.totals.legs>1&&mny.totals.usd!=null?' · all '+mny.totals.legs+' legs '+usd(mny.totals.usd):''),
+           (al.usd>0)?'up':((al.usd<0)?'down':''))+
+      card('Alert delivery', d.channels&&!d.channels.gmail_cfg&&!d.channels.webhook
             ? 'LOCAL ONLY' : (d.channels&&d.channels.webhook?'webhook':'mail'),
            (d.channels&&(d.channels.gmail_cfg||d.channels.webhook))?'up':'flat')+
       card('Alerts queued', d.channels?(d.channels.queued+'/'+(d.channels.cap||200)):'-',
@@ -1332,7 +1341,7 @@ tick(); setInterval(tick, 10000);
 EMBED = '''<!DOCTYPE html><html><body style="margin:0;background:#0b0f17;color:#d7e0ea;font:12px -apple-system,sans-serif;padding:8px">
 <b style="color:#2ecc71">● HERMES SENTRY</b> <span id="s">loading…</span>
 <script>async function t(){try{const d=await(await fetch('data.json'+(location.search||''))).json();
-document.getElementById('s').textContent='float '+(d.float_pl||0)+' USD · '+(d.positions||[]).length+' pos · '+(d.orders||[]).length+' orders · '+((d.money&&d.money.totals)?('trades '+(d.money.totals.trades==null?'—':d.money.totals.trades)+' · '+(d.money.totals.wins||0)+'W/'+(d.money.totals.losses||0)+'L · '+((d.money.totals.usd==null)?'—':((d.money.totals.usd<0?'-$':'+$')+Math.abs(d.money.totals.usd).toFixed(2))+' '+d.money.totals.currency+' · '):'')+((d.record&&d.record.overall&&d.record.overall.line)||'win rate —')+' · sentry '+(d.sentry_alive?'LIVE':'DOWN');}catch(e){}}
+document.getElementById('s').textContent='float '+(d.float_pl||0)+' USD · '+(d.positions||[]).length+' pos · '+(d.orders||[]).length+' orders · '+((d.money&&d.money.account_leg)?(function(x){return 'trades '+(x.trades==null?'—':x.trades)+' · '+(x.wins||0)+'W/'+(x.losses||0)+'L · '+((x.usd==null)?'—':((x.usd<0?'-$':'+$')+Math.abs(x.usd).toFixed(2))+' '+(x.currency||'')+(x.kind?' ['+x.kind+']':'')+' · ')})(d.money.account_leg):'')+((d.record&&d.record.overall&&d.record.overall.line)||'win rate —')+' · sentry '+(d.sentry_alive?'LIVE':'DOWN');}catch(e){}}
 t();setInterval(t,15000);</script></body></html>'''
 
 
