@@ -3004,5 +3004,162 @@ else:
           _r40c.stdout[:120])
     _sh40.rmtree(_d40, ignore_errors=True)
 
+
+# ---------- 41: the Money block — total trades, wins, losses and the profit or loss, with nothing invented ----------
+# "on dashboard include its total trades win and loss and profit or loss amount". Every one of those numbers
+# already existed as a PUBLISHED field somewhere (live_record for the terminal leg, `grades` + `realized` for
+# each crypto book); what was missing was a place on the page. So the tests below are mostly about the three
+# ways a display layer like this lies: printing 0 where nobody published a number, pooling shadow dollars
+# with the account's, and quietly re-computing a ratio that another block already owns for a different
+# population. Each check reads the SHIPPED module, not a copy of its logic.
+print("\n== 41: money block (totals, W/L and the dollars, on the dashboard)")
+_MRP41 = _asset("trade_radar.py") or _asset("tools", "mac", "trade_radar.py") or _asset("tools/mac/trade_radar.py")
+if not _MRP41:
+    check("trade_radar.py is not reachable from this folder, so the money checks run on the Mac (skipped here)",
+          True, "skipped: no trade_radar.py")
+else:
+    import tempfile as _tf41, json as _j41
+    _rd41 = _load32("radar41", _MRP41)
+    check("the shipped module has the block, and the payload calls it",
+          hasattr(_rd41, "money_block") and 'snap["money"] = money_block(' in open(_MRP41, encoding="utf-8").read(),
+          "")
+
+    def _st41(**over):
+        st = {"day": "2026-11-19", "account_line": "login 5058788329 · server MetaQuotes-Demo",
+              "account": {"login": "5058788329", "server": "MetaQuotes-Demo", "type": "demo",
+                          "currency": "USD", "profit": -64.11, "equity": 102267.37,
+                          "asof": "2026-11-19 04:19:12 KL"},
+              "live_record": {"sent": 135, "graded": 61, "from_terminal": 61, "wins": 40, "losses": 21,
+                              "scratch": 0, "ungraded": 74, "net_r": 14.52, "net_usd": 1659.23,
+                              "win_rate": 65.6, "currency": "USD"}}
+        st.update(over)
+        return st
+
+    _bk41 = {"okx": {"grades": {"graded": 29, "wins": 6, "losses": 20, "scratch": 3, "net_r": -4.56},
+                     "realized": -1513.39, "equity": 98535.8, "currency": "USD", "venue": "okx",
+                     "state": "shadow", "updated": "2026-11-19 04:14 KL",
+                     "blocked_on": ["no venue key in ./okx.env"], "positions": [{"pnl": 80.54}]},
+             "junk": {"no": "grades", "no_money_either": True}}
+
+    def _dir41(books):
+        d = _tf41.mkdtemp(prefix="money41")
+        for name, j in books.items():
+            open(os.path.join(d, name + ".json"), "w").write(_j41.dumps(j))
+        return d
+
+    _d41 = _dir41(_bk41)
+    _rows41 = [{"ts": "2026-11-19 02:00", "fired": True, "R": 1.0, "profit": 100.0, "sym": "EURUSD"},
+               {"ts": "2026-11-19 03:00", "fired": True, "R": -1.0, "profit": -60.0, "sym": "XAUUSD"},
+               {"ts": "2026-11-19 04:00", "fired": True, "R": 0.5, "sym": "EURUSD"},          # no profit yet
+               {"ts": "2026-11-19 05:00", "fired": False, "R": 1.0, "profit": 999.0},          # never sent
+               {"ts": "2026-11-18 02:00", "fired": True, "R": 1.5, "profit": 150.0, "sym": "NVDA"}]
+    b = _rd41.money_block(_st41(), _rows41, _d41, "2026-11-19")
+    fx = b["legs"][0]
+
+    check("total trades is what was SUBMITTED, and says so — it is never quietly the graded count",
+          fx["trades"] == 135 and fx["trades_is"] == "submitted" and fx["graded"] == 61
+          and fx["ungraded"] == 74, _j41.dumps({k: fx[k] for k in ("trades", "trades_is", "graded", "ungraded")}))
+    check("wins, losses and the dollars are lifted from live_record, not recomputed here",
+          (fx["wins"], fx["losses"], fx["usd"], fx["currency"]) == (40, 21, 1659.23, "USD"),
+          "%s/%s/%s" % (fx["wins"], fx["losses"], fx["usd"]))
+    check("...and the block did not invent a second win rate: the ratio stays in grade_stats",
+          b["real_money"] is False and "win_rate" not in fx, sorted(fx.keys())[:4])
+    check("floating is the account's own profit figure, not a sum of positions",
+          fx["floating"] == -64.11 and fx["kind"] == "demo", fx["floating"])
+    check("a DEMO account's dollars cannot be read as real money: the label is the terminal's own word",
+          fx["real_money"] is False and b["real_money"] is False, fx["kind"])
+    for _kind, _want in (("real", True), ("Real", True), ("demo", False), ("DEMO", False),
+                         ("vt-markets demo", False), ("trial", False), ("investor", True), ("", True),
+                         ("unknown", True)):
+        _st = _st41()
+        _st["account"]["type"] = _kind
+        _got = _rd41.money_block(_st, [], _d41, "2026-11-19")["real_money"]
+        if _got is not _want:
+            check("account kind %-16r reads as real=%s (same rule the live guard uses)" % (_kind, _want),
+                  False, "got %s" % _got)
+            break
+    else:
+        check("the nine account-kind spellings agree with account_is_real(): unknown counts as real, "
+              "anything demo/trial does not", True, "")
+
+    t = b["totals"]
+    check("the shadow leg's dollars are shown but never pooled as the account's",
+          t["usd"] == 145.84 and t["real_usd"] == 1659.23 and t["shadow_usd"] == -1513.39 and t["mixed"] is True,
+          "tot %s real %s shadow %s" % (t["usd"], t["real_usd"], t["shadow_usd"]))
+    check("and the pool says in words that the shadow dollars are simulated fills",
+          "simulated" in t["note"] and "1659.23" in t["note"], t["note"][:90])
+    check("trades are pooled per population, so the total says 164 = 135 sent + 29 graded-only",
+          t["trades"] == 164 and t["real_trades"] == 135 and t["shadow_trades"] == 29,
+          "%s/%s/%s" % (t["trades"], t["real_trades"], t["shadow_trades"]))
+    check("no second headline on the page: totals carry no win rate, no pooled net R, no summed equity",
+          not any(k in t for k in ("win_rate", "net_r", "equity")), sorted(t.keys()))
+    check("...but the block states which population it is, so the two numbers cannot be mistaken for each other",
+          "population" in t.get("what", ""), t.get("what", "")[:80])
+    check("a file in books/ that publishes neither grades nor money is not a leg",
+          len(b["legs"]) == 2 and b["legs"][1]["leg"] == "okx", [l["leg"] for l in b["legs"]])
+    check("today counts only that day's FIRED rows, and says how many carry a $ figure",
+          (b["today"]["graded"], b["today"]["usd"], b["today"]["usd_n"], b["today"]["wins"],
+           b["today"]["losses"], b["today"]["ungraded"]) == (3, 40.0, 2, 2, 1, 0),
+          _j41.dumps(b["today"]))
+    check("a graded row with no $ figure still counts as a result, so the page has to disclose the gap — "
+          "that is what usd_n is for",
+          b["today"]["wins"] + b["today"]["losses"] == b["today"]["graded"]
+          and b["today"]["usd_n"] < b["today"]["graded"]
+          and "rows carry a $ figure" in open(_MRP41, encoding="utf-8").read(),
+          "graded %s, $ figures %s" % (b["today"]["graded"], b["today"]["usd_n"]))
+    check("a below-gate candidate never enters the money total, however tidy its paper R looks",
+          999.0 not in [b["today"]["usd"]] and b["today"]["usd"] == 40.0, "")
+
+    e = _rd41.money_block({}, None, _dir41({}), None)
+    ef = e["legs"][0]
+    check("an empty state prints nothing rather than zeros — trades, W, L and $ all None",
+          all(ef[k] is None for k in ("trades", "graded", "wins", "losses", "ungraded", "usd", "floating")),
+          _j41.dumps({k: ef[k] for k in ("trades", "wins", "usd")}))
+    check("and it explains itself, because a blank table reads as 'nothing happened'",
+          "older than the ledger" in ef.get("note", ""), ef.get("note", ""))
+    check("rows=None (shared module missing) is NOT a zero-dollar day: the day block stays all-None",
+          all(e["today"][k] is None for k in ("graded", "usd", "wins", "losses", "ungraded")),
+          _j41.dumps(e["today"]))
+    check("with no leg published, totals are None too rather than 0",
+          all(e["totals"][k] is None for k in ("trades", "wins", "losses", "usd", "real_usd"))
+          and e["totals"]["mixed"] is False, _j41.dumps(e["totals"])[:120])
+    check("an account kind nobody published reads as demo-safe but never as proof of shadow: kind is 'unknown'",
+          ef["kind"] == "unknown", ef["kind"])
+
+    # a book that quietly omits `state` must not be allowed to look like real money
+    _d41b = _dir41({"quiet": {"grades": {"graded": 10, "wins": 7, "losses": 3}, "realized": 500.0,
+                               "currency": "USD", "venue": "unknown"}})
+    bq = _rd41.money_block(_st41(), [], _d41b, "2026-11-19")
+    check("a book with no `state` field is treated as SHADOW, not silently pooled as real dollars",
+          bq["legs"][1]["shadow"] is True and bq["totals"]["real_usd"] == 1659.23
+          and bq["totals"]["shadow_usd"] == 500.0,
+          "shadow %s real %s" % (bq["legs"][1]["shadow"], bq["totals"]["real_usd"]))
+    _d41c = _dir41({"livekey": {"grades": {"graded": 10, "wins": 7, "losses": 3}, "realized": 500.0,
+                                "state": "live", "currency": "USD", "venue": "bybit"}})
+    bc = _rd41.money_block(_st41(), [], _d41c, "2026-11-19")
+    check("while a book that DOES publish state:live is pooled as real, so the rule is not just a blanket '—'",
+          bc["legs"][1]["shadow"] is False and bc["totals"]["real_usd"] == 2159.23,
+          "real %s" % bc["totals"]["real_usd"])
+
+    page = open(_MRP41, encoding="utf-8").read()
+    i0 = page.index('id="money"')
+    i1 = page.index('<table id="ord">')
+    seg = page[i0:i1]
+    check("the table prints the four things he asked for, in that order",
+          all(x in seg for x in ("<th>Total trades</th>", "<th>Wins</th>", "<th>Losses</th>",
+                                 "<th>Profit / Loss</th>")), seg[:120])
+    check("...and the cards put them above the fold where the phone already looks",
+          all(x in page for x in ("card('Total trades'", "card('Wins / Losses'", "card('Profit / Loss'")), "")
+    check("an unknown figure renders as an em dash, never as $0.00",
+          seg.count("'—'") >= 4 or "null?'—'" in page, "")
+    check("the column count and the empty-table colspan agree (a drifted colspan misaligns the whole table)",
+          seg.count("<th>") == 8 and seg.count('colspan="9"') == 0
+          and page.count('colspan="8"') >= 2, "%d th, %d colspan8" % (seg.count("<th>"), page.count('colspan="8"')))
+    check("the compact strip carries the same totals, so the two views cannot disagree",
+          "'trades '+" in _rd41.EMBED or "trades '+" in _rd41.EMBED, _rd41.EMBED[120:260])
+    check("and the graded-record table is untouched — one ratio definition, still",
+          "<th>Best skill (accuracy)</th>" in page and page.count("def record_block()") == 1, "")
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

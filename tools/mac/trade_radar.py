@@ -258,6 +258,145 @@ def record_block():
             "overall": _gs.merge(*pooled) if pooled else _gs.stats([])}
 
 
+
+
+def money_block(st, rows=None, books_dir=None, day=None):
+    """Total trades, wins, losses and the profit or loss, from what each leg ALREADY publishes.
+
+    One rule keeps this honest: a figure is printed only where that leg itself wrote it. The MT5 leg reads the
+    resident's `live_record` (its counts are joined on the terminal's own closes) and `account` (kind,
+    currency, floating); every crypto leg reads its own `grades` block plus its own `realized`. Nothing here
+    re-derives a win rate or a dollar sum from a comment or a second formula, so this table cannot drift from
+    the desk page -- `grade_stats` stays the one definition of the ratios, and the money is the account's.
+
+    A count nobody published stays None and the page prints an em dash. Printing 0 for "unknown" would read
+    as "it broke even", which is a different claim entirely. A leg that publishes `blocked_on`, or says
+    `state: shadow`, is SHADOW: its dollars are shown (hiding them would be worse) but they are never pooled
+    into `real_usd`. The account kind is the terminal's own word for itself, so a demo profit cannot be
+    misread on a phone as money the desk actually made.
+    """
+    st = st if isinstance(st, dict) else {}
+    lr = st.get("live_record") or {}
+    acc = st.get("account") or {}
+
+    def num(v):
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return None
+        return f if f == f else None
+
+    def i(v):
+        f = num(v)
+        return None if f is None else int(f)
+
+    legs = []
+    k = str(acc.get("type") or "unknown").lower()
+    fx = {"leg": "MT5 · forex, gold, equities",
+          "trades": i(lr.get("sent")), "graded": i(lr.get("graded")),
+          "wins": i(lr.get("wins")), "losses": i(lr.get("losses")), "scratch": i(lr.get("scratch")),
+          "ungraded": i(lr.get("ungraded")), "net_r": num(lr.get("net_r")),
+          "usd": num(lr.get("net_usd")), "floating": num(acc.get("profit")),
+          "equity": num(acc.get("equity")), "currency": acc.get("currency") or lr.get("currency") or "",
+          "kind": str(acc.get("type") or "unknown"), "login": acc.get("login") or "",
+          "server": acc.get("server") or "", "asof": acc.get("asof") or "",
+          "shadow": False, "matched": i(lr.get("from_terminal")),
+          "real_money": not ("demo" in k or "trial" in k)}
+    # `sent` is orders submitted; a book that publishes only graded outcomes has trades == graded.
+    if fx["trades"] is None:
+        fx["trades"] = fx["graded"]
+        fx["trades_is"] = "graded"
+    else:
+        fx["trades_is"] = "submitted"
+    if fx["graded"] is None and fx["trades"] is None:
+        fx["note"] = ("no live_record in state.json — the resident on the Mac is older than the ledger "
+                      "block, so nothing is claimed here")
+    legs.append(fx)
+
+    d = books_dir if books_dir is not None else (BASE + "/books")
+    try:
+        names = sorted(os.listdir(d))
+    except Exception:
+        names = []
+    for fn in names:
+        if not fn.endswith(".json"):
+            continue
+        try:
+            j = json.load(open(os.path.join(d, fn), errors="replace"))
+        except Exception:
+            continue
+        if not isinstance(j, dict):
+            continue
+        g = j.get("grades") or {}
+        pos = [p for p in (j.get("positions") or []) if isinstance(p, dict)]
+        # Fail closed on the money claim. Only a book that publishes `state: live` AND no `blocked_on` gets
+        # its dollars counted as the account's; a field nobody wrote is treated as shadow, never as proof that
+        # a venue key exists. (The producer's guard fails the other way on purpose — an unknown account kind
+        # there must trigger the live check, not skip it.)
+        shadow = bool(j.get("blocked_on")) or str(j.get("state") or "").lower() != "live"
+        fl = sum((num(p.get("pnl")) or 0.0) for p in pos)
+        b = {"leg": fn[:-5], "trades": i(g.get("graded")), "graded": i(g.get("graded")),
+             "wins": i(g.get("wins")), "losses": i(g.get("losses")), "scratch": i(g.get("scratch")),
+             "ungraded": None,
+             "net_r": num(g.get("net_r")), "usd": num(j.get("realized")),
+             "floating": round(fl, 2) if pos else None, "equity": num(j.get("equity")),
+             "currency": j.get("currency") or "USD",
+             "kind": str(j.get("state") or ("shadow" if shadow else "unpublished")),
+             "login": "", "server": j.get("venue") or "", "asof": j.get("updated") or "",
+             "shadow": shadow, "matched": None, "trades_is": "graded", "real_money": not shadow}
+        if b["graded"] is None and b["usd"] is None:
+            continue        # no ledger and no money in this file: not a leg, so it gets no row
+        if b["graded"] is None:
+            b["note"] = "money published, no grades block"
+        legs.append(b)
+
+    def tot_of(key, only=None):
+        vals = [l[key] for l in legs
+                if isinstance(l.get(key), (int, float)) and (only is None or bool(l.get("shadow")) == only)]
+        return round(sum(vals), 2) if vals else None
+
+    w, l = tot_of("wins"), tot_of("losses")
+    # Deliberately absent: no win rate and no pooled net R. grade_stats is the ONE definition of the ratios,
+    # and the graded-record table above already prints them for its own population, which is WIDER than this
+    # block's (every graded row, not only the trades that were sent). A second headline that differs by its
+    # denominator reads as a contradiction, so this block keeps counts and dollars and names its population.
+    tot = {"legs": len(legs), "trades": tot_of("trades"), "graded": tot_of("graded"),
+           "wins": w, "losses": l, "ungraded": tot_of("ungraded"),
+           "usd": tot_of("usd"), "floating": tot_of("floating"), "scratch": tot_of("scratch"),
+           "real_usd": tot_of("usd", False), "shadow_usd": tot_of("usd", True),
+           "real_trades": tot_of("trades", False), "shadow_trades": tot_of("trades", True),
+           "currency": fx["currency"]}
+    tot["decisive"] = None if (w is None and l is None) else (w or 0) + (l or 0)
+    tot["what"] = ("these are the counts and dollars each leg graded for ITSELF, over the trades it sent; "
+                   "the win-rate card above pools every graded row on the desk, sent or not, so the two are "
+                   "different populations and are meant to be read that way")
+    tot["mixed"] = tot["real_usd"] is not None and tot["shadow_usd"] is not None
+    if tot["mixed"]:
+        tot["note"] = ("the total pools the terminal leg with shadow books: real leg $%+.2f, shadow legs "
+                       "$%+.2f — the shadow dollars are simulated fills, not the account's"
+                       % (tot["real_usd"], tot["shadow_usd"]))
+
+    today = {"day": day or "", "graded": None, "usd": None, "wins": None, "losses": None, "ungraded": None}
+    if rows is not None:
+        t = [r for r in rows if isinstance(r, dict) and r.get("fired")
+             and str(r.get("ts") or "")[:10] == (day or "")]
+        g = [r for r in t if isinstance(r.get("R"), (int, float))]
+        today["graded"] = len(g)
+        today["ungraded"] = len(t) - len(g)
+        p = [num(r.get("profit")) for r in g]
+        p = [x for x in p if x is not None]
+        today["usd"] = round(sum(p), 2) if p else 0.0
+        # How many rows actually carried a dollar figure: a day where the ledger has R but no profit must
+        # print "1 of 3 rows carry a $ figure", not a quiet sum of the two that did.
+        today["usd_n"] = len(p)
+        today["wins"] = sum(1 for r in g if num(r.get("R")) > 0)
+        today["losses"] = sum(1 for r in g if num(r.get("R")) < 0)
+        today["net_r"] = round(sum(num(r.get("R")) or 0.0 for r in g), 2) if g else 0.0
+    return {"legs": legs, "totals": tot, "today": today, "kind": fx["kind"],
+            "real_money": fx["real_money"], "currency": fx["currency"],
+            "account_line": st.get("account_line") or ""}
+
+
 def tail(path, n=12):
     try:
         with open(path) as f: return "".join(f.readlines()[-n:])
@@ -327,7 +466,14 @@ def snapshot():
     snap["kl"] = kl_now().strftime("%Y-%m-%d %H:%M:%S")
     snap["red_window"] = red_window()
     snap["float_pl"] = round(sum(p["profit"] for p in snap.get("positions", [])), 2)
-    snap["record"] = record_block()
+    snap["record"] = record_block()    # Money is the same published fields, read once more so a hung terminal cannot stall it: no fetch,
+    # no second formula. `rows is not None` distinguishes "the ledger was read and is empty" from
+    # "the shared module is missing", and the page prints a dash for the latter.
+    _ss = snap.get("sentry_state") or {}
+    snap["money"] = money_block(_ss,
+                                _gs.rows_from(BASE + "/trades_log.jsonl") if _gs is not None else None,
+                                BASE + "/books", _ss.get("day"))
+
     snap["fx_charts"] = fx_charts_block(snap.get("sentry_state") or {})
     ip = lan_ip()
     snap["access"] = {"lan_ip": ip, "port": PORT,
@@ -985,7 +1131,10 @@ h2{font-size:14px;margin:14px 0 6px;color:#9fb2c8}
 <h2>Positions</h2><table id="pos"><tr><th>Symbol</th><th>Dir</th><th>Vol</th><th>Open</th><th>Last</th><th>SL</th><th>TP</th><th>P/L</th></tr></table>
 <h2>Graded record — win rate the sizer is actually reading</h2>
 <table id="record"><tr><th>Book</th><th>Win rate</th><th>W / L / voids</th><th>Graded</th><th>Net R</th><th>Best skill (accuracy)</th></tr></table>
-<h2>Working orders</h2><table id="ord"><tr><th>Symbol</th><th>Type</th><th>Price</th><th>SL</th><th>TP</th><th>State</th></tr></table>
+<h2>Working orders</h2><h2>Money — total trades, wins, losses and the profit or loss, leg by leg</h2>
+<div id="moneynote" class="sub"></div>
+<table id="money"><tr><th>Leg</th><th>Total trades</th><th>Wins</th><th>Losses</th><th>No close yet</th><th>Profit / Loss</th><th>Floating</th><th>Account</th></tr></table>
+<table id="ord"><tr><th>Symbol</th><th>Type</th><th>Price</th><th>SL</th><th>TP</th><th>State</th></tr></table>
 <h2>Forex — the playbook across every chart it reads</h2>
 <div id="fxnote" class="sub"></div>
 <table id="fx"><tr><th>Symbol</th><th>Theme</th><th>Decided today</th><th>Bid / Ask</th></tr></table>
@@ -1012,7 +1161,10 @@ async function tick(){
     document.getElementById('badges').innerHTML =
       '<span class="badge '+(d.sentry_alive?'b-live':'b-dead')+'">SENTRY '+(d.sentry_alive?'LIVE':'DOWN')+'</span> '+
       (d.red_window?'<span class="badge b-red">RED WINDOW — no new entries</span>':'');
-    const pl = d.float_pl||0;
+    const pl = d.float_pl||0;    const mny = d.money||{};
+    const usd = v => (v==null ? '—'
+      : (v<0?'−$':'+$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
+
     document.getElementById('cards').innerHTML =
       card('Floating P/L', (pl>=0?'+':'')+pl+' USD', pl>0?'up':(pl<0?'down':'flat'))+
       card('Positions', (d.positions||[]).length)+
@@ -1023,7 +1175,18 @@ async function tick(){
            (d.record&&d.record.overall&&d.record.overall.win_rate>=0.5)?'up':'down')+
       card('Graded outcomes', (d.record&&d.record.overall?d.record.overall.graded:0)+' ('
             +((d.record&&d.record.overall)?(d.record.overall.decisive||0):0)+' decisive)')+
-      card('Alert delivery', d.channels&&!d.channels.gmail_cfg&&!d.channels.webhook
+      card('Total trades', mny.totals&&mny.totals.trades!=null?mny.totals.trades
+            +(mny.totals.graded!=null?' ('+mny.totals.graded+' graded, '+(mny.totals.ungraded||0)+' open)':'')
+            :'—')+
+      // counts only — the win-rate card above owns that ratio, for a wider population
+      card('Wins / Losses', (mny.totals&&(mny.totals.wins!=null||mny.totals.losses!=null))
+            ?((mny.totals.wins||0)+'W / '+(mny.totals.losses||0)+'L'
+              +(mny.totals.scratch?' · '+mny.totals.scratch+' void':''))
+            :'—',
+           (mny.totals&&mny.totals.usd!=null)?(mny.totals.usd>0?'up':'down'):'')+
+      card('Profit / Loss', usd(mny.totals&&mny.totals.usd)+(mny.totals&&mny.totals.floating
+            ?' ('+usd(mny.totals.floating)+' open)':''),
+           (mny.totals&&mny.totals.usd>0)?'up':((mny.totals&&mny.totals.usd<0)?'down':''))+      card('Alert delivery', d.channels&&!d.channels.gmail_cfg&&!d.channels.webhook
             ? 'LOCAL ONLY' : (d.channels&&d.channels.webhook?'webhook':'mail'),
            (d.channels&&(d.channels.gmail_cfg||d.channels.webhook))?'up':'flat')+
       card('Alerts queued', d.channels?(d.channels.queued+'/'+(d.channels.cap||200)):'-',
@@ -1053,7 +1216,42 @@ async function tick(){
         g.win_rate==null?'—':(100*g.win_rate).toFixed(1)+'%'}</td><td>${g.wins||0} / ${g.losses||0} / ${g.scratch||0}</td><td>${g.graded||0}</td><td>${g.net_r||0}</td><td>${
         (g.by_skill&&g.by_skill.length)?g.by_skill[0].skill+' '+(100*g.by_skill[0].acc).toFixed(0)+'% ('+g.by_skill[0].n+')':'—'}</td></tr>`).join('')
       + (rec.error?`<tr><td colspan="6">${rec.error}</td></tr>`:'');
-    const cp = document.getElementById('cpb');
+    const cp = document.getElementById('cpb');    const mlegs = (d.money&&d.money.legs)||[];
+    document.getElementById('money').innerHTML =
+      '<tr><th>Leg</th><th>Total trades</th><th>Wins</th><th>Losses</th><th>No close yet</th>'
+      +'<th>Profit / Loss</th><th>Floating</th><th>Account</th></tr>'
+      + mlegs.map(x=>`<tr><td>${x.leg}${x.shadow?' <span class="sub">shadow · simulated fills</span>':''}</td>`
+        +`<td>${x.trades==null?'—':x.trades}${x.trades_is=='graded'?' <span class="sub">graded</span>':''}</td>`
+        +`<td class="up">${x.wins==null?'—':x.wins}</td><td class="down">${x.losses==null?'—':x.losses}</td>`
+        +`<td>${x.ungraded==null?'—':x.ungraded}</td>`
+        +`<td class="${x.usd>0?'up':(x.usd<0?'down':'')}">${usd(x.usd)}${x.usd==null?'':' '+x.currency}</td>`
+        +`<td class="${x.floating>0?'up':(x.floating<0?'down':'')}">${usd(x.floating)}</td>`
+        +`<td class="sub">${x.kind||'?'}${x.login?' '+x.login:''}${x.server?' @ '+x.server:''}`
+        +`${x.asof?' · '+x.asof:''}</td></tr>`).join('')
+      + ((d.money&&d.money.totals)?`<tr style="border-top:2px solid #243040"><td><b>every leg</b></td>`
+        +`<td><b>${d.money.totals.trades==null?'—':d.money.totals.trades}</b></td>`
+        +`<td class="up"><b>${d.money.totals.wins==null?'—':d.money.totals.wins}</b></td>`
+        +`<td class="down"><b>${d.money.totals.losses==null?'—':d.money.totals.losses}</b></td>`
+        +`<td><b>${d.money.totals.ungraded==null?'—':d.money.totals.ungraded}</b></td>`
+        +`<td><b>${d.money.totals.net_r==null?'—':(d.money.totals.net_r>=0?'+':'')+d.money.totals.net_r.toFixed(2)}</b></td>`
+        +`<td class="${d.money.totals.usd>0?'up':'down'}"><b>${usd(d.money.totals.usd)} ${d.money.totals.currency||''}</b></td>`
+        +`<td><b>${usd(d.money.totals.floating)}</b></td>`
+        +`<td class="sub">real leg ${usd(d.money.totals.real_usd)} · shadow ${usd(d.money.totals.shadow_usd)}</td></tr>`:'')
+      + ((d.money&&d.money.totals&&d.money.totals.what)
+        ?'<tr><td colspan="8" class="sub">'+d.money.totals.what+'</td></tr>':'')
+      + (mlegs.length?'':'<tr><td colspan="8" class="sub">no leg published a ledger this cycle — '
+        + 'an empty table means nothing was readable, NOT that nothing happened</td></tr>');
+    document.getElementById('moneynote').textContent =
+      ((d.money&&d.money.today&&d.money.today.graded!=null)
+        ? ('today · '+(d.money.today.day||'?')+': '+d.money.today.graded+' graded ('+d.money.today.wins+'W/'
+           +d.money.today.losses+'L, '+(d.money.today.ungraded||0)+' sent but no close yet) for '
+           + usd(d.money.today.usd)
+           +(d.money.today.usd_n!=null&&d.money.today.usd_n!==d.money.today.graded
+              ?' (only '+d.money.today.usd_n+' of '+d.money.today.graded+' rows carry a $ figure)' : '')+' · ')
+        : 'today · the ledger could not be read, so no day figure is claimed · ')
+      + ((d.money&&d.money.totals&&d.money.totals.note) ? d.money.totals.note : '')
+      + ((d.money&&d.money.kind) ? '  [account kind the terminal reports: '+d.money.kind+']' : '');
+
     if (cp) cp.onclick = function(){ const u = (a.phone_url||'');
       if (navigator.clipboard) navigator.clipboard.writeText(u); cp.textContent = 'copied'; };
     const cb = document.getElementById('cmpb'); if (cb) cb.onclick = function(){ document.body.classList.toggle('cmp'); };
@@ -1134,7 +1332,7 @@ tick(); setInterval(tick, 10000);
 EMBED = '''<!DOCTYPE html><html><body style="margin:0;background:#0b0f17;color:#d7e0ea;font:12px -apple-system,sans-serif;padding:8px">
 <b style="color:#2ecc71">● HERMES SENTRY</b> <span id="s">loading…</span>
 <script>async function t(){try{const d=await(await fetch('data.json'+(location.search||''))).json();
-document.getElementById('s').textContent='float '+(d.float_pl||0)+' USD · '+(d.positions||[]).length+' pos · '+(d.orders||[]).length+' orders · '+((d.record&&d.record.overall&&d.record.overall.line)||'win rate —')+' · sentry '+(d.sentry_alive?'LIVE':'DOWN');}catch(e){}}
+document.getElementById('s').textContent='float '+(d.float_pl||0)+' USD · '+(d.positions||[]).length+' pos · '+(d.orders||[]).length+' orders · '+((d.money&&d.money.totals)?('trades '+(d.money.totals.trades==null?'—':d.money.totals.trades)+' · '+(d.money.totals.wins||0)+'W/'+(d.money.totals.losses||0)+'L · '+((d.money.totals.usd==null)?'—':((d.money.totals.usd<0?'-$':'+$')+Math.abs(d.money.totals.usd).toFixed(2))+' '+d.money.totals.currency+' · '):'')+((d.record&&d.record.overall&&d.record.overall.line)||'win rate —')+' · sentry '+(d.sentry_alive?'LIVE':'DOWN');}catch(e){}}
 t();setInterval(t,15000);</script></body></html>'''
 
 

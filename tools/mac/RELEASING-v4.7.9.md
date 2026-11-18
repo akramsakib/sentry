@@ -78,12 +78,33 @@ both mine, both now pinned by a test:
    backup with `entries_enabled: true` while opening the live file paused, and the original is still archived
    verbatim.  Suite: **609 PASS / 0 failed**.
 
+5. **The dashboard now carries the ledger: total trades, wins, losses and the profit or loss.**  He asked for
+   it after the performance read-out, and every figure was already published by something — `live_record` in
+   `state.json` for the terminal leg, each crypto book's `grades` + `realized` — so `money_block()` reads
+   those fields instead of re-deriving anything, and the page prints an em dash wherever nobody published a
+   number (a 0 there would read as "it broke even", which is a different claim).  Three decisions worth
+   keeping:  **trades means SUBMITTED** (`live_record.sent`, 135) with the graded count beside it and "no
+   close yet" (74) named as such, because submitted / filled / graded is the distinction the desk is built
+   on;  **shadow dollars are shown but never pooled as the account's** — a book counts as real only if it
+   publishes `state: live` and no `blocked_on`, so a field nobody wrote fails closed on the money claim
+   (`real_usd` 1,659.23 against `shadow_usd` -2,889.23, printed as separate figures in the footer row);
+   and  **no win rate and no pooled net R live here** — `grade_stats` is the one definition of the ratios,
+   and a second net-R headline (+4.07R over sent trades) beside the graded record's (+0.97R over every
+   graded row) differs only by its denominator, which is how a dashboard gets distrusted.  The account kind
+   printed next to the dollars is the terminal's own word for itself (`demo`), so a demo profit cannot be
+   read on a phone as real money.  `today` discloses `usd_n`: a graded row with no dollar figure still counts
+   as a result, so the note says "only 2 of 3 rows carry a $ figure" instead of summing quietly.
+   Suite: **638 PASS / 0 failed** (§41, 29 checks); `fx_watch_test.py` 0 failed; `node --check` parses the
+   14,638 chars of page JS.  Measured on the deployed page after the kickstart: totals `trades 192 | W 54
+   L 60 void 4 | $ -1230.00 (real 1659.23 / shadow -2889.23)`, MT5 leg `135 · 40W/21L · $1659.23 · demo`,
+   the graded record's own line unchanged at 47.9 %, desk still `watch_error None` on the demo.
+
 | file | md5 | bytes |
 |---|---|---|
 | `sentry_mac.py` (the resident — now in the repo too) | `4b907b9e6ad9c4eb1d6542cc4d539be5` | 111,638 |
 | `monitor.py` (desk page) | `e7389c2aa6c84e78f96792b4f9d5d640` | 52,999 |
 | `account_switch.sh` (switch kit) | `f1d01f716af6a4d08b8b510d71b2e35d` | 17,827 |
-| `trade_radar.py` (radar page) | `d29d7cf10cfcd0b62aa57b8b46fe54de` | 74,062 |
+| `trade_radar.py` (radar page) | `1b482e08e485103ed2f56f5c6b15781e` | 87,361 |
 
 ## The two things it could not do before
 
