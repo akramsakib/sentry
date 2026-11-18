@@ -656,3 +656,17 @@
 - **11-18 10:42 UTC** CANDIDATE(score 5/5) — LTC/USD C-M15-three-outside-down sell_stop 44.25078158 sl44.73804606 tp43.51988485 — paper-graded (spot can't short)
 - **11-18 10:42 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-three-outside-down sell_stop 7.10492752 sl7.2101812 tp6.94704701 — paper-graded (spot can't short)
 - **11-18 10:42 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $100081.90 · 10s · venue fees $129.07 to date @ 0.02/0.05%
+- **11-18 15:28 UTC** CLOSED ETH/USD — graded scratch (-0.02R net of 0.07R in venue fees) from exit 1801.49
+- **11-18 15:28 UTC** SKIP — BTC/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-18 15:28 UTC** ORDER BOOKED — ETH/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 1.770430 @ 1778.16049338 sl1749.91876654 tp1820.52308365 · risk $50.00 · fees ~$3.12 (0.06R)
+- **11-18 15:28 UTC** SKIP — XRP/USD S22-rsi-bull-div: already have pending/position in play
+- **11-18 15:28 UTC** SKIP — XRP/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-18 15:28 UTC** SKIP — SOL/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-18 15:28 UTC** SKIP — DOGE/USD C-H1-shooting-star: already have pending/position in play
+- **11-18 15:28 UTC** SKIP — ADA/USD C-H1-bull-engulfing: already have pending/position in play
+- **11-18 15:28 UTC** SKIP — ADA/USD C-H1-three-inside-up: already have pending/position in play
+- **11-18 15:28 UTC** SKIP — ADA/USD C-M15-bull-harami: already have pending/position in play
+- **11-18 15:28 UTC** CANDIDATE(score 4/5) — LINK/USD C-H1-shooting-star sell_stop 9.10887559 sl9.19281102 tp8.98297244 — paper-graded (spot can't short)
+- **11-18 15:28 UTC** CANDIDATE(score 4/5) — LTC/USD S13-ichimoku-short sell_stop 43.7488414 sl44.66731721 tp42.91300715 — paper-graded (spot can't short)
+- **11-18 15:28 UTC** CANDIDATE(score 4/5) — BCH/USD S1-pullback-short sell_limit 208.55811073 sl210.09998112 tp206.24530513 — paper-graded (spot can't short)
+- **11-18 15:28 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $99600.66 · 7s · venue fees $130.92 to date @ 0.02/0.05%
