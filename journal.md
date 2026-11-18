@@ -681,3 +681,4 @@
 - **11-18 15:36 UTC** CANDIDATE(score 4/5) — BCH/USD S2-breakdown-short sell_stop 206.42001888 sl210.09998112 tp200.90007551 — paper-graded (spot can't short)
 - **11-18 15:36 UTC** CANDIDATE(score 4/5) — BCH/USD S22-rsi-bear-div sell_stop 206.78400755 sl209.90998112 tp202.09504719 — paper-graded (spot can't short)
 - **11-18 15:36 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99622.64 · 10s · venue fees $130.92 to date @ 0.02/0.05%
+- **11-18 15:38 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 1 pendings · 5 positions equity $99542.19 · 9s · venue fees $130.92 to date @ 0.02/0.05%
