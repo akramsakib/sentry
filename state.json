@@ -90,7 +90,8 @@
   "FIRE|AVAX/USD|S21-pivot-S1-short|2026-11-18",
   "FIRE|AVAX/USD|C-M15-bear-engulfing|2026-11-18",
   "FIRE|AVAX/USD|C-M15-tweezer-top|2026-11-18",
-  "FIRE|AVAX/USD|C-M15-three-outside-down|2026-11-18"
+  "FIRE|AVAX/USD|C-M15-three-outside-down|2026-11-18",
+  "FIRE|BTC/USD|S13-ichimoku-short|2026-11-18"
  ],
  "open_cids": {
   "sentryETHUSD1795015735014n41": {
@@ -104,18 +105,6 @@
    "r_dist": 28.241726839999956,
    "score": 3,
    "risk": 50.0
-  },
-  "sentryBTCUSD1795017269617n42": {
-   "sym": "BTC/USD",
-   "skill": "S4-band-fade-long",
-   "otype": "buy_limit",
-   "entry": 63033.2,
-   "sl": 62742.06451993,
-   "tp": 64364.375,
-   "qty": 0.25761202,
-   "r_dist": 291.1354800699992,
-   "score": 3,
-   "risk": 75
   }
  },
  "pos_state": {
@@ -129,7 +118,7 @@
    "skill": "S16-inside-long",
    "be": 0.95972892,
    "sent_sl": 0.95972892,
-   "last_price": 0.976
+   "last_price": 0.9739
   },
   "SOL/USD": {
    "side": "long",
@@ -141,7 +130,7 @@
    "skill": "S16-inside-long",
    "be": 71.39858632,
    "sent_sl": 71.39858632,
-   "last_price": 73.22
+   "last_price": 73.3
   },
   "DOGE/USD": {
    "side": "long",
@@ -153,23 +142,23 @@
    "skill": "C-M15-bull-engulfing",
    "be": null,
    "sent_sl": 0.05820127,
-   "last_price": 0.05866
+   "last_price": 0.05858
   },
   "BTC/USD": {
    "side": "long",
-   "entry": 62972.71,
-   "sl": 62547.97419989,
-   "tp": 64315.68289002,
-   "r_dist": 485.2258001099981,
-   "qty": 0.1545672138270428,
-   "skill": "S18-ma-revert-long",
+   "entry": 62879.25,
+   "sl": 62742.06451993,
+   "tp": 64364.375,
+   "r_dist": 291.1354800699992,
+   "qty": 0.25761202304153163,
+   "skill": "S4-band-fade-long",
    "be": null,
    "sent_sl": null,
    "last_price": null
   }
  },
  "cid_seq": 43,
- "last_cycle": 1795017818.5691226,
+ "last_cycle": 1795018291.9517992,
  "seen_candles": [
   "SOL/USD|H1|tweezer-top|2026-11-16T00:00:00Z",
   "ADA/USD|H1|bear-engulfing|2026-11-16T00:00:00Z",
