@@ -783,3 +783,27 @@
 - **11-19 01:09 UTC** NOTE — AVAX/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
 - **11-19 01:09 UTC** NOTE — AVAX/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-19 01:09 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 3 new · 3 pendings · 3 positions equity $99318.23 · 11s · venue fees $180.42 to date @ 0.02/0.05%
+- **11-19 08:45 UTC** EXPIRED — BTC/USD C-H1-morning-star: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-19 08:45 UTC** EXPIRED — BTC/USD C-H1-three-inside-up: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-19 08:45 UTC** EXPIRED — BTC/USD C-M15-morning-star: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-19 08:45 UTC** ORDER BOOKED — BTC/USD S18-rsi2-long (score 4/5) limit buy_limit qty 0.075209 @ 63561.1 sl62896.28341514 tp64392.12073107 · risk $50.00 · fees ~$4.76 (0.10R)
+- **11-19 08:45 UTC** CANDIDATE(score 4/5) — BTC/USD S22-rsi-bear-div sell_stop 63575.69861793 sl63994.50345518 tp62947.49136205 — paper-graded (spot can't short)
+- **11-19 08:45 UTC** ORDER BOOKED — BTC/USD C-H1-marubozu (score 4/5) stop buy_stop qty 0.082209 @ 63780.40138207 sl63172.19654482 tp64692.70863795 · risk $50.00 · fees ~$5.22 (0.10R)
+- **11-19 08:45 UTC** ORDER BOOKED — BTC/USD C-H1-tweezer-bottom (score 4/5) stop buy_stop qty 0.082209 @ 63780.40138207 sl63172.19654482 tp64692.70863795 · risk $50.00 · fees ~$5.22 (0.10R)
+- **11-19 08:45 UTC** NOTE — BTC/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** CANDIDATE(score 5/5) — BTC/USD C-M15-bear-engulfing sell_stop 63575.69861793 sl63957.60345518 tp63002.84136205 — paper-graded (spot can't short)
+- **11-19 08:45 UTC** NOTE — ETH/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** CANDIDATE(score 4/5) — ETH/USD S22-rsi-bear-div sell_stop 1799.52226669 sl1815.14433328 tp1776.08916681 — paper-graded (spot can't short)
+- **11-19 08:45 UTC** CANDIDATE(score 3/5) — ETH/USD C-M15-bear-engulfing sell_stop 1799.52226669 sl1810.91433328 tp1782.43416681 — paper-graded (spot can't short)
+- **11-19 08:45 UTC** CANDIDATE(score 3/5) — ETH/USD C-M15-tweezer-top sell_stop 1799.52226669 sl1810.91433328 tp1782.43416681 — paper-graded (spot can't short)
+- **11-19 08:45 UTC** SKIP — XRP/USD C-H1-three-outside-up: already have pending/position in play
+- **11-19 08:45 UTC** SKIP — SOL/USD C-H1-marubozu: already have pending/position in play
+- **11-19 08:45 UTC** SKIP — DOGE/USD C-H1-three-outside-up: already have pending/position in play
+- **11-19 08:45 UTC** NOTE — ADA/USD C-H1-marubozu: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** NOTE — LINK/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** CANDIDATE(score 5/5) — LINK/USD C-M15-evening-star sell_stop 9.13275938 sl9.19710154 tp9.03624614 — paper-graded (spot can't short)
+- **11-19 08:45 UTC** NOTE — LTC/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** NOTE — LTC/USD C-H1-marubozu: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** NOTE — LTC/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** NOTE — AVAX/USD C-H1-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-19 08:45 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 3 new · 3 pendings · 3 positions equity $99679.01 · 9s · venue fees $187.96 to date @ 0.02/0.05%
