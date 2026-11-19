@@ -817,3 +817,30 @@
 - **11-19 17:43 UTC** CANDIDATE(score 4/5) — LTC/USD C-M15-marubozu sell_stop 42.43797964 sl43.1650509 tp41.34737275 — paper-graded (spot can't short)
 - **11-19 17:43 UTC** CANDIDATE(score 4/5) — BCH/USD S22-rsi-bear-div sell_stop 203.6287824 sl210.52804399 tp193.27989003 — paper-graded (spot can't short)
 - **11-19 17:43 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 2 new · 2 pendings · 3 positions equity $99155.88 · 12s · venue fees $187.96 to date @ 0.02/0.05%
+- **11-19 23:54 UTC** EXPIRED — LTC/USD S4-band-fade-long: entry trigger rested 6.2 h (>6 h), setup no longer valid
+- **11-19 23:54 UTC** EXPIRED — LTC/USD S18-ma-revert-long: entry trigger rested 6.2 h (>6 h), setup no longer valid
+- **11-19 23:54 UTC** CLOSED DOGE/USD — graded win (+2.17R net of 0.17R in venue fees) from exit 0.0589
+- **11-19 23:54 UTC** CANCEL leftover DOGE/USD order sentryprot1795028889 after close
+- **11-19 23:54 UTC** CANCEL leftover DOGE/USD order sentryprot1795110188 after close
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — BTC/USD S11-dc20-short sell_stop 61648.52342659 sl62092.85944044 tp60315.51538505 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — BTC/USD S11-dc55-short sell_stop 61648.52342659 sl62092.85944044 tp60315.51538505 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — BTC/USD S13-ichimoku-short sell_stop 61808.08513989 sl62911.42972022 tp60506.81538505 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — ETH/USD S11-dc20-short sell_stop 1746.75783621 sl1761.54298276 tp1702.40239654 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** SKIP — XRP/USD S11-dc20-short: already have pending/position in play
+- **11-19 23:54 UTC** SKIP — XRP/USD C-H1-marubozu: already have pending/position in play
+- **11-19 23:54 UTC** SKIP — XRP/USD C-M15-bull-engulfing: already have pending/position in play
+- **11-19 23:54 UTC** SKIP — XRP/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-19 23:54 UTC** SKIP — SOL/USD S11-dc20-short: already have pending/position in play
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — DOGE/USD S11-dc20-short sell_stop 0.05784395 sl0.05830628 tp0.05645697 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — DOGE/USD S13-ichimoku-short sell_stop 0.05801093 sl0.05882814 tp0.05665697 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 5/5) — DOGE/USD C-H1-three-crows sell_stop 0.05735395 sl0.05840512 tp0.05577721 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-three-crows sell_stop 0.14951522 sl0.15216196 tp0.14554509 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — LINK/USD S11-dc20-short sell_stop 8.90304605 sl8.97972371 tp8.67301305 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — LINK/USD S11-dc55-short sell_stop 8.87004605 sl8.94672371 tp8.64001305 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — LTC/USD S11-dc20-short sell_stop 42.07196557 sl42.40820658 tp41.06324255 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — LTC/USD S11-dc55-short sell_stop 42.07196557 sl42.40820658 tp41.06324255 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — LTC/USD S13-ichimoku-short sell_stop 42.16794836 sl43.34910329 tp41.18324255 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — BCH/USD S11-dc20-short sell_stop 203.60017208 sl205.27896753 tp198.56378574 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-marubozu sell_stop 203.21017208 sl207.4295698 tp196.88107549 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** CANDIDATE(score 4/5) — AVAX/USD S11-dc20-short sell_stop 6.8948335 sl6.95899902 tp6.70233692 — paper-graded (spot can't short)
+- **11-19 23:54 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 2 positions equity $98371.79 · 10s · venue fees $199.25 to date @ 0.02/0.05%
