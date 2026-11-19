@@ -1,5 +1,5 @@
 {
- "cash": 57449.5739637403,
+ "cash": 42358.51551553374,
  "realized": -936.1290173782593,
  "orders": [
   {
@@ -1235,8 +1235,11 @@
    "qty": 0.03938240649330377,
    "limit_price": null,
    "stop_price": 63334.98641595,
-   "status": "open",
-   "placed_at": 1795050564
+   "status": "filled",
+   "placed_at": 1795050564,
+   "filled_avg_price": 63334.98641595,
+   "filled_qty": 0.03938240649330377,
+   "filled_at": 1795077915
   },
   {
    "id": "1795050564504",
@@ -1247,8 +1250,11 @@
    "qty": 0.03938240649330377,
    "limit_price": null,
    "stop_price": 63334.98641595,
-   "status": "open",
-   "placed_at": 1795050564
+   "status": "filled",
+   "placed_at": 1795050564,
+   "filled_avg_price": 63334.98641595,
+   "filled_qty": 0.03938240649330377,
+   "filled_at": 1795077915
   },
   {
    "id": "1795050564730",
@@ -1259,8 +1265,74 @@
    "qty": 0.08407565751693094,
    "limit_price": null,
    "stop_price": 63231.48641595,
+   "status": "filled",
+   "placed_at": 1795050564,
+   "filled_avg_price": 63231.48641595,
+   "filled_qty": 0.08407565751693094,
+   "filled_at": 1795077915
+  },
+  {
+   "id": "1795077915751",
+   "client_order_id": "sentryprot1795077915",
+   "symbol": "SOL/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 108.48599330560018,
+   "limit_price": null,
+   "stop_price": 72.71607573,
    "status": "open",
-   "placed_at": 1795050564
+   "placed_at": 1795077915
+  },
+  {
+   "id": "1795077916057",
+   "client_order_id": "sentryprot1795077916",
+   "symbol": "DOGE/USD",
+   "side": "sell",
+   "type": "stop",
+   "qty": 157866.5463873943,
+   "limit_price": null,
+   "stop_price": 0.05811291,
+   "status": "open",
+   "placed_at": 1795077916
+  },
+  {
+   "id": "1795077916412",
+   "client_order_id": "sentryBTCUSD1795077916412n51",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "limit",
+   "qty": 0.0752087134085704,
+   "limit_price": 63561.1,
+   "stop_price": null,
+   "status": "filled",
+   "placed_at": 1795077916,
+   "filled_avg_price": 63539.44,
+   "filled_qty": 0.0752087134085704,
+   "filled_at": 1795077916
+  },
+  {
+   "id": "1795077916717",
+   "client_order_id": "sentryBTCUSD1795077916717n52",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 0.0822091455669363,
+   "limit_price": null,
+   "stop_price": 63780.40138207,
+   "status": "open",
+   "placed_at": 1795077916
+  },
+  {
+   "id": "1795077917067",
+   "client_order_id": "sentryBTCUSD1795077917067n53",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 0.0822091455669363,
+   "limit_price": null,
+   "stop_price": 63780.40138207,
+   "status": "open",
+   "placed_at": 1795077917
   }
  ],
  "positions": [
@@ -1271,7 +1343,7 @@
    "cid": "sentryXRPUSD1794818528191n24",
    "fees": 2.98433994,
    "opened": 1794848490,
-   "current_price": 0.9665
+   "current_price": 0.9795
   },
   {
    "symbol": "LTC/USD",
@@ -1280,7 +1352,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 44.167
+   "current_price": 44.533
   },
   {
    "symbol": "XRP/USD",
@@ -1289,7 +1361,7 @@
    "cid": "sentryXRPUSD1794848491404n29",
    "fees": 2.22830577,
    "opened": 1794848491,
-   "current_price": 0.9665
+   "current_price": 0.9795
   },
   {
    "symbol": "SOL/USD",
@@ -1298,7 +1370,7 @@
    "cid": "sentrySOLUSD1795019663510n44",
    "fees": 3.93424455,
    "opened": 1795019663,
-   "current_price": 73.48
+   "current_price": 74.31
   },
   {
    "symbol": "DOGE/USD",
@@ -1307,7 +1379,7 @@
    "cid": "sentryDOGEUSD1795019663767n45",
    "fees": 4.58365517,
    "opened": 1795020701,
-   "current_price": 0.05885
+   "current_price": 0.05928
   },
   {
    "symbol": "ETH/USD",
@@ -1316,7 +1388,7 @@
    "cid": "sentryETHUSD1795015735014n41",
    "fees": 1.57405433,
    "opened": 1795050564,
-   "current_price": 1783.05
+   "current_price": 1799.07
   },
   {
    "symbol": "BCH/USD",
@@ -1325,8 +1397,44 @@
    "cid": "sentryBCHUSD1795019664043n46",
    "fees": 2.84477706,
    "opened": 1795050564,
-   "current_price": 208.5
+   "current_price": 207.06
+  },
+  {
+   "symbol": "BTC/USD",
+   "qty": 0.03938240649330377,
+   "entry": 63334.98641595,
+   "cid": "sentryBTCUSD1795050564256n48",
+   "fees": 1.24714209,
+   "opened": 1795077915,
+   "current_price": 63539.44
+  },
+  {
+   "symbol": "BTC/USD",
+   "qty": 0.03938240649330377,
+   "entry": 63334.98641595,
+   "cid": "sentryBTCUSD1795050564504n49",
+   "fees": 1.24714209,
+   "opened": 1795077915,
+   "current_price": 63539.44
+  },
+  {
+   "symbol": "BTC/USD",
+   "qty": 0.08407565751693094,
+   "entry": 63231.48641595,
+   "cid": "sentryBTCUSD1795050564730n50",
+   "fees": 2.6581144,
+   "opened": 1795077915,
+   "current_price": 63539.44
+  },
+  {
+   "symbol": "BTC/USD",
+   "qty": 0.0752087134085704,
+   "entry": 63539.44,
+   "cid": "sentryBTCUSD1795077916412n51",
+   "fees": 2.38935977,
+   "opened": 1795077916,
+   "current_price": 63539.44
   }
  ],
- "fees_paid": 180.41612581
+ "fees_paid": 187.95788416
 }
