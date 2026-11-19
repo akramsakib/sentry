@@ -807,3 +807,13 @@
 - **11-19 08:45 UTC** NOTE — LTC/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-19 08:45 UTC** NOTE — AVAX/USD C-H1-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-19 08:45 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 3 new · 3 pendings · 3 positions equity $99679.01 · 9s · venue fees $187.96 to date @ 0.02/0.05%
+- **11-19 17:43 UTC** EXPIRED — BTC/USD S18-rsi2-long: entry trigger rested 9.0 h (>6 h), setup no longer valid
+- **11-19 17:43 UTC** EXPIRED — BTC/USD C-H1-marubozu: entry trigger rested 9.0 h (>6 h), setup no longer valid
+- **11-19 17:43 UTC** EXPIRED — BTC/USD C-H1-tweezer-bottom: entry trigger rested 9.0 h (>6 h), setup no longer valid
+- **11-19 17:43 UTC** SKIP — DOGE/USD S10-ma-cross-short: already have pending/position in play
+- **11-19 17:43 UTC** RE-ANCHORED — LTC/USD S4-band-fade-long: trigger 43.25657304 is already through the tape 42.91 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-19 17:43 UTC** ORDER BOOKED — LTC/USD S4-band-fade-long (score 3/5) limit buy_limit qty 198.316562 @ 42.845635 (collar on 42.91) sl42.65787784 tp44.203 · risk $50.00 · fees ~$8.48 (0.17R)
+- **11-19 17:43 UTC** ORDER BOOKED — LTC/USD S18-ma-revert-long (score 3/5) limit buy_limit qty 118.989934 @ 42.91 sl42.48979639 tp44.14696475 · risk $50.00 · fees ~$5.08 (0.10R)
+- **11-19 17:43 UTC** CANDIDATE(score 4/5) — LTC/USD C-M15-marubozu sell_stop 42.43797964 sl43.1650509 tp41.34737275 — paper-graded (spot can't short)
+- **11-19 17:43 UTC** CANDIDATE(score 4/5) — BCH/USD S22-rsi-bear-div sell_stop 203.6287824 sl210.52804399 tp193.27989003 — paper-graded (spot can't short)
+- **11-19 17:43 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 2 new · 2 pendings · 3 positions equity $99155.88 · 12s · venue fees $187.96 to date @ 0.02/0.05%
