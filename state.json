@@ -38,43 +38,36 @@
   "FIRE|LTC/USD|S13-ichimoku-long|2026-11-19",
   "FIRE|LTC/USD|C-H1-marubozu|2026-11-19",
   "FIRE|LTC/USD|C-H1-three-outside-up|2026-11-19",
-  "FIRE|AVAX/USD|C-H1-tweezer-bottom|2026-11-19"
+  "FIRE|AVAX/USD|C-H1-tweezer-bottom|2026-11-19",
+  "FIRE|DOGE/USD|S10-ma-cross-short|2026-11-19",
+  "FIRE|LTC/USD|S4-band-fade-long|2026-11-19",
+  "FIRE|LTC/USD|S18-ma-revert-long|2026-11-19",
+  "FIRE|LTC/USD|C-M15-marubozu|2026-11-19",
+  "FIRE|BCH/USD|S22-rsi-bear-div|2026-11-19"
  ],
  "open_cids": {
-  "sentryBTCUSD1795077916412n51": {
-   "sym": "BTC/USD",
-   "skill": "S18-rsi2-long",
+  "sentryLTCUSD1795110188767n54": {
+   "sym": "LTC/USD",
+   "skill": "S4-band-fade-long",
    "otype": "buy_limit",
-   "entry": 63561.1,
-   "sl": 62896.28341514,
-   "tp": 64392.12073107,
-   "qty": 0.07520871,
-   "r_dist": 664.8165848599965,
-   "score": 4,
+   "entry": 42.91,
+   "sl": 42.65787784,
+   "tp": 44.203,
+   "qty": 198.3165621,
+   "r_dist": 0.252122159999999,
+   "score": 3,
    "risk": 50.0
   },
-  "sentryBTCUSD1795077916717n52": {
-   "sym": "BTC/USD",
-   "skill": "C-H1-marubozu",
-   "otype": "buy_stop",
-   "entry": 63780.40138207,
-   "sl": 63172.19654482,
-   "tp": 64692.70863795,
-   "qty": 0.08220915,
-   "r_dist": 608.2048372499994,
-   "score": 4,
-   "risk": 50.0
-  },
-  "sentryBTCUSD1795077917067n53": {
-   "sym": "BTC/USD",
-   "skill": "C-H1-tweezer-bottom",
-   "otype": "buy_stop",
-   "entry": 63780.40138207,
-   "sl": 63172.19654482,
-   "tp": 64692.70863795,
-   "qty": 0.08220915,
-   "r_dist": 608.2048372499994,
-   "score": 4,
+  "sentryLTCUSD1795110189074n55": {
+   "sym": "LTC/USD",
+   "skill": "S18-ma-revert-long",
+   "otype": "buy_limit",
+   "entry": 42.91,
+   "sl": 42.48979639,
+   "tp": 44.14696475,
+   "qty": 118.98993443,
+   "r_dist": 0.4202036099999944,
+   "score": 3,
    "risk": 50.0
   }
  },
@@ -89,7 +82,7 @@
    "skill": "S16-inside-long",
    "be": 0.95972892,
    "sent_sl": 0.95972892,
-   "last_price": 0.9794
+   "last_price": 0.9735
   },
   "SOL/USD": {
    "side": "long",
@@ -100,8 +93,8 @@
    "qty": 108.48599330560018,
    "skill": "S4-band-fade-long",
    "be": 72.53,
-   "sent_sl": 72.71607573,
-   "last_price": 74.31
+   "sent_sl": 72.53,
+   "last_price": 73.97
   },
   "DOGE/USD": {
    "side": "long",
@@ -112,14 +105,13 @@
    "qty": 157866.5463873943,
    "skill": "S4-band-fade-long",
    "be": 0.05807,
-   "sent_sl": 0.05811291,
-   "last_price": 0.05928
+   "sent_sl": 0.05807,
+   "last_price": 0.0589
   }
  },
- "cid_seq": 53,
- "last_cycle": 1795077917.5284343,
+ "cid_seq": 55,
+ "last_cycle": 1795110189.4781182,
  "seen_candles": [
-  "LTC/USD|M15|bear-harami|2026-11-16T16:30:00Z",
   "BCH/USD|M15|bear-harami|2026-11-16T16:30:00Z",
   "AVAX/USD|H1|bear-engulfing|2026-11-16T15:00:00Z",
   "AVAX/USD|M15|tweezer-top|2026-11-16T16:30:00Z",
@@ -418,6 +410,7 @@
   "LTC/USD|H1|marubozu|2026-11-19T06:00:00Z",
   "LTC/USD|H1|three-outside-up|2026-11-19T06:00:00Z",
   "BCH/USD|M15|homing-pigeon|2026-11-19T08:15:00Z",
-  "AVAX/USD|H1|tweezer-bottom|2026-11-19T06:00:00Z"
+  "AVAX/USD|H1|tweezer-bottom|2026-11-19T06:00:00Z",
+  "LTC/USD|M15|marubozu|2026-11-19T17:00:00Z"
  ]
 }
