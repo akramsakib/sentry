@@ -2,17 +2,16 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-19 08:45 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $47,139.62 · equity $99,679.01
+**2026-11-19 17:43 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $42,358.52 · equity $99,155.88
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$187.96 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
-## Orders resting on the book now (3)
+## Orders resting on the book now (2)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| BTC/USD | buy_limit | 63561.1 | 0.0752087 | $4,780 | $50.00 | 63561.1 | +0.00% | 0 min |
-| BTC/USD | buy_stop | 63780.401 | 0.0822091 | $5,243 | $50.00 | 63561.1 | +0.35% | 0 min |
-| BTC/USD | buy_stop | 63780.401 | 0.0822091 | $5,243 | $50.00 | 63561.1 | +0.35% | 0 min |
+| LTC/USD | buy_limit | 42.91 | 198.317 | $8,510 | $50.00 | 42.9 | +0.02% | 0 min |
+| LTC/USD | buy_limit | 42.91 | 118.99 | $5,106 | $50.00 | 42.9 | +0.02% | 0 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -20,14 +19,19 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| DOGE/USD | 157867 | 0.05807 | 0.05928 | $191.02 | 0.05790527 | 0.0593965 | +3.41R |
-| SOL/USD | 108.486 | 72.53 | 74.31 | $193.11 | 72.273804 | 74.428 | +3.45R |
-| XRP/USD | 4643.61 | 0.95972892 | 0.9794 | $91.34 | 0.94357771 | 0.97833374 | +1.22R |
+| DOGE/USD | 157867 | 0.05807 | 0.0589 | $131.03 | 0.05790527 | 0.0593965 | +2.34R |
+| SOL/USD | 108.486 | 72.53 | 73.97 | $156.22 | 72.273804 | 74.428 | +2.79R |
+| XRP/USD | 4643.61 | 0.95972892 | 0.9735 | $63.95 | 0.94357771 | 0.97833374 | +0.85R |
 
-## Last 12 signals (447 ever logged)
+## Last 12 signals (452 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-19 17:43 | BCH/USD | S22-rsi-bear-div | 4/5 | 203.62878 | 210.52804 | 193.27989 | $50.00 | paper-graded (spot cannot short) |
+| 11-19 17:43 | LTC/USD | C-M15-marubozu | 4/5 | 42.43798 | 43.165051 | 41.347373 | $50.00 | paper-graded (spot cannot short) |
+| 11-19 17:43 | LTC/USD | S18-ma-revert-long | 3/5 | 42.91 | 42.489796 | 44.146965 | $50.00 | order placed |
+| 11-19 17:43 | LTC/USD | S4-band-fade-long | 3/5 | 43.256573 | 42.657878 | 44.203 | $50.00 | order placed |
+| 11-19 17:43 | DOGE/USD | S10-ma-cross-short | 4/5 | 0.05871878 | 0.05956732 | 0.05738536 | $50.00 | not fired (guard/duplicate) |
 | 11-19 08:45 | LINK/USD | C-M15-evening-star | 5/5 | 9.1327594 | 9.1971015 | 9.0362461 | $62.00 | paper-graded (spot cannot short) |
 | 11-19 08:45 | DOGE/USD | C-H1-three-outside-up | 3/5 | 0.05949835 | 0.05892411 | 0.06035972 | $50.00 | not fired (guard/duplicate) |
 | 11-19 08:45 | SOL/USD | C-H1-marubozu | 4/5 | 75.199696 | 74.390759 | 76.413101 | $50.00 | not fired (guard/duplicate) |
@@ -35,11 +39,6 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 | 11-19 08:45 | ETH/USD | C-M15-tweezer-top | 3/5 | 1799.5223 | 1810.9143 | 1782.4342 | $50.00 | paper-graded (spot cannot short) |
 | 11-19 08:45 | ETH/USD | C-M15-bear-engulfing | 3/5 | 1799.5223 | 1810.9143 | 1782.4342 | $50.00 | paper-graded (spot cannot short) |
 | 11-19 08:45 | ETH/USD | S22-rsi-bear-div | 4/5 | 1799.5223 | 1815.1443 | 1776.0892 | $50.00 | paper-graded (spot cannot short) |
-| 11-19 08:45 | BTC/USD | C-M15-bear-engulfing | 5/5 | 63575.699 | 63957.603 | 63002.841 | $62.00 | paper-graded (spot cannot short) |
-| 11-19 08:45 | BTC/USD | C-H1-tweezer-bottom | 4/5 | 63780.401 | 63172.197 | 64692.709 | $50.00 | order placed |
-| 11-19 08:45 | BTC/USD | C-H1-marubozu | 4/5 | 63780.401 | 63172.197 | 64692.709 | $50.00 | order placed |
-| 11-19 08:45 | BTC/USD | S22-rsi-bear-div | 4/5 | 63575.699 | 63994.503 | 62947.491 | $50.00 | paper-graded (spot cannot short) |
-| 11-19 08:45 | BTC/USD | S18-rsi2-long | 4/5 | 63561.1 | 62896.283 | 64392.121 | $50.00 | order placed |
 
 ## Accuracy so far
 
@@ -47,7 +46,7 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 3 new order(s), 10 symbols scanned
+## This cycle: 2 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
