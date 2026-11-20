@@ -844,3 +844,31 @@
 - **11-19 23:54 UTC** CANDIDATE(score 5/5) — BCH/USD C-H1-marubozu sell_stop 203.21017208 sl207.4295698 tp196.88107549 — paper-graded (spot can't short)
 - **11-19 23:54 UTC** CANDIDATE(score 4/5) — AVAX/USD S11-dc20-short sell_stop 6.8948335 sl6.95899902 tp6.70233692 — paper-graded (spot can't short)
 - **11-19 23:54 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 2 positions equity $98371.79 · 10s · venue fees $199.25 to date @ 0.02/0.05%
+- **11-20 05:29 UTC** CLOSED SOL/USD — graded win (+0.92R net of 0.14R in venue fees) from exit 73.08
+- **11-20 05:29 UTC** CANCEL leftover SOL/USD order sentryprot1795077915 after close
+- **11-20 05:29 UTC** CANCEL leftover SOL/USD order sentryprot1795110188 after close
+- **11-20 05:29 UTC** ORDER BOOKED — BTC/USD C-M15-homing-pigeon (score 3/5) stop buy_stop qty 0.181062 @ 61625.69248478 sl61211.46878805 tp62247.02802986 · risk $75.00 · fees ~$11.12 (0.15R)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — ETH/USD S2-breakdown-short sell_stop 1716.34821746 sl1775.59178254 tp1627.48286983 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — ETH/USD S13-ichimoku-short sell_stop 1723.29693047 sl1776.22613905 tp1676.78831362 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — ETH/USD S21-pivot-S1-short sell_stop 1739.63795365 sl1792.55333333 tp1640.61333333 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** SKIP — XRP/USD S1-pullback-short: already have pending/position in play
+- **11-20 05:29 UTC** ORDER BOOKED — SOL/USD C-M15-homing-pigeon (score 3/5) stop buy_stop qty 119.859314 @ 72.31878103 sl71.69304743 tp73.25738144 · risk $75.00 · fees ~$8.63 (0.12R)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — DOGE/USD S13-ichimoku-short sell_stop 0.05691043 sl0.05850913 tp0.05541302 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — DOGE/USD S21-pivot-S1-short sell_stop 0.05711029 sl0.05855667 tp0.05443667 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** ORDER BOOKED — DOGE/USD S22-rsi-bull-div (score 3/5) stop buy_stop qty 130287.501086 @ 0.05703304 sl0.05645739 tp0.05789653 · risk $75.00 · fees ~$7.39 (0.10R)
+- **11-20 05:29 UTC** CANDIDATE(score 3/5) — ADA/USD S18-rsi2-short sell_limit 0.1479 sl0.15038029 tp0.14479964 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — ADA/USD S13-ichimoku-short sell_stop 0.14758996 sl0.15237007 tp0.14335281 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — ADA/USD S21-pivot-S1-short sell_stop 0.14832664 sl0.15226667 tp0.14106667 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — LINK/USD S13-ichimoku-short sell_stop 8.77310989 sl9.06328022 tp8.52861173 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — LINK/USD S21-pivot-S1-short sell_stop 8.88040659 sl9.13366667 tp8.40966667 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** ORDER BOOKED — LTC/USD S18-ma-revert-long (score 3/5) limit buy_limit qty 107.784887 @ 41.35 sl40.83044664 tp42.68595381 · risk $56.00 · fees ~$4.43 (0.08R)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — LTC/USD S13-ichimoku-short sell_stop 41.272067 sl43.22086601 tp40.20698261 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** ORDER BOOKED — LTC/USD S22-rsi-bull-div (score 3/5) stop buy_stop qty 191.402857 @ 41.49195534 sl41.10011166 tp42.07972085 · risk $75.00 · fees ~$7.90 (0.10R)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-tweezer-top sell_stop 41.60804466 sl42.32988834 tp40.52527915 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-bear-harami sell_stop 41.60804466 sl42.32988834 tp40.52527915 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — BCH/USD S2-breakdown-short sell_stop 201.9609122 sl208.4190878 tp192.27364882 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — BCH/USD S21-pivot-S1-short sell_stop 203.12636488 sl208.58 tp193.01 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — AVAX/USD S18-rsi2-short sell_limit 6.851 sl6.96560972 tp6.70773785 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.83667378 sl7.03065243 tp6.64088218 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** CANDIDATE(score 4/5) — AVAX/USD S21-pivot-S1-short sell_stop 6.92078252 sl7.10866667 tp6.57366667 — paper-graded (spot can't short)
+- **11-20 05:29 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $97818.58 · 10s · venue fees $212.48 to date @ 0.02/0.05%
