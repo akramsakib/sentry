@@ -891,3 +891,15 @@
 - **11-20 12:47 UTC** CANDIDATE(score 4/5) — LTC/USD S2-breakdown-short sell_stop 41.06640649 sl42.16359351 tp39.42062597 — paper-graded (spot can't short)
 - **11-20 12:47 UTC** CANDIDATE(score 4/5) — BCH/USD S13-ichimoku-short sell_stop 196.20005424 sl206.46489153 tp190.87079547 — paper-graded (spot can't short)
 - **11-20 12:47 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $97454.64 · 8s · venue fees $217.70 to date @ 0.02/0.05%
+- **11-20 13:43 UTC** NOTE — ADA/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-20 13:43 UTC** CANDIDATE(score 4/5) — ADA/USD S11-dc20-short sell_stop 0.14690386 sl0.14827681 tp0.14278503 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** CANDIDATE(score 4/5) — ADA/USD S11-dc55-short sell_stop 0.14690386 sl0.14827681 tp0.14278503 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-marubozu sell_stop 0.14640386 sl0.14979034 tp0.14132416 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-three-outside-down sell_stop 0.14640386 sl0.14979034 tp0.14132416 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** CANDIDATE(score 3/5) — BCH/USD S18-rsi2-short sell_limit 197.69 sl200.86188286 tp193.72514642 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** CANDIDATE(score 4/5) — BCH/USD S11-dc20-short sell_stop 200.39567643 sl202.24594143 tp194.84488142 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** CANDIDATE(score 4/5) — BCH/USD S11-dc55-short sell_stop 200.39567643 sl202.24594143 tp194.84488142 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** CANDIDATE(score 4/5) — BCH/USD S3-momentum-short sell_stop 198.56567643 sl202.88864714 tp190.18405857 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** NOTE — AVAX/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-20 13:43 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-three-outside-down sell_stop 6.84726013 sl6.94484968 tp6.70087579 — paper-graded (spot can't short)
+- **11-20 13:43 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $97252.89 · 10s · venue fees $217.70 to date @ 0.02/0.05%
