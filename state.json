@@ -35,7 +35,18 @@
   "FIRE|LINK/USD|C-H1-bull-engulfing|2026-11-20",
   "FIRE|LINK/USD|C-H1-tweezer-bottom|2026-11-20",
   "FIRE|LTC/USD|S2-breakdown-short|2026-11-20",
-  "FIRE|BCH/USD|S13-ichimoku-short|2026-11-20"
+  "FIRE|BCH/USD|S13-ichimoku-short|2026-11-20",
+  "FIRE|ADA/USD|S4-band-fade-long|2026-11-20",
+  "FIRE|ADA/USD|S11-dc20-short|2026-11-20",
+  "FIRE|ADA/USD|S11-dc55-short|2026-11-20",
+  "FIRE|ADA/USD|C-H1-marubozu|2026-11-20",
+  "FIRE|ADA/USD|C-H1-three-outside-down|2026-11-20",
+  "FIRE|BCH/USD|S18-rsi2-short|2026-11-20",
+  "FIRE|BCH/USD|S11-dc20-short|2026-11-20",
+  "FIRE|BCH/USD|S11-dc55-short|2026-11-20",
+  "FIRE|BCH/USD|S3-momentum-short|2026-11-20",
+  "FIRE|AVAX/USD|S4-band-fade-long|2026-11-20",
+  "FIRE|AVAX/USD|C-H1-three-outside-down|2026-11-20"
  ],
  "open_cids": {
   "sentryBTCUSD1795178859364n61": {
@@ -113,14 +124,8 @@
  },
  "pos_state": {},
  "cid_seq": 66,
- "last_cycle": 1795178860.8962102,
+ "last_cycle": 1795182212.2432919,
  "seen_candles": [
-  "SOL/USD|H1|tweezer-bottom|2026-11-17T01:00:00Z",
-  "SOL/USD|M15|shooting-star|2026-11-17T02:30:00Z",
-  "DOGE/USD|H1|tweezer-bottom|2026-11-17T01:00:00Z",
-  "DOGE/USD|M15|tweezer-bottom|2026-11-17T02:30:00Z",
-  "ADA/USD|H1|tweezer-bottom|2026-11-17T01:00:00Z",
-  "ADA/USD|M15|tweezer-bottom|2026-11-17T02:30:00Z",
   "LINK/USD|M15|tweezer-bottom|2026-11-17T02:30:00Z",
   "LTC/USD|H1|bull-engulfing|2026-11-17T01:00:00Z",
   "LTC/USD|H1|tweezer-bottom|2026-11-17T01:00:00Z",
@@ -414,6 +419,12 @@
   "LINK/USD|H1|tweezer-bottom|2026-11-20T10:00:00Z",
   "LTC/USD|H1|tweezer-bottom|2026-11-20T10:00:00Z",
   "BCH/USD|H1|tweezer-bottom|2026-11-20T10:00:00Z",
-  "BCH/USD|M15|homing-pigeon|2026-11-20T12:15:00Z"
+  "BCH/USD|M15|homing-pigeon|2026-11-20T12:15:00Z",
+  "XRP/USD|H1|three-outside-down|2026-11-20T11:00:00Z",
+  "SOL/USD|H1|three-outside-down|2026-11-20T11:00:00Z",
+  "ADA/USD|H1|marubozu|2026-11-20T11:00:00Z",
+  "ADA/USD|H1|three-outside-down|2026-11-20T11:00:00Z",
+  "LINK/USD|H1|marubozu|2026-11-20T11:00:00Z",
+  "AVAX/USD|H1|three-outside-down|2026-11-20T11:00:00Z"
  ]
 }
