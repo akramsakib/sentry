@@ -214,3 +214,66 @@ re-imposing the 4/day cap (day-controlled, no decay: 1st +0.35, 2nd-3rd +0.51, 4
 **Not touched:** the crypto lanes (`crypto/run_cycle.py`, `sentry_core.py`) have their own ledger and their own
 grading path; this file's fixes do not propagate to them. `test_data.py` **665 PASS / 0 failed** (22 checks in
 §42); `tools/mac/fx_watch_test.py` green on the Mac against the deployed copy.
+
+---
+
+## v4.8.1 — the candle bias test, made load-bearing (deployed 2026-11-20 21:29 KL)
+
+One scoring rule, and it exists because the version shipped 45 minutes earlier did nothing.
+
+v4.8.0 changed the candle skills' bias term from `htf in (0, direction)` (which paid the point to a **flat**
+daily, so the entry test was "a pattern appeared and nobody objected") to "the daily must agree", with an OR on
+H1 structure. Then I replayed the term over every C-* row in the ledger to check it, and the check killed the
+change:
+
+- **A flat daily occurs 0 times in 340 rows.** `htf` is `d1[-2].c` vs `d1[-12].c` at ±0.1 %, and over
+  2026-11-13…11-20 it was +1 or −1 on every single candle candidate — so the two spellings granted the same
+  point on every row, and the change refused **0 of 336** replayed rows.
+- The `tr` OR-clause was worse than inert: its only measurable effect was to **promote 2 candidates, both
+  −1.00 R**. n=3 is not evidence for a loophole, so the clause is gone.
+- The losing candle longs were not the flat-daily story at all: they fired **against** a down daily and cleared
+  the gate anyway, because `rr_ok = True` is hardcoded. Gate ≥4 with one free point means three real terms
+  carry a trade, so a bias-blind candle never needed the bias term. That is the leak.
+- The replay's windows are verified, not assumed: a level is drawn at `sig_high + 0.1*ATR` with the stop at
+  `sig_low − 0.25*ATR`, so the stored entry/SL encode the ATR of the window being replayed. The signal bar is
+  found inside the replayed window for **113 of 114** C-H1 rows (99 %), and my recomputed four terms equal the
+  stored score minus the free point on 309 of 336 rows (92 %) — the residual is one-bar drift between the
+  cycle that scored a candidate and the minute stamped on the row.
+
+The fix is therefore the one every `S-*` leg already uses — disagreement is **capped below the gate**, not
+merely de-pointed:
+
+    agrees = (htf == direction)
+    rr_ok = True
+    score = sum([at_lvl, big, close_ext, agrees, rr_ok])
+    if not agrees:
+        score = min(score, (3 if sym in CRYPTO_SET else 4) - 1)
+
+Measured on the corrected record (125 graded sent trades, terminal-graded): keeps 55 candle trades at
+**+0.399 R** (t +3.06, 67.3 % win), refuses 24 at **−0.365 R** (t −2.14, 33.3 %); the book goes **+0.263 →
++0.412 R/trade** and **+32.83 → +41.60 R** on 101 trades. Robustness: leave-one-day-out of the gated book
+stays inside **+0.355 … +0.473**; by symbol GBPUSD −0.68 → +5.73, EURUSD +2.06 → +5.07, XAUUSD +21.08 →
++20.40, NVDA untouched; it gives back +3.00 R on 11-13 and +0.59 R on 11-17. It cannot add a trade — the cap
+only ever lowers a score — so the worst case is "it refuses something that would have won", which is what the
+paper book now measures at score 3.
+
+Measured and **rejected**, so nobody re-pitches it: taking the free point away entirely (candles must earn 4 of
+4) keeps 27 at +0.238 R but refuses 52 that were making +0.130 R — it discards **+6.75 R** of graded profit
+and is worse on 5 of 7 days. And `at_lvl` reads inverted (off-level: 9 graded at +0.587 R, 72 paper at
++0.139 R; on-level: 70 graded at +0.113 R, 79 paper at −0.165 R): a 9-trade finding, so it gets the v4.8.0
+`ctx` fields and time, not a rule.
+
+Untouched, deliberately: every `S-*` leg's scoring, the ≥4 gate itself, the 2×ATR trail, the +1R breakeven, the
+no-chasing geometry refusal, the sizing band and the caps. The record, sizer and grading fixes from v4.8.0 are
+unchanged by this release; the crypto lane is unchanged (its candle rows would cap at 2 against its ≥3 floor —
+this account lists no coins, so that path is defensive only).
+
+Verification. `test_data.py` **0 checks failed** (668 incl. four new §42 checks: the term's exact spelling, the
+cap's presence *and its position between the sum and the send*, that crypto's own floor is what the cap reads,
+and that the S-* scoring did not move). `tools/mac/fx_watch_test.py` **0 checks failed**, run on the Mac against
+the installed file. Deployed at a cycle boundary (waited 46 tries for `state.json` to be <8 s old), previous
+build kept at `archive/v479/sentry_mac.py.pre-biascap`, `md5 c3d0fd3e6ae865ce5ea3c0dee25f002b` byte-equal Mac ↔
+sandbox ↔ repo, 0 tracebacks in `sentry.out.log`. Behaviour proven on the deployed file with a sandboxed cycle
+(`tools_sandbox/bias_probe.py`: temp state/journal/ledger, `send_order` stubbed, every mutating MCP tool
+refused): the same `C-M15-morning-star` AMD buy is scored **5** on the real daily and **3** when the daily is
+forced down, and **no candle row anywhere reaches 4 against a disagreeing daily**.

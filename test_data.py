@@ -3312,11 +3312,26 @@ if _sm42:
           "%d payloads" % _src42.count("**ctx}"))
 
     # ---- 5. the confluence rule, and what must NOT have moved
-    check("candle skills now need a bias that AGREES (daily or structure), symmetric on both sides",
-          "agrees = (htf == direction) or (tr == (" in _src42
+    check("candle skills need a daily that AGREES, with no structure escape hatch (on the record the hatch only"
+          " ever loosened: 2 candidates promoted, both -1.00R, n=3 is not evidence)",
+          "agrees = (htf == direction)\n" in _src42
+          and 'agrees = (htf == direction) or' not in _src42
           and "score = sum([at_lvl, big, close_ext, agrees, rr_ok])" in _src42
           and "close_ext, htf in (0, direction), rr_ok" not in _src42,
-          "the OLD form survives only inside the comment that explains why it was wrong")
+          "old spellings may survive only inside the comment that explains why they were wrong")
+    check("and the requirement is LOAD-BEARING: disagreement caps the score below the gate, the way every S-*"
+          " leg already caps it -- re-pointing the term alone refused 0 of 336 replayed rows because rr_ok is"
+          " hardcoded and carries a bias-blind candle to 4 by itself",
+          "if not agrees:" in _src42
+          and "score = min(score, (3 if sym in CRYPTO_SET else 4) - 1)" in _src42,
+          "the cap must use each lane's own gate so crypto (>=3) is covered by the same sentence")
+    check("the cap sits between the sum and the send, so nothing re-raises a capped candle",
+          -1 < _src42.index("score = sum([at_lvl, big, close_ext, agrees, rr_ok])")
+          < _src42.index("if not agrees:") < _src42.index('skill = f"C-{tflabel}-{name}"'),
+          "ordering check")
+    check("the gate still fires on a cap: 4 real terms with the daily agreeing, and a capped 3 when it does not",
+          all(k in _src42 for k in ("at_lvl = level_prox(", "big = abs(sig[\"c\"] - sig[\"o\"])",
+                                    "close_ext = (direction == 1")) and _src42.count("if not agrees:") == 1, "")
     check("the S-* legs' own bias requirement is untouched (they were never the leak)",
           _src42.count("4 if htf > 0 else 3") >= 4 and _src42.count("4 if htf < 0 else 3") >= 4, "")
     check("no money-path behaviour changed except that score: send, interlock, geometry, min-lot and margin all intact",

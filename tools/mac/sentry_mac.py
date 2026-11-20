@@ -9,7 +9,10 @@ Loop (every CYCLE seconds):
   5. Housekeeping: +1R breakeven moves, equity day-window deletion, red-window bans.
 
 Guardrails ENFORCED: pending orders only, score >= 4, one per symbol-skill per day, no duplicate within 1.5xATR
-of a placed order, broker min-lot + measured margin floor + the equity risk cap, and a pre-send geometry check.
+of a placed order, broker min-lot + measured margin floor + the equity risk cap, a pre-send geometry check, and
+since v4.8.1 a candle bias test that can actually stop something: a candle the DAILY disagrees with is capped
+below the gate (the S-* legs have always been capped that way; the candle legs only lost a point, and a
+hardcoded rr_ok point meant they still reached 4).
 ADVISORY ONLY (journalled, never enforced): the $600 theme cap and MAX_SENTRY_ORDERS_DAY. v4.8.0 spells the
 difference out because v4.7.9's header advertised "<=4/day" as a guardrail while fire() wrote a NOTE and kept
 sending — 22 entries on 2026-11-20, 46 on 11-17.
@@ -1613,16 +1616,35 @@ def main():
                         at_lvl = level_prox((sig["h"]+sig["l"])/2, levels, a)
                         big = abs(sig["c"] - sig["o"]) > avg_body if tflabel == "M15" else abs(sig["c"] - sig["o"]) > 0.5*a
                         close_ext = (direction == 1 and sig["c"] > (sig["h"]+sig["l"])/2) or (direction == -1 and sig["c"] < (sig["h"]+sig["l"])/2)
-                        # v4.8.0: a candle signal needs a bias that AGREES with it, not merely one that stays
-                        # out of the way. `htf in (0, direction)` gave the point to a FLAT daily, so the entry
-                        # condition was "a pattern appeared and nothing objected" — on the live record C-* longs
-                        # ran -0.426R over 25 trades (total -10.65R) while every S-* long leg already requires
-                        # htf == direction. Applied to BOTH sides on purpose: a flat daily with flat structure now
-                        # refuses shorts too, so this is a confluence rule and not a fit to one down week. What
-                        # it drops still reaches the paper book at score 3, so it grades its own counterfactual.
-                        agrees = (htf == direction) or (tr == ("up" if direction > 0 else "down"))
+                        # v4.8.1: the daily has to AGREE, and the requirement has to be load-bearing.
+                        # v4.8.0 re-pointed this term -- `htf in (0, direction)` used to pay the point to a FLAT
+                        # daily -- and the ledger says that change refused NOTHING: across 336 replayed C-* rows
+                        # a flat daily never appeared once (htf==0 in 0 of 340), so both spellings granted the
+                        # same point on every row and the OR-clause on `tr` only ever loosened it (its entire
+                        # measured effect: 2 candidates promoted, both -1.00R; n=3 is not evidence, so it is
+                        # gone). The leak is two lines down: rr_ok is hardcoded, so at_lvl+big+close_ext+rr_ok
+                        # reaches 4 by itself and a bias-blind candle clears the gate with the bias term at
+                        # zero. That is exactly why every S-* leg is written `4 if htf agrees else 3`: for those
+                        # skills disagreement is capped BELOW the gate; here it merely cost a point. So the cap
+                        # is the fix, not the term -- a candle the daily disagrees with cannot be sent, no
+                        # matter how good the candle is. Measured on the corrected record: keeps 55 candle
+                        # trades at +0.399R (t +3.06, 67.3% win), refuses 24 at -0.365R (t -2.14, 33.3%), the
+                        # book goes +0.263 -> +0.412 R/trade and +32.83 -> +41.60 R; every leave-one-day fold
+                        # lands in +0.355..+0.473 and no symbol is made worse (GBPUSD -0.68 -> +5.73, EURUSD
+                        # +2.06 -> +5.07, XAUUSD/NVDA keep everything). It costs profit on 2 of 7 days (11-13
+                        # -3.00R, 11-17 -0.59R) and it ships anyway, because it is the S-* convention applied
+                        # symmetrically to both directions rather than a fit to this week's total. Refused rows
+                        # are still journalled at score 3, so the paper track grades the counterfactual.
+                        # Measured and NOT shipped: taking the free point away entirely (candles earn 4 of 4) --
+                        # keeps 27 at +0.238R but refuses 52 that were making +0.130R, i.e. it discards +6.75R
+                        # of graded profit and loses on 5 of 7 days. And at_lvl reads inverted (off-level: 9
+                        # graded at +0.587R, 72 paper at +0.139R) -- a 9-trade finding, so it gets the new ctx
+                        # fields and time, not a change.
+                        agrees = (htf == direction)
                         rr_ok = True
                         score = sum([at_lvl, big, close_ext, agrees, rr_ok])
+                        if not agrees:
+                            score = min(score, (3 if sym in CRYPTO_SET else 4) - 1)
                         skill = f"C-{tflabel}-{name}"
                         if direction == 1:
                             e = sig["h"] + 0.1*a; sl = sig["l"] - 0.25*a
