@@ -3175,5 +3175,163 @@ else:
           "<th>Best skill (accuracy)</th>" in page and page.count("def record_block()") == 1, "")
 
 
+# ---------------------------------------------------------------------------
+# 42. v4.8.0 — the record IS the instrument panel
+# The 2026-11-20 audit ("is sentry working?") found the desk publishing 36 graded trades while 121 existed,
+# and found the reason in two places that no earlier section could see: the grading JOIN's caller was passing
+# every ledger ticket as `known_tickets` (deleting each ungraded row's own close from the pool), and the record
+# plus the sizer were reading `[-600:]` / `[-120:]` LINES of a file that is mostly refused candidates. Both are
+# wiring defects, not logic defects — §37 tested match_closes in isolation and passed while the build was dead.
+# So this section tests the CALL SITE and the POPULATION, not the functions again.
+print("\n== 42: grading call site, record window, the sizer's population, the confluence rule")
+import importlib.util as _ilu42
+import json as _json42
+import os as _os42
+import tempfile as _tf42
+
+_HERE42 = _os42.path.dirname(_os42.path.abspath(__file__))
+_PROD42 = next((x for x in (_os42.path.join(_HERE42, "..", "sentry_mac.py"),
+                            _os42.path.join(_HERE42, "tools", "mac", "sentry_mac.py"),
+                            "/home/user/sentry_mac.py") if _os42.path.exists(x)), None)
+if _PROD42 is None:
+    check("42 producer present (Mac-side by design; the Mac runs tools/mac/fx_watch_test.py)", True, "skipped")
+    _sm42 = None
+    _src42 = ""
+else:
+    _sp42 = _ilu42.spec_from_file_location("fx_prod42", _PROD42)
+    _sm42 = _ilu42.module_from_spec(_sp42)
+    _sp42.loader.exec_module(_sm42)           # import only; the resident starts under __main__
+    _src42 = open(_PROD42, errors="replace").read()
+
+_TL42 = _os42.path.join(_tf42.mkdtemp(prefix="tl42"), "trades_log.jsonl")
+_OLD_TL42 = _sm42.TL_PATH if _sm42 else None
+if _sm42:
+    _sm42.TL_PATH = _TL42
+
+
+def _w42(rows):
+    with open(_TL42, "w") as f:
+        for r in rows:
+            f.write(_json42.dumps(r) + "\n")
+
+
+def _sent(rid, ticket, skill="S13-ichimoku-short", sym="EURUSD", result=None, gs="terminal",
+          ts="2026-11-14 03:00", risk=100.0):
+    r = {"rid": rid, "ticket": ticket, "sym": sym, "skill": skill, "otype": "sell stop", "entry": 1.10,
+         "sl": 1.1010, "tp": 1.0985, "score": 4, "risk": risk, "fired": True, "vol": 0.5, "ts": ts}
+    if result:
+        r["result"] = result
+        r["R"] = 1.0 if result == "win" else -1.0
+        if gs:
+            r["grade_source"] = gs
+    return r
+
+
+if _sm42:
+    # ---- 2. the window: the record must not age its own history out of sight
+    _w42([_sent("r%03d" % i, "9%03d" % i, result="win") for i in range(100)]
+         + [{"rid": "p%d" % i, "sym": "EURUSD", "skill": "C-M15-marubozu", "score": 3, "fired": False,
+             "ts": "2026-11-20 03:00"} for i in range(620)])
+    check("tl_rows() reads the WHOLE ledger, so a growing file cannot hide graded trades from the record",
+          len(_sm42.tl_rows()) == 720, "%d rows read, 720 written" % len(_sm42.tl_rows()))
+    check("...and an explicit limit still works, for any caller that wants one",
+          len(_sm42.tl_rows(50)) == 50 and len(_sm42.tl_rows(limit=720)) == 720, "")
+    _rec42 = _sm42.live_record(_sm42.tl_rows(), "USD")
+    check("the published record therefore counts all 100 graded trades, not the 0 that survived [-600:]",
+          _rec42["graded"] == 100 and _rec42["sent"] == 100 and _rec42["ungraded"] == 0, str(_rec42))
+    check("...and it did NOT lose the shape the desk page reads (keys + from_terminal)",
+          sorted(_rec42) == sorted("sent graded wins losses scratch ungraded net_r net_usd win_rate currency "
+                                    "from_terminal".split()) and _rec42["from_terminal"] == 100, sorted(_rec42))
+    check("has_ungraded_sent also sees the whole file (that flag is what makes the history fetch happen at all)",
+          _sm42.has_ungraded_sent() is False and
+          (_w42([_sent("r1", "9001")]) or _sm42.has_ungraded_sent() is True, True)[1], "")
+
+    # ---- 1. the call site: a row's own ticket must not disqualify its own close
+    _w42([_sent("rA", "59000001"), _sent("rB", "59000002", result="win")])
+    _cls42 = [{"ticket": "59000001", "sym": "EURUSD", "comment": "Sentry S13-ichimo",
+               "open_time": "2026-11-14 03:05:00", "close_time": "2026-11-14 08:00:00",
+               "open_price": 1.10, "close_price": 1.0985, "profit": 75.0, "volume": 0.5},
+              {"ticket": "59000002", "sym": "EURUSD", "comment": "Sentry S13-ichimo",
+               "open_time": "2026-11-14 04:00:00", "close_time": "2026-11-14 09:00:00",
+               "open_price": 1.10, "close_price": 1.0985, "profit": 60.0, "volume": 0.5}]
+    _as_called = _sm42.match_closes(_sm42.tl_rows(), _cls42)
+    _as_before = _sm42.match_closes(_sm42.tl_rows(), _cls42,
+                                    {str(r.get("ticket")) for r in _sm42.tl_rows() if r.get("ticket")})
+    check("the resident's call form grades a close whose ticket is on the ungraded row (the v4.8.0 fix)",
+          len(_as_called) == 1 and _as_called[0]["rid"] == "rA" and _as_called[0]["via"] == "ticket",
+          str(_as_called)[:120])
+    check("...and the OLD call form finds nothing on that same data — this is the regression, pinned",
+          _as_before == [], str(_as_before)[:120])
+    # comment-only matching compares against comment_for(skill), which the terminal truncates at 31 chars —
+    # build the fixture from the function so it cannot drift out of sync with a renamed skill.
+    _cls42b = [dict(_cls42[0], ticket="99991", comment=_sm42.comment_for("S13-ichimoku-short"))]
+    check("removing the exclusion does NOT let one close settle two rows (the `used` set still guards)",
+          len(_sm42.match_closes([_sent("rX", None, result=None, ts="2026-11-14 11:00"),
+                                  _sent("rY", None, result=None, ts="2026-11-14 11:00")], _cls42b)) == 1,
+          "one close, two candidate rows, exactly one owner (open_time 03:05 UTC = 11:05 KL)")
+    check("...and a comment-only match OUTSIDE the 6h window is still refused, offset accounted for",
+          _sm42.match_closes([_sent("rZ", None, result=None, ts="2026-11-15 22:00")], _cls42b) == [], "")
+    check("source: the third argument is gone from the call site, and the exclusion set is not rebuilt nearby",
+          "match_closes(rows_now, closed_now)" in _src42 and 'mine = {str(r.get("ticket"))' not in _src42, "")
+
+    # ---- 3. the sizer's population: money, not the paper book
+    _w42([{"rid": "x%d" % i, "sym": "EURUSD", "skill": "S4-band-fade-long", "score": 3, "fired": False,
+           "result": "win", "R": 1.0, "ts": "2026-11-20 03:00"} for i in range(12)]
+         + [_sent("m%d" % i, "700%d" % i, skill="S4-band-fade-long", result="loss",
+                  ts="2026-11-1%d 03:00" % (i + 1)) for i in range(3)])
+    check("skill_acc ignores the paper track: 12 simulated wins no longer outweigh 3 real losses",
+          abs(_sm42.skill_acc("S4-band-fade-long") - 0.0) < 1e-9, str(_sm42.skill_acc("S4-band-fade-long")))
+    check("...and a skill with no live record inherits the LIVE global (0.0 here), not the paper 1.0",
+          abs(_sm42.skill_acc("C-H1-dragonfly") - 0.0) < 1e-9, str(_sm42.skill_acc("C-H1-dragonfly")))
+    _hot = [_sent("h%d" % i, "800%d" % i, skill="C-M15-tweezer-top", result="win",
+                  ts="2026-11-1%d 03:00" % (i + 1)) for i in range(4)]
+    _w42(_hot)
+    check("a skill the terminal says is 4/4 gets sized UP, inside the $50-$200 band",
+          abs(_sm42.skill_acc("C-M15-tweezer-top") - 1.0) < 1e-9 and 100 < _sm42.self_size("C-M15-tweezer-top", 4) <= 200,
+          "acc %s size %s" % (_sm42.skill_acc("C-M15-tweezer-top"), _sm42.self_size("C-M15-tweezer-top", 4)))
+    _w42([_sent("l%d" % i, "810%d" % i, skill="C-M15-evening-star", result="loss",
+                 ts="2026-11-1%d 03:00" % (i + 1)) for i in range(4)])
+    check("...and one the terminal says is 0/4 gets sized DOWN, floored at MIN_RISK",
+          50 <= _sm42.self_size("C-M15-evening-star", 4) < 100, "size %s" % _sm42.self_size("C-M15-evening-star", 4))
+    _w42([_sent("g%d" % i, "820%d" % i, skill="S1-pullback-short", result="win", ts="2026-11-12 03:00")
+           for i in range(300)])
+    check("the sizer sees the whole graded history, so 300 old graded trades are no longer invisible to it",
+          abs(_sm42.skill_acc("S1-pullback-short") - 1.0) < 1e-9 and _sm42.self_size("S1-pullback-short", 4) > 100,
+          "%s" % _sm42.skill_acc("S1-pullback-short"))
+
+    # ---- 4. instrumentation: the bias a signal was judged on, on the row
+    _w42([])
+    _sm42.tl_log({"rid": "z1", "sym": "EURUSD", "skill": "S1-pullback-long", "fired": False, "score": 4,
+                  "htf": 1, "tr": "up", "atr": 0.0041, "near": True})
+    _row42 = _json42.loads(open(_TL42).read().splitlines()[-1])
+    check("extra context keys survive the ledger write (they are the only way the confluence question is answerable)",
+          _row42.get("htf") == 1 and _row42.get("tr") == "up" and _row42.get("near") is True and "ts" in _row42,
+          str(_row42)[:130])
+    check("all four fire() paths carry it — the sub-gate, the size refusal, the geometry hold and the send",
+          _src42.count("**ctx}") == 4 and _src42.count('ctx = {"htf": htf, "tr": tr,') == 1,
+          "%d payloads" % _src42.count("**ctx}"))
+
+    # ---- 5. the confluence rule, and what must NOT have moved
+    check("candle skills now need a bias that AGREES (daily or structure), symmetric on both sides",
+          "agrees = (htf == direction) or (tr == (" in _src42
+          and "score = sum([at_lvl, big, close_ext, agrees, rr_ok])" in _src42
+          and "close_ext, htf in (0, direction), rr_ok" not in _src42,
+          "the OLD form survives only inside the comment that explains why it was wrong")
+    check("the S-* legs' own bias requirement is untouched (they were never the leak)",
+          _src42.count("4 if htf > 0 else 3") >= 4 and _src42.count("4 if htf < 0 else 3") >= 4, "")
+    check("no money-path behaviour changed except that score: send, interlock, geometry, min-lot and margin all intact",
+          all(k in _src42 for k in ("def send_order(", "def pending_geom(", "def size_report(",
+                                    "def risk_max_frac(", "def account_is_real(", "trade_modify_sl_tp",
+                                    "MAX_SENTRY_ORDERS_DAY = 4")), "")
+    check("the header and the boot line now say which caps are advisory (v4.7.9 claimed 4/day as a guardrail)",
+          "ADVISORY ONLY (journalled, never enforced)" in _src42
+          and 'f"cap {MAX_SENTRY_ORDERS_DAY}/day ADVISORY' in _src42, "")
+    check("match_closes' own time bounds are still enforced (comment-only matches stay window-bounded)",
+          "lim = ticket_window_h if want else window_h" in _src42 and "comment-only matching MUST be time-bounded" in _src42, "")
+
+if _sm42:
+    _sm42.TL_PATH = _OLD_TL42
+
+
 print("\n%d checks failed" % len(FAILS))
 sys.exit(1 if FAILS else 0)

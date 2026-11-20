@@ -8,8 +8,11 @@ Loop (every CYCLE seconds):
   4. On hit -> caps gate -> dry-check -> place PENDING order -> journal (4-question block).
   5. Housekeeping: +1R breakeven moves, equity day-window deletion, red-window bans.
 
-Guardrails (playbook §9): pending orders only, $100 fixed risk, <=4 sentry orders/day,
-one per symbol-skill, no duplicates near existing orders, theme caps, red-window ban.
+Guardrails ENFORCED: pending orders only, score >= 4, one per symbol-skill per day, no duplicate within 1.5xATR
+of a placed order, broker min-lot + measured margin floor + the equity risk cap, and a pre-send geometry check.
+ADVISORY ONLY (journalled, never enforced): the $600 theme cap and MAX_SENTRY_ORDERS_DAY. v4.8.0 spells the
+difference out because v4.7.9's header advertised "<=4/day" as a guardrail while fire() wrote a NOTE and kept
+sending — 22 entries on 2026-11-20, 46 on 11-17.
 """
 import json, math, os, re, subprocess, sys, time
 from datetime import datetime, timedelta
@@ -230,23 +233,31 @@ def discover_symbols():
     return True
 
 # ---- v3.1: self-sizing — Sentry decides its own risk from its recent accuracy ----
-def skill_acc(skill):
-    """Weighted rolling accuracy (0..1) for a skill from trades_log; live results count 2x.
-    Cold skill (<3 records) blends toward the global average so it starts neutral."""
+def skill_acc(skill, rows=None):
+    """Win rate (0..1) of the trades we ACTUALLY SENT and the terminal ACTUALLY closed.
+
+    v4.7.9 scanned the last 120 LINES of the ledger and counted any row with a result, weighting live trades 2x
+    and rejected candidates 1x. Measured on the running account 2026-11-20: of those last 120 rows, 61 carried
+    a result and ZERO of them were sent trades — so the figure driving position size was made of bar-touch
+    outcomes for signals the gate had already refused, and because only 7 of 39 graded skills had >=3 rows in
+    that window, 32 fell through to the global average: S4-band-fade-long, C-M15-marubozu and S18-ma-revert-long
+    (three unrelated skills) all read exactly 0.615. Fired + terminal-graded only now. A skill with fewer than 3
+    such trades still blends toward the LIVE global, so cold hands stay neutral without inheriting the paper book.
+    """
     try:
-        rows = [json.loads(x) for x in open(TL_PATH) if x.strip()]
+        rows = tl_rows() if rows is None else rows
     except Exception:
         return 0.5
     w = n = gw = gn = 0.0
-    for r in rows[-120:]:
-        if not r.get("result"): continue
-        wt = 2.0 if r.get("fired") else 1.0
+    for r in rows:
+        if not r.get("fired") or r.get("result") not in ("win", "loss", "scratch"): continue
+        if r.get("grade_source") != "terminal": continue
         win = 1.0 if r["result"] == "win" else 0.0
-        gn += wt; gw += wt * win
+        gn += 1.0; gw += win
         if r.get("skill") == skill:
-            n += wt; w += wt * win
+            n += 1.0; w += win
     if n >= 3: return w / n
-    if gn > 0: return (w + 0.5 * gw) / (n + 0.5 * gn) if (n + gn) > 0 else 0.5
+    if gn > 0: return (w + gw) / (n + gn) if (n + gn) > 0 else 0.5
     return 0.5
 
 def self_size(skill, score):
@@ -860,11 +871,21 @@ def live_record(rows, ccy=None):
             # a wallet balance, and a cent- or non-USD account's numbers are not dollars at all.
             "currency": ccy or "USD"}
 
-def tl_rows(limit=600):
+def tl_rows(limit=None):
+    """Every row the ledger holds — the whole file unless a limit is asked for.
+
+    v4.7.9 read `[-600:]` for BOTH the published record and the sizer's accuracy, and the ledger is mostly
+    refused candidates, so graded trades aged out of what the build looks at while still sitting on disk.
+    Measured 2026-11-20 on the running account: file 714 rows / 174 sent / 63 graded; the last 600 held
+    137 sent / 36 graded — and 36 is what the desk published. Nine rows appended ten minutes later moved the
+    published net P&L from $169.60 to $111.66 with no trade opened or closed. Reading a few hundred KB whole
+    costs one parse per cycle; a record that quietly forgets itself costs the calibration of everything else.
+    """
     try:
-        return [json.loads(x) for x in open(TL_PATH, errors="replace") if x.strip()][-limit:]
+        rows = [json.loads(x) for x in open(TL_PATH, errors="replace") if x.strip()]
     except Exception:
         return []
+    return rows[-limit:] if limit else rows
 
 def has_ungraded_sent(rows=None):
     """True when a trade we sent is still waiting for its outcome — the only reason to pull the history."""
@@ -1252,7 +1273,8 @@ def main():
     use_fallback()
     discover_symbols()
     journal_alert("Sentry online — playbook v3.1 · S1/S2/S4 mechanical + CRYPTO 24/7 · self-sizing "
-            f"${MIN_RISK:.0f}-${MAX_RISK:.0f} (baseline ${RISK:.0f} · accuracy-scaled) · {MAX_SENTRY_ORDERS_DAY}/day · "
+            f"${MIN_RISK:.0f}-${MAX_RISK:.0f} (baseline ${RISK:.0f} · accuracy-scaled) · score>=4 · "
+            f"cap {MAX_SENTRY_ORDERS_DAY}/day ADVISORY · "
             f"themes {THEME_CAP} · pending-only · red-window ban 20:15-22:30 KL (crypto exempt)")
     while True:
         state = load_state()
@@ -1371,10 +1393,15 @@ def main():
                     done = state.setdefault("fired_today", [])
                     if fkey in done: return
                     risk = self_size(skill, score)   # v3.1: Sentry sizes itself off its own accuracy
+                    # v4.8.0: record WHAT the gate judged. The 2026-11-20 audit could not settle whether the
+                    # losing candle-long trades fired on agreement or merely on nobody objecting, because
+                    # htf/tr were never stored. Every row now carries them, so that question is answerable at
+                    # n=100 with three grep-able fields instead of not at all.
+                    ctx = {"htf": htf, "tr": tr, "atr": round(a, 8), "near": bool(near)}
                     if score < (3 if is_crypto else 4):   # crypto gets a 3/5 shot at floor size
                         done.append(fkey); del done[:-200]
                         rid = f"{sym}|{skill}|{entry:.5f}"
-                        tl_log({"rid": rid, "sym": sym, "skill": skill, "otype": otype, "entry": entry, "sl": sl, "tp": tp, "score": score, "risk": risk, "fired": False})
+                        tl_log({"rid": rid, "sym": sym, "skill": skill, "otype": otype, "entry": entry, "sl": sl, "tp": tp, "score": score, "risk": risk, "fired": False, **ctx})
                         state.setdefault("paper", []).append({"rid": rid, "sym": sym, "skill": skill, "otype": otype, "entry": entry, "sl": sl, "tp": tp, "t": time.time(), "score": score})
                         del state["paper"][:-60]
                         journal_alert(f"CANDIDATE(score {score}/5) — {sym} {skill} {otype} {rnd(sym,entry)} sl{rnd(sym,sl)} tp{rnd(sym,tp)} — below auto-fire gate, desk review")
@@ -1393,7 +1420,7 @@ def main():
                         # implied was under the broker's minimum lot, and the candidate simply vanished.
                         tl_log({"rid": f"{sym}|{skill}|{entry:.5f}", "sym": sym, "skill": skill, "otype": otype,
                                 "entry": entry, "sl": sl, "tp": tp, "score": score, "risk": risk, "fired": False,
-                                "vol": rep["lots"], "refuse": rep["verdict"], "why": rep["why"]})
+                                "vol": rep["lots"], "refuse": rep["verdict"], "why": rep["why"], **ctx})
                         journal_alert(f"REFUSED — {sym} {skill}: {rep['why']}")
                         return
                     v = rep["lots"]
@@ -1418,7 +1445,7 @@ def main():
                             tl_log({"rid": f"{sym}|{skill}|{entry:.5f}", "sym": sym, "skill": skill,
                                     "otype": otype, "entry": entry, "sl": sl, "tp": tp, "score": score,
                                     "risk": risk, "fired": False, "vol": v,
-                                    "refuse": "level_crossed_before_send", "why": gwhy})
+                                    "refuse": "level_crossed_before_send", "why": gwhy, **ctx})
                             journal_alert(f"HELD — {sym} {skill}: {gwhy}")
                         return
                     ok = bool(v) and send_order(state, sym, otype, v, entry, sl, tp, skill, risk)
@@ -1426,7 +1453,7 @@ def main():
                     ok = bool(ok)
                     rec = {"rid": f"{sym}|{skill}|{entry:.5f}", "sym": sym, "skill": skill, "otype": otype,
                            "entry": entry, "sl": sl, "tp": tp, "score": score, "risk": risk, "fired": ok,
-                           "vol": v}
+                           "vol": v, **ctx}
                     if tid: rec["ticket"] = tid
                     if rep["verdict"] == "round_up_to_min_lot":
                         rec["upsized_from"] = rep["risk_asked"]
@@ -1586,8 +1613,16 @@ def main():
                         at_lvl = level_prox((sig["h"]+sig["l"])/2, levels, a)
                         big = abs(sig["c"] - sig["o"]) > avg_body if tflabel == "M15" else abs(sig["c"] - sig["o"]) > 0.5*a
                         close_ext = (direction == 1 and sig["c"] > (sig["h"]+sig["l"])/2) or (direction == -1 and sig["c"] < (sig["h"]+sig["l"])/2)
+                        # v4.8.0: a candle signal needs a bias that AGREES with it, not merely one that stays
+                        # out of the way. `htf in (0, direction)` gave the point to a FLAT daily, so the entry
+                        # condition was "a pattern appeared and nothing objected" — on the live record C-* longs
+                        # ran -0.426R over 25 trades (total -10.65R) while every S-* long leg already requires
+                        # htf == direction. Applied to BOTH sides on purpose: a flat daily with flat structure now
+                        # refuses shorts too, so this is a confluence rule and not a fit to one down week. What
+                        # it drops still reaches the paper book at score 3, so it grades its own counterfactual.
+                        agrees = (htf == direction) or (tr == ("up" if direction > 0 else "down"))
                         rr_ok = True
-                        score = sum([at_lvl, big, close_ext, htf in (0, direction), rr_ok])
+                        score = sum([at_lvl, big, close_ext, agrees, rr_ok])
                         skill = f"C-{tflabel}-{name}"
                         if direction == 1:
                             e = sig["h"] + 0.1*a; sl = sig["l"] - 0.25*a
@@ -1615,9 +1650,15 @@ def main():
             rows_now = tl_rows()
             closed_now = parse_closed(hist_raw) if hist_raw.strip() else []
             if closed_now:
-                mine = {str(r.get("ticket")) for r in rows_now if r.get("ticket")}
+                # v4.8.0: no `known_tickets` here. The fix that stopped match_closes re-using a consumed close
+                # landed INSIDE the function (see its `used` set, built from rows that already have a result),
+                # but this caller then re-imposed it by feeding in every ticket in the ledger — which excludes
+                # each UNGRADED row's own close, i.e. exactly the trade being graded. v4.7.9's send-parsing
+                # hardening is what made it bite: once rows started carrying tickets reliably, every new trade
+                # became ungradeable. Measured on the live account 2026-11-20: the deployed join found 0
+                # matches as called and 38 as written; the desk published 36 graded trades while 121 existed.
                 wrote = 0
-                for u in match_closes(rows_now, closed_now, mine):
+                for u in match_closes(rows_now, closed_now):
                     pf = ("%+.2f" % u["profit"]) if u.get("profit") is not None else "n/a"
                     rr = (", %+.2fR" % u["R"]) if u.get("R") is not None else ""
                     if tl_grade_terminal(u):

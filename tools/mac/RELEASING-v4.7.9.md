@@ -159,3 +159,58 @@ $50 → **gold is refused**. EURUSD/GBPUSD become placeable at 0.01 lot with ris
 your 79 real fills said the same thing: as-coded **$50.00, 0 of 79 trades placeable**; forced to the broker
 minimum **$22.65 (−54.7%)**; 5%-of-equity risk **$60.83**. A coherent base for this build's own $50–$200 band is
 **$5k–$10k** — that number is arithmetic on your fills, not advice.
+
+
+---
+
+# v4.8.0 — the record, the sizer's population, and one gate change (2026-11-20)
+
+Found while answering "sentry working?". Three measurement defects and one behaviour change, all of it measured
+on the running account before anything was touched.
+
+**1. The grading join's caller was undoing the fix inside it (`:1615`).** `match_closes` was corrected in v4.7.9
+to stop excluding an ungraded row's own ticket — then the call site passed `known_tickets = every ticket in the
+ledger`, which re-imposed exactly that. So every trade that carried a ticket (i.e. every trade, once send-parsing
+was hardened) became permanently ungradeable. Running the deployed function on the terminal's own history reply:
+**0 matches as called, 38 as written**; $1,638.96 / +15.76 R of closes discarded. Now called without the
+argument. §42 pins both halves: the call form grades, and the old form does not.
+
+**2. The record read `[-600:]` LINES of a file that is mostly refused candidates.** `tl_rows()` now reads the
+whole ledger. Measured on 2026-11-20: file 714 rows / 174 sent / 63 graded, last-600 window 137 / 36, and the
+desk published 36. Appending nine rows ten minutes later moved the *published* net P&L from $169.60 to $111.66
+with no trade opened or closed.
+
+**3. `skill_acc` was calibrating position size on the paper book.** It scanned `rows[-120:]` and counted any
+row with a result: of the last 120, **61 had a result and 0 were sent trades** — all simulated outcomes of
+signals the gate had already refused — and 32 of 39 graded skills fell through to the global average (three
+unrelated skills all read exactly 0.615). It now scores fired rows with `grade_source == "terminal"` over the
+whole file, so cold hands still blend, but toward live play.
+
+**4. One behaviour change: candle skills need a bias that agrees.** `score = sum([at_lvl, big, close_ext,
+htf in (0, direction), rr_ok])` awarded the point to a **flat** daily, so a candle entry meant "a pattern
+appeared and nothing objected". On the true record `C-*` longs were **-0.426 R over 25 trades** (-10.65 R) while
+`C-*` shorts were +0.526 and `S-*` longs +0.036. Now: `agrees = (htf == direction) or (tr == direction-of-trade)`
+— applied to **both sides**, so this is a confluence rule rather than a fit to one down week — and a signal that
+loses the point drops to score 3, into the paper book, where it grades its own counterfactual.
+
+**Also: the header and the boot line now distinguish enforced from advisory.** v4.7.9's docstring advertised
+"<=4 sentry orders/day" and "theme caps" as guardrails while `fire()` wrote a NOTE and kept sending (22 entries
+on 11-20, 46 on 11-17). Enforced: score>=4, one per symbol-skill per day, dedupe within 1.5 ATR, min-lot,
+measured margin floor, equity risk cap, pre-send geometry. Advisory: $600 theme cap, MAX_SENTRY_ORDERS_DAY.
+
+**Every fired row now carries `htf`, `tr`, `atr`, `near`** — the fields the audit needed and did not have. With
+them, "was the losing long set one a flat daily waved through?" is a grep instead of an inference.
+
+What the corrected record says, computed before deploy and re-checkable after: **121 graded trades, mean
++0.322 R/trade, SE 0.084, t +3.85, PF 2.28, payoff 1.17, $3,784.79 realised** — versus the 36 / +1.34 R /
+$111.66 the card was showing. Positive under all 11 leave-one-day/leave-one-symbol cuts.
+
+What was tested and left alone, because the data said no: removing the +1R breakeven (replayed on real H1 bars:
+16 reach TP, 23 hit the structural stop, **-12.51 R**); treating `level_crossed_before_send` as a leak (at the
+price it refused at: **-0.419 R per candidate, -21.37 R** — the rule is a no-chasing rule and it pays); loosening
+the gate to score 3 (that population averages +0.015 R); restricting to score 5 (keeps +8.62 R of +38.99 R);
+re-imposing the 4/day cap (day-controlled, no decay: 1st +0.35, 2nd-3rd +0.51, 4th-6th +0.14, 7th+ +0.27).
+
+**Not touched:** the crypto lanes (`crypto/run_cycle.py`, `sentry_core.py`) have their own ledger and their own
+grading path; this file's fixes do not propagate to them. `test_data.py` **665 PASS / 0 failed** (22 checks in
+§42); `tools/mac/fx_watch_test.py` green on the Mac against the deployed copy.
