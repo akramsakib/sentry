@@ -903,3 +903,15 @@
 - **11-20 13:43 UTC** NOTE — AVAX/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
 - **11-20 13:43 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-three-outside-down sell_stop 6.84726013 sl6.94484968 tp6.70087579 — paper-graded (spot can't short)
 - **11-20 13:43 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $97252.89 · 10s · venue fees $217.70 to date @ 0.02/0.05%
+- **11-20 14:18 UTC** CANDIDATE(score 4/5) — ETH/USD S3-momentum-short sell_stop 1724.33278907 sl1753.75442186 tp1667.53673443 — paper-graded (spot can't short)
+- **11-20 14:18 UTC** NOTE — ADA/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-20 14:18 UTC** CANDIDATE(score 4/5) — LTC/USD S18-rsi2-short sell_limit 41.66 sl42.21756662 tp40.96304173 — paper-graded (spot can't short)
+- **11-20 14:18 UTC** NOTE — LTC/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-20 14:18 UTC** NOTE — LTC/USD C-M15-three-inside-up: soft cap on open items (6) — advisory, skipping
+- **11-20 14:18 UTC** CANDIDATE(score 3/5) — BCH/USD S1-pullback-short sell_limit 202.99751522 sl208.45003689 tp194.8187327 — paper-graded (spot can't short)
+- **11-20 14:18 UTC** CANDIDATE(score 4/5) — BCH/USD C-H1-marubozu sell_stop 195.77398524 sl199.95003689 tp189.50990777 — paper-graded (spot can't short)
+- **11-20 14:18 UTC** CANDIDATE(score 4/5) — AVAX/USD S11-dc20-short sell_stop 6.79314155 sl6.85515072 tp6.60711401 — paper-graded (spot can't short)
+- **11-20 14:18 UTC** CANDIDATE(score 4/5) — AVAX/USD S11-dc55-short sell_stop 6.79314155 sl6.85515072 tp6.60711401 — paper-graded (spot can't short)
+- **11-20 14:18 UTC** CANDIDATE(score 4/5) — AVAX/USD S25-session-break-short sell_stop 6.84714155 sl6.94071691 tp6.68756435 — paper-graded (spot can't short)
+- **11-20 14:18 UTC** NOTE — AVAX/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-20 14:18 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $97850.69 · 10s · venue fees $217.70 to date @ 0.02/0.05%
