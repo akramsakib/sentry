@@ -872,3 +872,22 @@
 - **11-20 05:29 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.83667378 sl7.03065243 tp6.64088218 — paper-graded (spot can't short)
 - **11-20 05:29 UTC** CANDIDATE(score 4/5) — AVAX/USD S21-pivot-S1-short sell_stop 6.92078252 sl7.10866667 tp6.57366667 — paper-graded (spot can't short)
 - **11-20 05:29 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 5 new · 5 pendings · 1 positions equity $97818.58 · 10s · venue fees $212.48 to date @ 0.02/0.05%
+- **11-20 12:47 UTC** EXPIRED — BTC/USD C-M15-homing-pigeon: entry trigger rested 7.3 h (>6 h), setup no longer valid
+- **11-20 12:47 UTC** EXPIRED — SOL/USD C-M15-homing-pigeon: entry trigger rested 7.3 h (>6 h), setup no longer valid
+- **11-20 12:47 UTC** EXPIRED — DOGE/USD S22-rsi-bull-div: entry trigger rested 7.3 h (>6 h), setup no longer valid
+- **11-20 12:47 UTC** EXPIRED — LTC/USD S18-ma-revert-long: entry trigger rested 7.3 h (>6 h), setup no longer valid
+- **11-20 12:47 UTC** EXPIRED — LTC/USD S22-rsi-bull-div: entry trigger rested 7.3 h (>6 h), setup no longer valid
+- **11-20 12:47 UTC** CLOSED XRP/USD — graded win (+0.28R net of 0.06R in venue fees) from exit 0.9653
+- **11-20 12:47 UTC** CANCEL leftover XRP/USD order sentryprot1794861594 after close
+- **11-20 12:47 UTC** ORDER BOOKED — BTC/USD C-H1-bull-engulfing (score 4/5) stop buy_stop qty 0.126390 @ 62376.70211804 sl61450.9947049 tp63765.26323775 · risk $117.00 · fees ~$7.83 (0.07R)
+- **11-20 12:47 UTC** CANDIDATE(score 4/5) — ETH/USD S1-pullback-short sell_limit 1755.81136045 sl1774.79146915 tp1727.34119738 — paper-graded (spot can't short)
+- **11-20 12:47 UTC** ORDER BOOKED — XRP/USD C-H1-tweezer-bottom (score 4/5) stop buy_stop qty 6996.728880 @ 0.96904917 sl0.95232707 tp0.99413233 · risk $117.00 · fees ~$6.72 (0.06R)
+- **11-20 12:47 UTC** ORDER BOOKED — SOL/USD C-M15-bull-harami (score 3/5) stop buy_stop qty 111.789412 @ 71.46776983 sl70.68057542 tp72.64856145 · risk $88.00 · fees ~$7.95 (0.09R)
+- **11-20 12:47 UTC** ORDER BOOKED — DOGE/USD C-H1-tweezer-bottom (score 3/5) stop buy_stop qty 105004.414958 @ 0.05758516 sl0.0567471 tp0.05884224 · risk $88.00 · fees ~$6.00 (0.07R)
+- **11-20 12:47 UTC** ORDER BOOKED — DOGE/USD C-M15-bull-harami (score 3/5) stop buy_stop qty 176685.539895 @ 0.05675516 sl0.0562571 tp0.05750224 · risk $88.00 · fees ~$9.98 (0.11R)
+- **11-20 12:47 UTC** CANDIDATE(score 4/5) — LINK/USD S2-breakdown-short sell_stop 8.72224937 sl8.94875063 tp8.38249749 — paper-graded (spot can't short)
+- **11-20 12:47 UTC** ORDER BOOKED — LINK/USD C-H1-bull-engulfing (score 3/5) stop buy_stop qty 644.920722 @ 8.92770025 sl8.79124937 tp9.13237657 · risk $88.00 · fees ~$5.71 (0.07R)
+- **11-20 12:47 UTC** NOTE — LINK/USD C-H1-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-20 12:47 UTC** CANDIDATE(score 4/5) — LTC/USD S2-breakdown-short sell_stop 41.06640649 sl42.16359351 tp39.42062597 — paper-graded (spot can't short)
+- **11-20 12:47 UTC** CANDIDATE(score 4/5) — BCH/USD S13-ichimoku-short sell_stop 196.20005424 sl206.46489153 tp190.87079547 — paper-graded (spot can't short)
+- **11-20 12:47 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $97454.64 · 8s · venue fees $217.70 to date @ 0.02/0.05%
