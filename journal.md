@@ -993,3 +993,19 @@
 - **11-21 10:45 UTC** NOTE — AVAX/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-21 10:45 UTC** NOTE — AVAX/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-21 10:45 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $93855.08 · 8s · venue fees $220.13 to date @ 0.02/0.05%
+- **11-21 17:47 UTC** EXPIRED — BTC/USD C-M15-three-outside-up: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-21 17:47 UTC** EXPIRED — ETH/USD C-M15-tweezer-bottom: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-21 17:47 UTC** EXPIRED — ETH/USD C-M15-three-inside-up: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-21 17:47 UTC** EXPIRED — XRP/USD C-M15-tweezer-bottom: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-21 17:47 UTC** EXPIRED — SOL/USD C-M15-tweezer-bottom: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-21 17:47 UTC** EXPIRED — SOL/USD C-M15-three-inside-up: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-21 17:47 UTC** ORDER BOOKED — BTC/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 0.039564 @ 60242.79049589 sl58347.11900821 tp62158.72727312 · risk $75.00 · fees ~$2.35 (0.03R)
+- **11-21 17:47 UTC** ORDER BOOKED — ETH/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 1.633927 @ 1684.70055653 sl1638.79888694 tp1744.70482907 · risk $75.00 · fees ~$2.72 (0.04R)
+- **11-21 17:47 UTC** ORDER BOOKED — XRP/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 2129.133962 @ 0.93675853 sl0.90153294 tp0.9676251 · risk $75.00 · fees ~$1.96 (0.03R)
+- **11-21 17:47 UTC** CANDIDATE(score 4/5) — XRP/USD S21-pivot-S1-short sell_stop 0.94792765 sl0.97336667 tp0.90156667 — paper-graded (spot can't short)
+- **11-21 17:47 UTC** ORDER BOOKED — SOL/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 25.378827 @ 70.83840643 sl67.88318715 tp73.27662757 · risk $75.00 · fees ~$1.76 (0.02R)
+- **11-21 17:47 UTC** ORDER BOOKED — ADA/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 12084.825809 @ 0.14558538 sl0.13937925 tp0.15085217 · risk $75.00 · fees ~$1.72 (0.02R)
+- **11-21 17:47 UTC** ORDER BOOKED — LINK/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 948.079980 @ 8.61788779 sl8.53878054 tp8.73654866 · risk $75.00 · fees ~$8.13 (0.11R)
+- **11-21 17:47 UTC** NOTE — BCH/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-21 17:47 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-21 17:47 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $97053.40 · 8s · venue fees $238.86 to date @ 0.02/0.05%
