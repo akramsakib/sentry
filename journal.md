@@ -1009,3 +1009,12 @@
 - **11-21 17:47 UTC** NOTE — BCH/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
 - **11-21 17:47 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
 - **11-21 17:47 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $97053.40 · 8s · venue fees $238.86 to date @ 0.02/0.05%
+- **11-21 22:28 UTC** NOTE — DOGE/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-21 22:28 UTC** NOTE — LTC/USD C-H1-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-21 22:28 UTC** NOTE — LTC/USD C-H1-homing-pigeon: soft cap on open items (6) — advisory, skipping
+- **11-21 22:28 UTC** CANDIDATE(score 3/5) — LTC/USD C-H1-evening-star sell_stop 39.84550397 sl40.24624007 tp39.24439983 — paper-graded (spot can't short)
+- **11-21 22:28 UTC** CANDIDATE(score 4/5) — BCH/USD S21-pivot-S1-short sell_stop 201.41190724 sl206.20333333 tp192.68333333 — paper-graded (spot can't short)
+- **11-21 22:28 UTC** NOTE — BCH/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-21 22:28 UTC** NOTE — BCH/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-21 22:28 UTC** NOTE — BCH/USD C-M15-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-21 22:28 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $96946.26 · 11s · venue fees $238.86 to date @ 0.02/0.05%
