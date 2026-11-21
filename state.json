@@ -34,7 +34,15 @@
   "FIRE|ADA/USD|S13-ichimoku-long|2026-11-21",
   "FIRE|LINK/USD|C-M15-tweezer-bottom|2026-11-21",
   "FIRE|BCH/USD|S13-ichimoku-long|2026-11-21",
-  "FIRE|AVAX/USD|S13-ichimoku-long|2026-11-21"
+  "FIRE|AVAX/USD|S13-ichimoku-long|2026-11-21",
+  "FIRE|DOGE/USD|S13-ichimoku-long|2026-11-21",
+  "FIRE|LTC/USD|C-H1-hammer/takuri|2026-11-21",
+  "FIRE|LTC/USD|C-H1-homing-pigeon|2026-11-21",
+  "FIRE|LTC/USD|C-H1-evening-star|2026-11-21",
+  "FIRE|BCH/USD|S21-pivot-S1-short|2026-11-21",
+  "FIRE|BCH/USD|C-H1-bull-engulfing|2026-11-21",
+  "FIRE|BCH/USD|C-H1-three-outside-up|2026-11-21",
+  "FIRE|BCH/USD|C-M15-hammer/takuri|2026-11-21"
  ],
  "open_cids": {
   "sentryBTCUSD1795283221368n79": {
@@ -112,20 +120,8 @@
  },
  "pos_state": {},
  "cid_seq": 84,
- "last_cycle": 1795283222.75702,
+ "last_cycle": 1795300093.6942992,
  "seen_candles": [
-  "BTC/USD|M15|dragonfly|2026-11-17T17:30:00Z",
-  "ETH/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
-  "ETH/USD|M15|dragonfly|2026-11-17T17:30:00Z",
-  "XRP/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
-  "SOL/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
-  "SOL/USD|M15|hammer/takuri|2026-11-17T17:30:00Z",
-  "DOGE/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
-  "ADA/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
-  "LINK/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
-  "LINK/USD|M15|bear-harami|2026-11-17T17:30:00Z",
-  "LTC/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
-  "LTC/USD|M15|hammer/takuri|2026-11-17T17:30:00Z",
   "BCH/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
   "AVAX/USD|H1|homing-pigeon|2026-11-17T16:00:00Z",
   "BTC/USD|M15|morning-star|2026-11-17T17:45:00Z",
@@ -413,6 +409,18 @@
   "AVAX/USD|M15|tweezer-bottom|2026-11-21T10:15:00Z",
   "AVAX/USD|M15|three-outside-up|2026-11-21T10:15:00Z",
   "LINK/USD|M15|tweezer-bottom|2026-11-21T17:15:00Z",
-  "AVAX/USD|M15|three-outside-up|2026-11-21T17:15:00Z"
+  "AVAX/USD|M15|three-outside-up|2026-11-21T17:15:00Z",
+  "ETH/USD|M15|bull-engulfing|2026-11-21T21:45:00Z",
+  "ETH/USD|M15|morning-star|2026-11-21T21:45:00Z",
+  "ADA/USD|H1|evening-star|2026-11-21T20:00:00Z",
+  "LINK/USD|H1|tweezer-top|2026-11-21T20:00:00Z",
+  "LINK/USD|H1|bear-harami|2026-11-21T20:00:00Z",
+  "LTC/USD|H1|hammer/takuri|2026-11-21T20:00:00Z",
+  "LTC/USD|H1|homing-pigeon|2026-11-21T20:00:00Z",
+  "LTC/USD|H1|evening-star|2026-11-21T20:00:00Z",
+  "BCH/USD|H1|bull-engulfing|2026-11-21T20:00:00Z",
+  "BCH/USD|H1|three-outside-up|2026-11-21T20:00:00Z",
+  "BCH/USD|M15|hammer/takuri|2026-11-21T21:45:00Z",
+  "AVAX/USD|M15|bull-harami|2026-11-21T21:45:00Z"
  ]
 }
