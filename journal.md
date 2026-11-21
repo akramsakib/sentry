@@ -960,3 +960,7 @@
 - **11-20 21:52 UTC** NOTE — AVAX/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-20 21:52 UTC** NOTE — AVAX/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-20 21:52 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $95298.59 · 10s · venue fees $217.70 to date @ 0.02/0.05%
+- **11-21 02:57 UTC** NOTE — LTC/USD C-H1-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-21 02:57 UTC** NOTE — LTC/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-21 02:57 UTC** CANDIDATE(score 4/5) — BCH/USD C-H1-evening-star sell_stop 193.32601242 sl195.66996895 tp189.81007762 — paper-graded (spot can't short)
+- **11-21 02:57 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $94981.08 · 6s · venue fees $217.70 to date @ 0.02/0.05%
