@@ -56,7 +56,11 @@
   "FIRE|LTC/USD|C-M15-tweezer-bottom|2026-11-22",
   "FIRE|BCH/USD|C-H1-evening-star|2026-11-22",
   "FIRE|AVAX/USD|C-M15-tweezer-bottom|2026-11-22",
-  "FIRE|AVAX/USD|C-M15-bull-harami|2026-11-22"
+  "FIRE|AVAX/USD|C-M15-bull-harami|2026-11-22",
+  "FIRE|ETH/USD|C-H1-bear-harami|2026-11-22",
+  "FIRE|DOGE/USD|C-H1-bear-harami|2026-11-22",
+  "FIRE|DOGE/USD|C-M15-tweezer-bottom|2026-11-22",
+  "FIRE|LTC/USD|S13-ichimoku-long|2026-11-22"
  ],
  "open_cids": {
   "sentryBTCUSD1795369939445n97": {
@@ -134,21 +138,8 @@
  },
  "pos_state": {},
  "cid_seq": 102,
- "last_cycle": 1795369940.817748,
+ "last_cycle": 1795388991.7359734,
  "seen_candles": [
-  "LINK/USD|M15|tweezer-top|2026-11-17T20:00:00Z",
-  "LINK/USD|M15|bear-harami|2026-11-17T20:00:00Z",
-  "AVAX/USD|M15|tweezer-top|2026-11-17T20:00:00Z",
-  "BTC/USD|H1|homing-pigeon|2026-11-17T19:00:00Z",
-  "ETH/USD|M15|tweezer-bottom|2026-11-17T21:15:00Z",
-  "ETH/USD|M15|three-outside-up|2026-11-17T21:15:00Z",
-  "XRP/USD|H1|three-outside-up|2026-11-17T19:00:00Z",
-  "DOGE/USD|M15|bull-engulfing|2026-11-17T21:15:00Z",
-  "DOGE/USD|M15|three-outside-up|2026-11-17T21:15:00Z",
-  "ADA/USD|M15|bull-engulfing|2026-11-17T21:15:00Z",
-  "ADA/USD|M15|three-outside-up|2026-11-17T21:15:00Z",
-  "LINK/USD|H1|bull-engulfing|2026-11-17T19:00:00Z",
-  "LINK/USD|H1|tweezer-bottom|2026-11-17T19:00:00Z",
   "LINK/USD|H1|three-outside-up|2026-11-17T19:00:00Z",
   "BCH/USD|H1|bull-engulfing|2026-11-17T19:00:00Z",
   "BCH/USD|H1|tweezer-bottom|2026-11-17T19:00:00Z",
@@ -435,6 +426,19 @@
   "BCH/USD|H1|evening-star|2026-11-22T15:00:00Z",
   "BCH/USD|M15|homing-pigeon|2026-11-22T17:15:00Z",
   "AVAX/USD|M15|tweezer-bottom|2026-11-22T17:15:00Z",
-  "AVAX/USD|M15|bull-harami|2026-11-22T17:15:00Z"
+  "AVAX/USD|M15|bull-harami|2026-11-22T17:15:00Z",
+  "BTC/USD|M15|shooting-star|2026-11-22T22:30:00Z",
+  "BTC/USD|M15|tweezer-bottom|2026-11-22T22:30:00Z",
+  "ETH/USD|H1|bear-harami|2026-11-22T21:00:00Z",
+  "ETH/USD|M15|tweezer-bottom|2026-11-22T22:30:00Z",
+  "XRP/USD|H1|shooting-star|2026-11-22T21:00:00Z",
+  "XRP/USD|H1|homing-pigeon|2026-11-22T21:00:00Z",
+  "XRP/USD|M15|shooting-star|2026-11-22T22:30:00Z",
+  "SOL/USD|H1|bull-engulfing|2026-11-22T21:00:00Z",
+  "SOL/USD|M15|shooting-star|2026-11-22T22:30:00Z",
+  "DOGE/USD|H1|bear-harami|2026-11-22T21:00:00Z",
+  "DOGE/USD|M15|tweezer-bottom|2026-11-22T22:30:00Z",
+  "ADA/USD|M15|tweezer-bottom|2026-11-22T22:30:00Z",
+  "LTC/USD|M15|homing-pigeon|2026-11-22T22:30:00Z"
  ]
 }
