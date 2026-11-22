@@ -1054,3 +1054,27 @@
 - **11-22 02:32 UTC** NOTE — BCH/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-22 02:32 UTC** CANDIDATE(score 3/5) — AVAX/USD C-H1-bear-harami sell_stop 6.55260533 sl6.60398668 tp6.47553329 — paper-graded (spot can't short)
 - **11-22 02:32 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $96460.34 · 8s · venue fees $250.22 to date @ 0.02/0.05%
+- **11-22 10:15 UTC** EXPIRED — BTC/USD S18-rsi2-long: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-22 10:15 UTC** EXPIRED — BTC/USD S13-ichimoku-long: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-22 10:15 UTC** EXPIRED — ETH/USD S13-ichimoku-long: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-22 10:15 UTC** EXPIRED — XRP/USD S18-rsi2-long: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-22 10:15 UTC** EXPIRED — SOL/USD S18-rsi2-long: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-22 10:15 UTC** EXPIRED — DOGE/USD S13-ichimoku-long: entry trigger rested 7.7 h (>6 h), setup no longer valid
+- **11-22 10:15 UTC** CANDIDATE(score 4/5) — BTC/USD S4-band-fade-short sell_limit 60991.52825266 sl61409.95756483 tp59916.04 — paper-graded (spot can't short)
+- **11-22 10:15 UTC** ORDER BOOKED — BTC/USD C-M15-three-soldiers (score 4/5) stop buy_stop qty 0.067781 @ 61438.24292747 sl59962.89268132 tp63651.2682967 · risk $100.00 · fees ~$4.11 (0.04R)
+- **11-22 10:15 UTC** CANDIDATE(score 4/5) — ETH/USD S4-band-fade-short sell_limit 1706.32555606 sl1725.08330773 tp1679.8365 — paper-graded (spot can't short)
+- **11-22 10:15 UTC** ORDER BOOKED — XRP/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 2613.272287 @ 0.93483322 sl0.90613357 tp0.95578718 · risk $75.00 · fees ~$2.41 (0.03R)
+- **11-22 10:15 UTC** RE-ANCHORED — XRP/USD C-H1-bull-engulfing: trigger 0.93262214 is already through the tape 0.9333 — entering at market, R recomputed (stop must sit beyond the tape (breakout trigger), not under it)
+- **11-22 10:15 UTC** ORDER BOOKED — XRP/USD C-H1-bull-engulfing (score 4/5) stop buy_stop qty 4772.048774 @ 0.9333 sl0.91234464 tp0.9630384 · risk $100.00 · fees ~$4.40 (0.04R)
+- **11-22 10:15 UTC** RE-ANCHORED — XRP/USD C-H1-three-outside-up: trigger 0.93262214 is already through the tape 0.9333 — entering at market, R recomputed (stop must sit beyond the tape (breakout trigger), not under it)
+- **11-22 10:15 UTC** ORDER BOOKED — XRP/USD C-H1-three-outside-up (score 4/5) stop buy_stop qty 4772.048774 @ 0.9333 sl0.91234464 tp0.9630384 · risk $100.00 · fees ~$4.40 (0.04R)
+- **11-22 10:15 UTC** ORDER BOOKED — SOL/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 35.766844 @ 70.7173047 sl68.6203906 tp72.32046894 · risk $75.00 · fees ~$2.49 (0.03R)
+- **11-22 10:15 UTC** ORDER BOOKED — ADA/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 14648.208622 @ 0.14587336 sl0.14075328 tp0.14960926 · risk $75.00 · fees ~$2.10 (0.03R)
+- **11-22 10:15 UTC** CANDIDATE(score 4/5) — LINK/USD S4-band-fade-short sell_limit 8.69956043 sl8.82612568 tp8.599 — paper-graded (spot can't short)
+- **11-22 10:15 UTC** NOTE — LINK/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-22 10:15 UTC** CANDIDATE(score 4/5) — LINK/USD S21-pivot-S1-short sell_stop 8.83131239 sl9.058 tp8.407 — paper-graded (spot can't short)
+- **11-22 10:15 UTC** NOTE — LTC/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
+- **11-22 10:15 UTC** NOTE — BCH/USD C-H1-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-22 10:15 UTC** NOTE — BCH/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-22 10:15 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-22 10:15 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $98285.89 · 10s · venue fees $253.34 to date @ 0.02/0.05%
