@@ -1097,3 +1097,8 @@
 - **11-22 17:52 UTC** NOTE — AVAX/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-22 17:52 UTC** NOTE — AVAX/USD C-M15-bull-harami: soft cap on open items (6) — advisory, skipping
 - **11-22 17:52 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $98183.02 · 11s · venue fees $253.34 to date @ 0.02/0.05%
+- **11-22 23:09 UTC** CANDIDATE(score 4/5) — ETH/USD C-H1-bear-harami sell_stop 1716.5711539 sl1733.58711525 tp1691.04721188 — paper-graded (spot can't short)
+- **11-22 23:09 UTC** CANDIDATE(score 4/5) — DOGE/USD C-H1-bear-harami sell_stop 0.05512335 sl0.05554663 tp0.05448842 — paper-graded (spot can't short)
+- **11-22 23:09 UTC** NOTE — DOGE/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-22 23:09 UTC** NOTE — LTC/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-22 23:09 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 6 pendings · 0 positions equity $98006.72 · 10s · venue fees $253.34 to date @ 0.02/0.05%
