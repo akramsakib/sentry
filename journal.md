@@ -1078,3 +1078,22 @@
 - **11-22 10:15 UTC** NOTE — BCH/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-22 10:15 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
 - **11-22 10:15 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $98285.89 · 10s · venue fees $253.34 to date @ 0.02/0.05%
+- **11-22 17:52 UTC** EXPIRED — BTC/USD C-M15-three-soldiers: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-22 17:52 UTC** EXPIRED — XRP/USD S13-ichimoku-long: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-22 17:52 UTC** EXPIRED — XRP/USD C-H1-bull-engulfing: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-22 17:52 UTC** EXPIRED — XRP/USD C-H1-three-outside-up: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-22 17:52 UTC** EXPIRED — SOL/USD S13-ichimoku-long: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-22 17:52 UTC** EXPIRED — ADA/USD S13-ichimoku-long: entry trigger rested 7.6 h (>6 h), setup no longer valid
+- **11-22 17:52 UTC** ORDER BOOKED — BTC/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 0.196876 @ 60951.8142435 sl60570.86439125 tp61523.23902186 · risk $75.00 · fees ~$11.96 (0.16R)
+- **11-22 17:52 UTC** ORDER BOOKED — XRP/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 11250.787555 @ 0.9295332 sl0.922867 tp0.93953249 · risk $75.00 · fees ~$10.42 (0.14R)
+- **11-22 17:52 UTC** ORDER BOOKED — XRP/USD C-M15-bull-harami (score 3/5) stop buy_stop qty 11250.787555 @ 0.9295332 sl0.922867 tp0.93953249 · risk $75.00 · fees ~$10.42 (0.14R)
+- **11-22 17:52 UTC** CANDIDATE(score 4/5) — SOL/USD C-H1-tweezer-top sell_stop 70.00934913 sl70.70662717 tp68.96343207 — paper-graded (spot can't short)
+- **11-22 17:52 UTC** ORDER BOOKED — SOL/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 171.515588 @ 70.52065087 sl70.08337283 tp71.17656793 · risk $75.00 · fees ~$12.06 (0.16R)
+- **11-22 17:52 UTC** ORDER BOOKED — ADA/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 76611.132108 @ 0.14486542 sl0.14388645 tp0.14633387 · risk $75.00 · fees ~$11.06 (0.15R)
+- **11-22 17:52 UTC** ORDER BOOKED — ADA/USD C-M15-bull-harami (score 3/5) stop buy_stop qty 76611.132108 @ 0.14486542 sl0.14388645 tp0.14633387 · risk $75.00 · fees ~$11.06 (0.15R)
+- **11-22 17:52 UTC** CANDIDATE(score 4/5) — LTC/USD C-H1-tweezer-top sell_stop 39.66914577 sl40.04213557 tp39.10966107 — paper-graded (spot can't short)
+- **11-22 17:52 UTC** NOTE — LTC/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-22 17:52 UTC** CANDIDATE(score 4/5) — BCH/USD C-H1-evening-star sell_stop 197.1454877 sl198.98128075 tp194.39179813 — paper-graded (spot can't short)
+- **11-22 17:52 UTC** NOTE — AVAX/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-22 17:52 UTC** NOTE — AVAX/USD C-M15-bull-harami: soft cap on open items (6) — advisory, skipping
+- **11-22 17:52 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $98183.02 · 11s · venue fees $253.34 to date @ 0.02/0.05%
