@@ -2,7 +2,7 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-22 17:52 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $-33,514.50 · equity $98,183.02
+**2026-11-22 23:09 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $-33,514.50 · equity $98,006.72
 
 _Venue cost: 0.02 % maker / 0.05 % taker per side · **$253.34 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
@@ -10,12 +10,12 @@ _Venue cost: 0.02 % maker / 0.05 % taker per side · **$253.34 paid on this book
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| ADA/USD | buy_stop | 0.14486542 | 76611.1 | $11,098 | $75.00 | 0.1447 | +0.11% | 0 min |
-| ADA/USD | buy_stop | 0.14486542 | 76611.1 | $11,098 | $75.00 | 0.1447 | +0.11% | 0 min |
-| BTC/USD | buy_stop | 60951.814 | 0.196876 | $12,000 | $75.00 | 60885.9 | +0.11% | 0 min |
-| SOL/USD | buy_stop | 70.520651 | 171.516 | $12,095 | $75.00 | 70.42 | +0.14% | 0 min |
-| XRP/USD | buy_stop | 0.9295332 | 11250.8 | $10,458 | $75.00 | 0.9279 | +0.18% | 0 min |
-| XRP/USD | buy_stop | 0.9295332 | 11250.8 | $10,458 | $75.00 | 0.9279 | +0.18% | 0 min |
+| ADA/USD | buy_stop | 0.14486542 | 76611.1 | $11,098 | $75.00 | 0.1441 | +0.53% | 318 min |
+| ADA/USD | buy_stop | 0.14486542 | 76611.1 | $11,098 | $75.00 | 0.1441 | +0.53% | 318 min |
+| BTC/USD | buy_stop | 60951.814 | 0.196876 | $12,000 | $75.00 | 61081.5 | -0.21% | 318 min |
+| SOL/USD | buy_stop | 70.520651 | 171.516 | $12,095 | $75.00 | 70.3 | +0.31% | 318 min |
+| XRP/USD | buy_stop | 0.9295332 | 11250.8 | $10,458 | $75.00 | 0.9244 | +0.56% | 318 min |
+| XRP/USD | buy_stop | 0.9295332 | 11250.8 | $10,458 | $75.00 | 0.9244 | +0.56% | 318 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -23,10 +23,12 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 _Flat._
 
-## Last 12 signals (615 ever logged)
+## Last 12 signals (617 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
+| 11-22 23:09 | DOGE/USD | C-H1-bear-harami | 4/5 | 0.05512335 | 0.05554663 | 0.05448842 | $100.00 | paper-graded (spot cannot short) |
+| 11-22 23:09 | ETH/USD | C-H1-bear-harami | 4/5 | 1716.5712 | 1733.5871 | 1691.0472 | $100.00 | paper-graded (spot cannot short) |
 | 11-22 17:52 | BCH/USD | C-H1-evening-star | 4/5 | 197.14549 | 198.98128 | 194.3918 | $100.00 | paper-graded (spot cannot short) |
 | 11-22 17:52 | LTC/USD | C-H1-tweezer-top | 4/5 | 39.669146 | 40.042136 | 39.109661 | $100.00 | paper-graded (spot cannot short) |
 | 11-22 17:52 | ADA/USD | C-M15-bull-harami | 3/5 | 0.14486542 | 0.14388645 | 0.14633387 | $75.00 | order placed |
@@ -37,8 +39,6 @@ _Flat._
 | 11-22 17:52 | XRP/USD | C-M15-tweezer-bottom | 3/5 | 0.9295332 | 0.922867 | 0.93953249 | $75.00 | order placed |
 | 11-22 17:52 | BTC/USD | C-M15-tweezer-bottom | 3/5 | 60951.814 | 60570.864 | 61523.239 | $75.00 | order placed |
 | 11-22 10:15 | LINK/USD | S21-pivot-S1-short | 4/5 | 8.8313124 | 9.058 | 8.407 | $100.00 | paper-graded (spot cannot short) |
-| 11-22 10:15 | LINK/USD | S4-band-fade-short | 4/5 | 8.6995604 | 8.8261257 | 8.599 | $100.00 | paper-graded (spot cannot short) |
-| 11-22 10:15 | ADA/USD | S13-ichimoku-long | 3/5 | 0.14587336 | 0.14075328 | 0.14960926 | $75.00 | order placed |
 
 ## Accuracy so far
 
@@ -46,7 +46,7 @@ _Flat._
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 6 new order(s), 10 symbols scanned
+## This cycle: 0 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
