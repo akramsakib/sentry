@@ -1134,3 +1134,30 @@
 - **11-23 03:42 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-marubozu sell_stop 6.59435142 sl6.67312146 tp6.47619634 — paper-graded (spot can't short)
 - **11-23 03:42 UTC** NOTE — AVAX/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
 - **11-23 03:42 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $99273.58 · 8s · venue fees $275.85 to date @ 0.02/0.05%
+- **11-23 13:43 UTC** EXPIRED — BTC/USD C-M15-morning-star: entry trigger rested 10.0 h (>6 h), setup no longer valid
+- **11-23 13:43 UTC** EXPIRED — XRP/USD C-M15-bull-engulfing: entry trigger rested 10.0 h (>6 h), setup no longer valid
+- **11-23 13:43 UTC** EXPIRED — XRP/USD C-M15-morning-star: entry trigger rested 10.0 h (>6 h), setup no longer valid
+- **11-23 13:43 UTC** EXPIRED — XRP/USD C-M15-three-inside-up: entry trigger rested 10.0 h (>6 h), setup no longer valid
+- **11-23 13:43 UTC** EXPIRED — SOL/USD S13-ichimoku-long: entry trigger rested 10.0 h (>6 h), setup no longer valid
+- **11-23 13:43 UTC** EXPIRED — DOGE/USD C-M15-marubozu: entry trigger rested 10.0 h (>6 h), setup no longer valid
+- **11-23 13:43 UTC** ORDER BOOKED — BTC/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 0.222852 @ 61326.14872322 sl60989.60255357 tp62362.74794051 · risk $75.00 · fees ~$13.63 (0.18R)
+- **11-23 13:43 UTC** CANDIDATE(score 4/5) — BTC/USD C-M15-bear-harami sell_stop 61139.43418452 sl61501.01453869 tp60597.06365326 — paper-graded (spot can't short)
+- **11-23 13:43 UTC** ORDER BOOKED — ETH/USD S22-rsi-bull-div (score 3/5) stop buy_stop qty 4.239780 @ 1726.17559973 sl1708.48600069 tp1752.70999829 · risk $75.00 · fees ~$7.28 (0.10R)
+- **11-23 13:43 UTC** ORDER BOOKED — XRP/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 5132.746512 @ 0.94157069 sl0.92695863 tp0.95757006 · risk $75.00 · fees ~$4.80 (0.06R)
+- **11-23 13:43 UTC** ORDER BOOKED — XRP/USD S22-rsi-bull-div (score 3/5) stop buy_stop qty 6618.659324 @ 0.94468046 sl0.93334886 tp0.96167786 · risk $75.00 · fees ~$6.21 (0.08R)
+- **11-23 13:43 UTC** ORDER BOOKED — SOL/USD C-M15-morning-star (score 3/5) stop buy_stop qty 113.928064 @ 72.55523147 sl71.89692133 tp73.54269668 · risk $75.00 · fees ~$8.23 (0.11R)
+- **11-23 13:43 UTC** ORDER BOOKED — DOGE/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 112043.980997 @ 0.05567813 sl0.05500875 tp0.05660919 · risk $75.00 · fees ~$6.20 (0.08R)
+- **11-23 13:43 UTC** NOTE — DOGE/USD C-H1-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — ADA/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — ADA/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — LINK/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — LINK/USD C-M15-morning-star: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — LTC/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — LTC/USD C-H1-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — LTC/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — BCH/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — BCH/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — BCH/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** NOTE — AVAX/USD C-M15-bull-engulfing: soft cap on open items (6) — advisory, skipping
+- **11-23 13:43 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $100605.30 · 12s · venue fees $286.83 to date @ 0.02/0.05%
