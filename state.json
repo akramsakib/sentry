@@ -20,88 +20,25 @@
   "FIRE|BCH/USD|C-M15-dragonfly|2026-11-24",
   "FIRE|AVAX/USD|S1-pullback-long|2026-11-24",
   "FIRE|AVAX/USD|C-M15-bear-engulfing|2026-11-24",
-  "FIRE|AVAX/USD|C-M15-tweezer-top|2026-11-24"
+  "FIRE|AVAX/USD|C-M15-tweezer-top|2026-11-24",
+  "FIRE|BTC/USD|C-M15-marubozu|2026-11-24",
+  "FIRE|ETH/USD|S3-momentum-short|2026-11-24",
+  "FIRE|XRP/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|SOL/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|DOGE/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|ADA/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|LINK/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|LTC/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|BCH/USD|S2-breakdown-short|2026-11-24",
+  "FIRE|BCH/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|AVAX/USD|S13-ichimoku-short|2026-11-24",
+  "FIRE|AVAX/USD|C-H1-bear-engulfing|2026-11-24"
  ],
- "open_cids": {
-  "sentryBTCUSD1795482935956n115": {
-   "sym": "BTC/USD",
-   "skill": "S22-rsi-bull-div",
-   "otype": "buy_stop",
-   "entry": 61517.9,
-   "sl": 60842.27396578,
-   "tp": 62207.16508555,
-   "qty": 0.11100816,
-   "r_dist": 675.6260342200039,
-   "score": 3,
-   "risk": 75
-  },
-  "sentryETHUSD1795482936306n116": {
-   "sym": "ETH/USD",
-   "skill": "C-M15-hammer/takuri",
-   "otype": "buy_stop",
-   "entry": 1718.46,
-   "sl": 1700.77298972,
-   "tp": 1733.34252569,
-   "qty": 4.24040009,
-   "r_dist": 17.687010280000095,
-   "score": 3,
-   "risk": 75
-  },
-  "sentrySOLUSD1795482936756n117": {
-   "sym": "SOL/USD",
-   "skill": "C-H1-tweezer-bottom",
-   "otype": "buy_stop",
-   "entry": 72.4,
-   "sl": 71.36204035,
-   "tp": 73.77489912,
-   "qty": 72.2571441,
-   "r_dist": 1.0379596500000048,
-   "score": 3,
-   "risk": 75
-  },
-  "sentrySOLUSD1795482937135n118": {
-   "sym": "SOL/USD",
-   "skill": "C-M15-dragonfly",
-   "otype": "buy_stop",
-   "entry": 72.4,
-   "sl": 71.70204035,
-   "tp": 73.16489912,
-   "qty": 107.45606856,
-   "r_dist": 0.6979596500000014,
-   "score": 3,
-   "risk": 75
-  },
-  "sentryADAUSD1795482937561n119": {
-   "sym": "ADA/USD",
-   "skill": "C-H1-bull-engulfing",
-   "otype": "buy_stop",
-   "entry": 0.1498,
-   "sl": 0.14606923,
-   "tp": 0.15267692,
-   "qty": 26804.11818472,
-   "r_dist": 0.0037307699999999944,
-   "score": 4,
-   "risk": 100
-  },
-  "sentryADAUSD1795482938001n120": {
-   "sym": "ADA/USD",
-   "skill": "C-H1-tweezer-bottom",
-   "otype": "buy_stop",
-   "entry": 0.1498,
-   "sl": 0.14606923,
-   "tp": 0.15267692,
-   "qty": 26804.11818472,
-   "r_dist": 0.0037307699999999944,
-   "score": 4,
-   "risk": 100
-  }
- },
+ "open_cids": {},
  "pos_state": {},
  "cid_seq": 120,
- "last_cycle": 1795482938.4048638,
+ "last_cycle": 1795518181.6710815,
  "seen_candles": [
-  "SOL/USD|M15|tweezer-top|2026-11-18T10:00:00Z",
-  "DOGE/USD|H1|tweezer-top|2026-11-18T08:00:00Z",
   "ADA/USD|H1|tweezer-top|2026-11-18T08:00:00Z",
   "LTC/USD|H1|bear-harami|2026-11-18T08:00:00Z",
   "LTC/USD|M15|three-outside-down|2026-11-18T10:00:00Z",
@@ -399,6 +336,8 @@
   "LTC/USD|M15|evening-star|2026-11-24T00:45:00Z",
   "BCH/USD|M15|dragonfly|2026-11-24T00:45:00Z",
   "AVAX/USD|M15|bear-engulfing|2026-11-24T00:45:00Z",
-  "AVAX/USD|M15|tweezer-top|2026-11-24T00:45:00Z"
+  "AVAX/USD|M15|tweezer-top|2026-11-24T00:45:00Z",
+  "BTC/USD|M15|marubozu|2026-11-24T10:30:00Z",
+  "AVAX/USD|H1|bear-engulfing|2026-11-24T09:00:00Z"
  ]
 }
