@@ -1194,3 +1194,22 @@
 - **11-24 01:15 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-bear-engulfing sell_stop 6.78589835 sl6.84375412 tp6.69911469 — paper-graded (spot can't short)
 - **11-24 01:15 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-tweezer-top sell_stop 6.78589835 sl6.84375412 tp6.69911469 — paper-graded (spot can't short)
 - **11-24 01:15 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $102185.32 · 13s · venue fees $312.85 to date @ 0.02/0.05%
+- **11-24 11:03 UTC** EXPIRED — BTC/USD S22-rsi-bull-div: entry trigger rested 9.8 h (>6 h), setup no longer valid
+- **11-24 11:03 UTC** EXPIRED — ETH/USD C-M15-hammer/takuri: entry trigger rested 9.8 h (>6 h), setup no longer valid
+- **11-24 11:03 UTC** EXPIRED — SOL/USD C-H1-tweezer-bottom: entry trigger rested 9.8 h (>6 h), setup no longer valid
+- **11-24 11:03 UTC** EXPIRED — SOL/USD C-M15-dragonfly: entry trigger rested 9.8 h (>6 h), setup no longer valid
+- **11-24 11:03 UTC** EXPIRED — ADA/USD C-H1-bull-engulfing: entry trigger rested 9.8 h (>6 h), setup no longer valid
+- **11-24 11:03 UTC** EXPIRED — ADA/USD C-H1-tweezer-bottom: entry trigger rested 9.8 h (>6 h), setup no longer valid
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — BTC/USD C-M15-marubozu sell_stop 59592.87821365 sl60021.20446589 tp58950.38883529 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — ETH/USD S3-momentum-short sell_stop 1672.46213393 sl1697.12573213 tp1625.09280361 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — XRP/USD S13-ichimoku-short sell_stop 0.92698067 sl0.98163866 tp0.90211653 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — SOL/USD S13-ichimoku-short sell_stop 70.29166991 sl74.52166017 tp68.40115872 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — DOGE/USD S13-ichimoku-short sell_stop 0.05547626 sl0.05794748 tp0.05405847 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — ADA/USD S13-ichimoku-short sell_stop 0.14560913 sl0.15113174 tp0.14163388 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — LINK/USD S13-ichimoku-short sell_stop 8.93388252 sl9.24023495 tp8.71361033 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — LTC/USD S13-ichimoku-short sell_stop 40.886242 sl42.197516 tp39.87821603 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — BCH/USD S2-breakdown-short sell_stop 196.25822471 sl204.35177529 tp184.11789883 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — BCH/USD S13-ichimoku-short sell_stop 197.32693482 sl205.60613035 tp192.22837742 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.69162144 sl6.96075712 tp6.5224478 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** CANDIDATE(score 3/5) — AVAX/USD C-H1-bear-engulfing sell_stop 6.67074763 sl6.75863093 tp6.53892267 — paper-graded (spot can't short)
+- **11-24 11:03 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 0 positions equity $96013.09 · 8s · venue fees $312.85 to date @ 0.02/0.05%
