@@ -1,5 +1,5 @@
 {
- "cash": -100528.14346170136,
+ "cash": -152586.3283647721,
  "realized": -943.7943593880458,
  "orders": [
   {
@@ -2105,8 +2105,11 @@
    "qty": 0.22285203863112893,
    "limit_price": null,
    "stop_price": 61326.14872322,
-   "status": "open",
-   "placed_at": 1795441390
+   "status": "filled",
+   "placed_at": 1795441390,
+   "filled_avg_price": 61326.14872322,
+   "filled_qty": 0.22285203863112893,
+   "filled_at": 1795482935
   },
   {
    "id": "1795441390464",
@@ -2117,7 +2120,7 @@
    "qty": 4.239779535443933,
    "limit_price": null,
    "stop_price": 1726.17559973,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795441390
   },
   {
@@ -2129,8 +2132,11 @@
    "qty": 5132.74651212764,
    "limit_price": null,
    "stop_price": 0.94157069,
-   "status": "open",
-   "placed_at": 1795441390
+   "status": "filled",
+   "placed_at": 1795441390,
+   "filled_avg_price": 0.94157069,
+   "filled_qty": 5132.74651212764,
+   "filled_at": 1795482935
   },
   {
    "id": "1795441391267",
@@ -2141,8 +2147,11 @@
    "qty": 6618.659324367193,
    "limit_price": null,
    "stop_price": 0.94468046,
-   "status": "open",
-   "placed_at": 1795441391
+   "status": "filled",
+   "placed_at": 1795441391,
+   "filled_avg_price": 0.94468046,
+   "filled_qty": 6618.659324367193,
+   "filled_at": 1795482935
   },
   {
    "id": "1795441391620",
@@ -2153,7 +2162,7 @@
    "qty": 113.9280643618831,
    "limit_price": null,
    "stop_price": 72.55523147,
-   "status": "open",
+   "status": "canceled",
    "placed_at": 1795441391
   },
   {
@@ -2165,8 +2174,95 @@
    "qty": 112043.98099734129,
    "limit_price": null,
    "stop_price": 0.05567813,
+   "status": "filled",
+   "placed_at": 1795441392,
+   "filled_avg_price": 0.05567813,
+   "filled_qty": 112043.98099734129,
+   "filled_at": 1795482935
+  },
+  {
+   "id": "1795482935957",
+   "client_order_id": "sentryBTCUSD1795482935956n115",
+   "symbol": "BTC/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 0.11100815569753159,
+   "limit_price": null,
+   "stop_price": 61517.9,
    "status": "open",
-   "placed_at": 1795441392
+   "placed_at": 1795482935
+  },
+  {
+   "id": "1795482936307",
+   "client_order_id": "sentryETHUSD1795482936306n116",
+   "symbol": "ETH/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 4.240400090953054,
+   "limit_price": null,
+   "stop_price": 1718.46,
+   "status": "open",
+   "placed_at": 1795482936
+  },
+  {
+   "id": "1795482936756",
+   "client_order_id": "sentrySOLUSD1795482936756n117",
+   "symbol": "SOL/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 72.2571440999654,
+   "limit_price": null,
+   "stop_price": 72.4,
+   "status": "filled",
+   "placed_at": 1795482936,
+   "filled_avg_price": 72.4,
+   "filled_qty": 72.2571440999654,
+   "filled_at": 1795482936
+  },
+  {
+   "id": "1795482937136",
+   "client_order_id": "sentrySOLUSD1795482937135n118",
+   "symbol": "SOL/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 107.45606855639844,
+   "limit_price": null,
+   "stop_price": 72.4,
+   "status": "filled",
+   "placed_at": 1795482937,
+   "filled_avg_price": 72.4,
+   "filled_qty": 107.45606855639844,
+   "filled_at": 1795482937
+  },
+  {
+   "id": "1795482937562",
+   "client_order_id": "sentryADAUSD1795482937561n119",
+   "symbol": "ADA/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 26804.11818471794,
+   "limit_price": null,
+   "stop_price": 0.1498,
+   "status": "filled",
+   "placed_at": 1795482937,
+   "filled_avg_price": 0.1498,
+   "filled_qty": 26804.11818471794,
+   "filled_at": 1795482937
+  },
+  {
+   "id": "1795482938001",
+   "client_order_id": "sentryADAUSD1795482938001n120",
+   "symbol": "ADA/USD",
+   "side": "buy",
+   "type": "stop",
+   "qty": 26804.11818471794,
+   "limit_price": null,
+   "stop_price": 0.1498,
+   "status": "filled",
+   "placed_at": 1795482938,
+   "filled_avg_price": 0.1498,
+   "filled_qty": 26804.11818471794,
+   "filled_at": 1795482938
   }
  ],
  "positions": [
@@ -2177,7 +2273,7 @@
    "cid": "sentryLTCUSD1794818528539n27",
    "fees": 2.64737331,
    "opened": 1794848491,
-   "current_price": 40.795
+   "current_price": 41.773
   },
   {
    "symbol": "ETH/USD",
@@ -2186,7 +2282,7 @@
    "cid": "sentryETHUSD1795015735014n41",
    "fees": 1.57405433,
    "opened": 1795050564,
-   "current_price": 1722.92
+   "current_price": 1716.54
   },
   {
    "symbol": "BCH/USD",
@@ -2195,7 +2291,7 @@
    "cid": "sentryBCHUSD1795019664043n46",
    "fees": 2.84477706,
    "opened": 1795050564,
-   "current_price": 199.39
+   "current_price": 202.86
   },
   {
    "symbol": "BTC/USD",
@@ -2204,7 +2300,7 @@
    "cid": "sentryBTCUSD1795050564256n48",
    "fees": 1.24714209,
    "opened": 1795077915,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "BTC/USD",
@@ -2213,7 +2309,7 @@
    "cid": "sentryBTCUSD1795050564504n49",
    "fees": 1.24714209,
    "opened": 1795077915,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "BTC/USD",
@@ -2222,7 +2318,7 @@
    "cid": "sentryBTCUSD1795050564730n50",
    "fees": 2.6581144,
    "opened": 1795077915,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "BTC/USD",
@@ -2231,7 +2327,7 @@
    "cid": "sentryBTCUSD1795077916412n51",
    "fees": 2.38935977,
    "opened": 1795077916,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "LTC/USD",
@@ -2240,7 +2336,7 @@
    "cid": "sentryLTCUSD1795110188767n54",
    "fees": 4.19013148,
    "opened": 1795132463,
-   "current_price": 40.795
+   "current_price": 41.773
   },
   {
    "symbol": "LTC/USD",
@@ -2249,7 +2345,7 @@
    "cid": "sentryLTCUSD1795110189074n55",
    "fees": 2.51407883,
    "opened": 1795132463,
-   "current_price": 40.795
+   "current_price": 41.773
   },
   {
    "symbol": "BTC/USD",
@@ -2258,7 +2354,7 @@
    "cid": "sentryBTCUSD1795152578905n56",
    "fees": 5.57902285,
    "opened": 1795152578,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "DOGE/USD",
@@ -2267,7 +2363,7 @@
    "cid": "sentryDOGEUSD1795152579196n58",
    "fees": 3.71534613,
    "opened": 1795152579,
-   "current_price": 0.05557
+   "current_price": 0.05686
   },
   {
    "symbol": "ETH/USD",
@@ -2276,7 +2372,7 @@
    "cid": "sentryETHUSD1795211568534n68",
    "fees": 2.42927613,
    "opened": 1795257921,
-   "current_price": 1722.92
+   "current_price": 1716.54
   },
   {
    "symbol": "BTC/USD",
@@ -2285,7 +2381,7 @@
    "cid": "sentryBTCUSD1795257922023n73",
    "fees": 3.29143591,
    "opened": 1795283221,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "ETH/USD",
@@ -2294,7 +2390,7 @@
    "cid": "sentryETHUSD1795257922291n74",
    "fees": 3.55211831,
    "opened": 1795283221,
-   "current_price": 1722.92
+   "current_price": 1716.54
   },
   {
    "symbol": "ETH/USD",
@@ -2303,7 +2399,7 @@
    "cid": "sentryETHUSD1795257922435n75",
    "fees": 3.55211831,
    "opened": 1795283221,
-   "current_price": 1722.92
+   "current_price": 1716.54
   },
   {
    "symbol": "XRP/USD",
@@ -2312,7 +2408,7 @@
    "cid": "sentryXRPUSD1795257922590n76",
    "fees": 2.62921955,
    "opened": 1795283221,
-   "current_price": 0.9407
+   "current_price": 0.9491
   },
   {
    "symbol": "SOL/USD",
@@ -2321,7 +2417,7 @@
    "cid": "sentrySOLUSD1795257922775n77",
    "fees": 2.85221512,
    "opened": 1795283221,
-   "current_price": 72.5
+   "current_price": 72.41
   },
   {
    "symbol": "SOL/USD",
@@ -2330,7 +2426,7 @@
    "cid": "sentrySOLUSD1795257923098n78",
    "fees": 2.85221512,
    "opened": 1795283221,
-   "current_price": 72.5
+   "current_price": 72.41
   },
   {
    "symbol": "BTC/USD",
@@ -2339,7 +2435,7 @@
    "cid": "sentryBTCUSD1795314742636n85",
    "fees": 4.0270901,
    "opened": 1795314742,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "XRP/USD",
@@ -2348,7 +2444,7 @@
    "cid": "sentryXRPUSD1795314743347n88",
    "fees": 3.62375827,
    "opened": 1795314743,
-   "current_price": 0.9407
+   "current_price": 0.9491
   },
   {
    "symbol": "SOL/USD",
@@ -2357,7 +2453,7 @@
    "cid": "sentrySOLUSD1795314743685n89",
    "fees": 3.71549699,
    "opened": 1795314743,
-   "current_price": 72.5
+   "current_price": 72.41
   },
   {
    "symbol": "BTC/USD",
@@ -2366,7 +2462,7 @@
    "cid": "sentryBTCUSD1795314742833n86",
    "fees": 1.08867288,
    "opened": 1795342514,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "ETH/USD",
@@ -2375,7 +2471,7 @@
    "cid": "sentryETHUSD1795314743140n87",
    "fees": 1.01892141,
    "opened": 1795342514,
-   "current_price": 1722.92
+   "current_price": 1716.54
   },
   {
    "symbol": "DOGE/USD",
@@ -2384,7 +2480,7 @@
    "cid": "sentryDOGEUSD1795314743891n90",
    "fees": 1.0131478,
    "opened": 1795342514,
-   "current_price": 0.05557
+   "current_price": 0.05686
   },
   {
    "symbol": "BTC/USD",
@@ -2393,7 +2489,7 @@
    "cid": "sentryBTCUSD1795369939445n97",
    "fees": 5.99998404,
    "opened": 1795405365,
-   "current_price": 61222.21
+   "current_price": 61455.07
   },
   {
    "symbol": "XRP/USD",
@@ -2402,7 +2498,7 @@
    "cid": "sentryXRPUSD1795369939662n98",
    "fees": 5.22899028,
    "opened": 1795405365,
-   "current_price": 0.9407
+   "current_price": 0.9491
   },
   {
    "symbol": "XRP/USD",
@@ -2411,7 +2507,7 @@
    "cid": "sentryXRPUSD1795369939866n99",
    "fees": 5.22899028,
    "opened": 1795405365,
-   "current_price": 0.9407
+   "current_price": 0.9491
   },
   {
    "symbol": "SOL/USD",
@@ -2420,7 +2516,7 @@
    "cid": "sentrySOLUSD1795369940098n100",
    "fees": 6.04769544,
    "opened": 1795405365,
-   "current_price": 72.5
+   "current_price": 72.41
   },
   {
    "symbol": "XRP/USD",
@@ -2429,7 +2525,7 @@
    "cid": "sentryXRPUSD1795405365567n104",
    "fees": 2.27310581,
    "opened": 1795441389,
-   "current_price": 0.9407
+   "current_price": 0.9491
   },
   {
    "symbol": "XRP/USD",
@@ -2438,7 +2534,7 @@
    "cid": "sentryXRPUSD1795405365744n105",
    "fees": 2.27310581,
    "opened": 1795441389,
-   "current_price": 0.9407
+   "current_price": 0.9491
   },
   {
    "symbol": "XRP/USD",
@@ -2447,7 +2543,7 @@
    "cid": "sentryXRPUSD1795405365993n106",
    "fees": 2.27310581,
    "opened": 1795441389,
-   "current_price": 0.9407
+   "current_price": 0.9491
   },
   {
    "symbol": "SOL/USD",
@@ -2456,7 +2552,7 @@
    "cid": "sentrySOLUSD1795405366246n107",
    "fees": 1.53593854,
    "opened": 1795441389,
-   "current_price": 72.5
+   "current_price": 72.41
   },
   {
    "symbol": "DOGE/USD",
@@ -2465,8 +2561,80 @@
    "cid": "sentryDOGEUSD1795405366398n108",
    "fees": 2.62915916,
    "opened": 1795441389,
-   "current_price": 0.05557
+   "current_price": 0.05686
+  },
+  {
+   "symbol": "BTC/USD",
+   "qty": 0.22285203863112893,
+   "entry": 61326.14872322,
+   "cid": "sentryBTCUSD1795441390056n109",
+   "fees": 6.83332863,
+   "opened": 1795482935,
+   "current_price": 61455.07
+  },
+  {
+   "symbol": "XRP/USD",
+   "qty": 5132.74651212764,
+   "entry": 0.94157069,
+   "cid": "sentryXRPUSD1795441390793n111",
+   "fees": 2.41642184,
+   "opened": 1795482935,
+   "current_price": 0.9491
+  },
+  {
+   "symbol": "XRP/USD",
+   "qty": 6618.659324367193,
+   "entry": 0.94468046,
+   "cid": "sentryXRPUSD1795441391266n112",
+   "fees": 3.12625907,
+   "opened": 1795482935,
+   "current_price": 0.9491
+  },
+  {
+   "symbol": "DOGE/USD",
+   "qty": 112043.98099734129,
+   "entry": 0.05567813,
+   "cid": "sentryDOGEUSD1795441392000n114",
+   "fees": 3.11919967,
+   "opened": 1795482935,
+   "current_price": 0.05686
+  },
+  {
+   "symbol": "SOL/USD",
+   "qty": 72.2571440999654,
+   "entry": 72.4,
+   "cid": "sentrySOLUSD1795482936756n117",
+   "fees": 2.61570862,
+   "opened": 1795482936,
+   "current_price": 72.41
+  },
+  {
+   "symbol": "SOL/USD",
+   "qty": 107.45606855639844,
+   "entry": 72.4,
+   "cid": "sentrySOLUSD1795482937135n118",
+   "fees": 3.88990968,
+   "opened": 1795482937,
+   "current_price": 72.41
+  },
+  {
+   "symbol": "ADA/USD",
+   "qty": 26804.11818471794,
+   "entry": 0.1498,
+   "cid": "sentryADAUSD1795482937561n119",
+   "fees": 2.00762845,
+   "opened": 1795482937,
+   "current_price": 0.14982
+  },
+  {
+   "symbol": "ADA/USD",
+   "qty": 26804.11818471794,
+   "entry": 0.1498,
+   "cid": "sentryADAUSD1795482938001n120",
+   "fees": 2.00762845,
+   "opened": 1795482938,
+   "current_price": 0.14982
   }
  ],
- "fees_paid": 286.83267278
+ "fees_paid": 312.84875719
 }
