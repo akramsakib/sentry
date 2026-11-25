@@ -1233,3 +1233,34 @@
 - **11-24 21:06 UTC** NOTE — AVAX/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
 - **11-24 21:06 UTC** NOTE — AVAX/USD C-M15-three-outside-up: soft cap on open items (6) — advisory, skipping
 - **11-24 21:06 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $93755.66 · 10s · venue fees $312.85 to date @ 0.02/0.05%
+- **11-25 04:08 UTC** EXPIRED — XRP/USD C-M15-tweezer-bottom: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-25 04:08 UTC** EXPIRED — SOL/USD C-M15-tweezer-bottom: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-25 04:08 UTC** EXPIRED — DOGE/USD C-M15-tweezer-bottom: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-25 04:08 UTC** EXPIRED — DOGE/USD C-M15-bull-harami: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-25 04:08 UTC** EXPIRED — ADA/USD C-M15-tweezer-bottom: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-25 04:08 UTC** EXPIRED — LTC/USD C-M15-bull-harami: entry trigger rested 7.0 h (>6 h), setup no longer valid
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — BTC/USD S13-ichimoku-short sell_stop 59126.22347084 sl60454.85305833 tp57989.47757226 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** ORDER BOOKED — BTC/USD S23-spring-long (score 3/5) stop buy_stop qty 0.121285 @ 59393.65101944 sl58775.27245139 tp60327.60570888 · risk $75.00 · fees ~$7.17 (0.10R)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — ETH/USD S13-ichimoku-short sell_stop 1656.04105951 sl1690.95288099 tp1620.5222061 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — ETH/USD S21-pivot-S1-short sell_stop 1663.37403967 sl1699.31333333 tp1596.69333333 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** ORDER BOOKED — ETH/USD S22-rsi-bull-div (score 3/5) stop buy_stop qty 2.997099 @ 1668.732627 sl1643.70843251 tp1706.26891872 · risk $75.00 · fees ~$4.96 (0.07R)
+- **11-25 04:08 UTC** ORDER BOOKED — ETH/USD C-M15-tweezer-bottom (score 3/5) stop buy_stop qty 6.300300 @ 1668.732627 sl1656.82843251 tp1686.58891872 · risk $75.00 · fees ~$10.48 (0.14R)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — XRP/USD S13-ichimoku-short sell_stop 0.91597902 sl0.93744195 tp0.89655903 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** ORDER BOOKED — XRP/USD C-H1-tweezer-bottom (score 3/5) stop buy_stop qty 6569.951146 @ 0.91964732 sl0.90823171 tp0.93677073 · risk $75.00 · fees ~$6.00 (0.08R)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — XRP/USD C-M15-gravestone sell_stop 0.91785268 sl0.92456829 tp0.90777927 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — SOL/USD S13-ichimoku-short sell_stop 68.84811044 sl70.77377913 tp67.18228639 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** ORDER BOOKED — SOL/USD C-M15-tweezer-bottom (score 4/5) stop buy_stop qty 150.509706 @ 69.49125971 sl68.82685073 tp70.48787319 · risk $100.00 · fees ~$10.41 (0.10R)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — DOGE/USD S13-ichimoku-short sell_stop 0.05436483 sl0.05592534 tp0.05320085 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** ORDER BOOKED — DOGE/USD S23-spring-long (score 3/5) stop buy_stop qty 134232.992680 @ 0.05476678 sl0.05420805 tp0.05560396 · risk $75.00 · fees ~$7.31 (0.10R)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — DOGE/USD C-M15-evening-star sell_stop 0.05458322 sl0.05500195 tp0.05395513 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — ADA/USD S13-ichimoku-short sell_stop 0.14234937 sl0.14660127 tp0.13892404 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** NOTE — ADA/USD C-H1-hammer/takuri: soft cap on open items (6) — advisory, skipping
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — ADA/USD C-M15-shooting-star sell_stop 0.14263291 sl0.14381772 tp0.14085569 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — LINK/USD S13-ichimoku-short sell_stop 8.75181262 sl8.95587476 tp8.55791843 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** NOTE — LINK/USD S23-spring-long: soft cap on open items (6) — advisory, skipping
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — LTC/USD S13-ichimoku-short sell_stop 40.38308602 sl41.08382796 tp39.46859498 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** NOTE — LTC/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-evening-star sell_stop 195.96677468 sl197.51306331 tp193.64734174 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.49988773 sl6.68272454 tp6.34802003 — paper-graded (spot can't short)
+- **11-25 04:08 UTC** NOTE — AVAX/USD S22-rsi-bull-div: soft cap on open items (6) — advisory, skipping
+- **11-25 04:08 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 6 new · 6 pendings · 0 positions equity $92583.04 · 12s · venue fees $312.85 to date @ 0.02/0.05%
