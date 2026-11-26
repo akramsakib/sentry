@@ -20,44 +20,52 @@
   "FIRE|LTC/USD|S23-upthrust-short|2026-11-26",
   "FIRE|BCH/USD|S13-ichimoku-long|2026-11-26",
   "FIRE|BCH/USD|C-M15-gravestone|2026-11-26",
-  "FIRE|AVAX/USD|S13-ichimoku-long|2026-11-26"
+  "FIRE|AVAX/USD|S13-ichimoku-long|2026-11-26",
+  "FIRE|ETH/USD|S13-ichimoku-long|2026-11-26",
+  "FIRE|ETH/USD|S22-rsi-bear-div|2026-11-26",
+  "FIRE|ETH/USD|C-M15-marubozu|2026-11-26",
+  "FIRE|ETH/USD|C-M15-three-inside-down|2026-11-26",
+  "FIRE|XRP/USD|C-H1-bear-harami|2026-11-26",
+  "FIRE|XRP/USD|C-M15-three-outside-down|2026-11-26",
+  "FIRE|DOGE/USD|S23-upthrust-short|2026-11-26",
+  "FIRE|DOGE/USD|C-H1-bear-harami|2026-11-26",
+  "FIRE|ADA/USD|C-H1-shooting-star|2026-11-26",
+  "FIRE|ADA/USD|C-M15-bear-engulfing|2026-11-26",
+  "FIRE|ADA/USD|C-M15-tweezer-top|2026-11-26",
+  "FIRE|LINK/USD|S18-rsi2-long|2026-11-26",
+  "FIRE|LTC/USD|S18-rsi2-long|2026-11-26",
+  "FIRE|LTC/USD|C-M15-bear-harami|2026-11-26",
+  "FIRE|BCH/USD|C-H1-tweezer-top|2026-11-26",
+  "FIRE|BCH/USD|C-M15-bear-harami|2026-11-26",
+  "FIRE|AVAX/USD|S21-pivot-S1-short|2026-11-26",
+  "FIRE|AVAX/USD|C-H1-bear-harami|2026-11-26",
+  "FIRE|AVAX/USD|C-M15-tweezer-top|2026-11-26",
+  "FIRE|AVAX/USD|C-M15-three-inside-down|2026-11-26"
  ],
  "open_cids": {
-  "sentryETHUSD1795648121080n139": {
-   "sym": "ETH/USD",
+  "sentryLINKUSD1795704810622n145": {
+   "sym": "LINK/USD",
    "skill": "S18-rsi2-long",
    "otype": "buy_limit",
-   "entry": 1681.73,
-   "sl": 1657.11212511,
-   "tp": 1712.50234362,
-   "qty": 4.06208905,
-   "r_dist": 24.61787488999994,
+   "entry": 9.227,
+   "sl": 9.12011185,
+   "tp": 9.36061019,
+   "qty": 935.55740276,
+   "r_dist": 0.10688814999999963,
    "score": 4,
    "risk": 100
   },
-  "sentryBTCUSD1795669151255n143": {
-   "sym": "BTC/USD",
+  "sentryLTCUSD1795704811090n146": {
+   "sym": "LTC/USD",
    "skill": "S18-rsi2-long",
    "otype": "buy_limit",
-   "entry": 60948.1,
-   "sl": 60178.80036683,
-   "tp": 61909.72454147,
-   "qty": 0.09749127,
-   "r_dist": 769.2996331699978,
-   "score": 3,
-   "risk": 75
-  },
-  "sentryBTCUSD1795669151629n144": {
-   "sym": "BTC/USD",
-   "skill": "S13-ichimoku-long",
-   "otype": "buy_stop",
-   "entry": 61044.26245415,
-   "sl": 59246.57509171,
-   "tp": 62358.48266082,
-   "qty": 0.04172027,
-   "r_dist": 1797.687362439996,
-   "score": 3,
-   "risk": 75
+   "entry": 43.66,
+   "sl": 43.13470718,
+   "tp": 44.31661602,
+   "qty": 190.37001115,
+   "r_dist": 0.5252928199999971,
+   "score": 4,
+   "risk": 100
   }
  },
  "pos_state": {
@@ -70,8 +78,8 @@
    "qty": 9.000727115639387,
    "skill": "C-M15-morning-star",
    "be": null,
-   "sent_sl": null,
-   "last_price": null
+   "sent_sl": 1678.47127606,
+   "last_price": 1695.72
   },
   "XRP/USD": {
    "side": "long",
@@ -81,9 +89,9 @@
    "r_dist": 0.013444879999999992,
    "qty": 5578.331677188643,
    "skill": "S18-rsi2-long",
-   "be": null,
-   "sent_sl": null,
-   "last_price": null
+   "be": 0.9326,
+   "sent_sl": 0.9326,
+   "last_price": 0.9486
   },
   "SOL/USD": {
    "side": "long",
@@ -94,30 +102,13 @@
    "qty": 89.97888915302687,
    "skill": "S18-rsi2-long",
    "be": null,
-   "sent_sl": null,
-   "last_price": null
+   "sent_sl": 69.1886282,
+   "last_price": 70.96
   }
  },
- "cid_seq": 144,
- "last_cycle": 1795669151.9373946,
+ "cid_seq": 146,
+ "last_cycle": 1795704811.5624824,
  "seen_candles": [
-  "XRP/USD|M15|morning-star|2026-11-19T00:30:00Z",
-  "SOL/USD|H1|three-inside-up|2026-11-18T23:00:00Z",
-  "SOL/USD|M15|morning-star|2026-11-19T00:30:00Z",
-  "LINK/USD|H1|three-inside-up|2026-11-18T23:00:00Z",
-  "LTC/USD|H1|three-inside-up|2026-11-18T23:00:00Z",
-  "BCH/USD|H1|three-inside-up|2026-11-18T23:00:00Z",
-  "BCH/USD|M15|three-inside-up|2026-11-19T00:30:00Z",
-  "AVAX/USD|H1|bull-engulfing|2026-11-18T23:00:00Z",
-  "AVAX/USD|H1|three-outside-up|2026-11-18T23:00:00Z",
-  "BTC/USD|H1|marubozu|2026-11-19T06:00:00Z",
-  "BTC/USD|H1|tweezer-bottom|2026-11-19T06:00:00Z",
-  "BTC/USD|H1|three-outside-up|2026-11-19T06:00:00Z",
-  "BTC/USD|M15|bear-engulfing|2026-11-19T08:15:00Z",
-  "ETH/USD|H1|three-outside-up|2026-11-19T06:00:00Z",
-  "ETH/USD|M15|bear-engulfing|2026-11-19T08:15:00Z",
-  "ETH/USD|M15|tweezer-top|2026-11-19T08:15:00Z",
-  "XRP/USD|H1|three-outside-up|2026-11-19T06:00:00Z",
   "SOL/USD|H1|marubozu|2026-11-19T06:00:00Z",
   "DOGE/USD|H1|three-outside-up|2026-11-19T06:00:00Z",
   "ADA/USD|H1|marubozu|2026-11-19T06:00:00Z",
@@ -400,6 +391,23 @@
   "SOL/USD|M15|tweezer-top|2026-11-26T04:15:00Z",
   "LINK/USD|H1|bear-harami|2026-11-26T02:00:00Z",
   "LTC/USD|M15|tweezer-top|2026-11-26T04:15:00Z",
-  "BCH/USD|M15|gravestone|2026-11-26T04:15:00Z"
+  "BCH/USD|M15|gravestone|2026-11-26T04:15:00Z",
+  "BTC/USD|H1|morning-star|2026-11-26T12:00:00Z",
+  "ETH/USD|M15|marubozu|2026-11-26T14:15:00Z",
+  "ETH/USD|M15|three-inside-down|2026-11-26T14:15:00Z",
+  "XRP/USD|H1|bear-harami|2026-11-26T12:00:00Z",
+  "XRP/USD|M15|tweezer-top|2026-11-26T14:15:00Z",
+  "XRP/USD|M15|three-outside-down|2026-11-26T14:15:00Z",
+  "DOGE/USD|H1|bear-harami|2026-11-26T12:00:00Z",
+  "ADA/USD|H1|shooting-star|2026-11-26T12:00:00Z",
+  "ADA/USD|H1|morning-star|2026-11-26T12:00:00Z",
+  "ADA/USD|M15|bear-engulfing|2026-11-26T14:15:00Z",
+  "ADA/USD|M15|tweezer-top|2026-11-26T14:15:00Z",
+  "LTC/USD|M15|bear-harami|2026-11-26T14:15:00Z",
+  "BCH/USD|H1|tweezer-top|2026-11-26T12:00:00Z",
+  "BCH/USD|M15|bear-harami|2026-11-26T14:15:00Z",
+  "AVAX/USD|H1|bear-harami|2026-11-26T12:00:00Z",
+  "AVAX/USD|M15|tweezer-top|2026-11-26T14:15:00Z",
+  "AVAX/USD|M15|three-inside-down|2026-11-26T14:15:00Z"
  ]
 }
