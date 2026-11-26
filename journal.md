@@ -1327,3 +1327,27 @@
 - **11-25 23:08 UTC** CANDIDATE(score 3/5) — BCH/USD C-H1-tweezer-top sell_stop 203.34862619 sl205.61843452 tp199.94391369 — paper-graded (spot can't short)
 - **11-25 23:08 UTC** CANDIDATE(score 4/5) — AVAX/USD S21-pivot-S1-short sell_stop 6.64369847 sl6.93833333 tp6.07833333 — paper-graded (spot can't short)
 - **11-25 23:08 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 4 new · 4 pendings · 0 positions equity $97668.18 · 12s · venue fees $331.34 to date @ 0.02/0.05%
+- **11-26 04:59 UTC** FILL — ETH/USD C-M15-morning-star 9.000727115639387@1689.58148957 sl1678.47127606 tp1706.24680984
+- **11-26 04:59 UTC** FILL — XRP/USD S18-rsi2-long 5578.331677188643@0.9326 sl0.92035512 tp0.95060611
+- **11-26 04:59 UTC** FILL — SOL/USD S18-rsi2-long 89.97888915302687@70.29 sl69.1886282 tp71.68921475
+- **11-26 04:59 UTC** ORDER BOOKED — BTC/USD S18-rsi2-long (score 3/5) limit buy_limit qty 0.097491 @ 60948.1 sl60178.80036683 tp61909.72454147 · risk $75.00 · fees ~$5.90 (0.08R)
+- **11-26 04:59 UTC** ORDER BOOKED — BTC/USD S13-ichimoku-long (score 3/5) stop buy_stop qty 0.041720 @ 61044.26245415 sl59246.57509171 tp62358.48266082 · risk $75.00 · fees ~$2.51 (0.03R)
+- **11-26 04:59 UTC** SKIP — XRP/USD S13-ichimoku-long: already have pending/position in play
+- **11-26 04:59 UTC** SKIP — XRP/USD C-M15-marubozu: already have pending/position in play
+- **11-26 04:59 UTC** SKIP — XRP/USD C-M15-tweezer-top: already have pending/position in play
+- **11-26 04:59 UTC** SKIP — XRP/USD C-M15-bear-harami: already have pending/position in play
+- **11-26 04:59 UTC** SKIP — SOL/USD S13-ichimoku-long: already have pending/position in play
+- **11-26 04:59 UTC** SKIP — SOL/USD C-M15-tweezer-top: already have pending/position in play
+- **11-26 04:59 UTC** NOTE — DOGE/USD S18-rsi2-long: soft cap on open items (6) — advisory, skipping
+- **11-26 04:59 UTC** NOTE — DOGE/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-26 04:59 UTC** NOTE — ADA/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-26 04:59 UTC** CANDIDATE(score 4/5) — ADA/USD S23-upthrust-short sell_stop 0.14710267 sl0.14949333 tp0.14347494 — paper-graded (spot can't short)
+- **11-26 04:59 UTC** NOTE — LINK/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-26 04:59 UTC** CANDIDATE(score 4/5) — LINK/USD C-H1-bear-harami sell_stop 9.11855786 sl9.27060536 tp8.89048661 — paper-graded (spot can't short)
+- **11-26 04:59 UTC** CANDIDATE(score 3/5) — LTC/USD S18-ma-revert-short sell_limit 43.8 sl44.33466944 tp42.10699669 — paper-graded (spot can't short)
+- **11-26 04:59 UTC** NOTE — LTC/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-26 04:59 UTC** CANDIDATE(score 4/5) — LTC/USD S23-upthrust-short sell_stop 43.28653306 sl44.04366736 tp42.12858511 — paper-graded (spot can't short)
+- **11-26 04:59 UTC** NOTE — BCH/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-26 04:59 UTC** CANDIDATE(score 3/5) — BCH/USD C-M15-gravestone sell_stop 208.00580923 sl209.55047692 tp205.68880769 — paper-graded (spot can't short)
+- **11-26 04:59 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-26 04:59 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 2 new · 3 pendings · 3 positions equity $102831.02 · 11s · venue fees $341.91 to date @ 0.02/0.05%
