@@ -1376,3 +1376,18 @@
 - **11-26 14:53 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-tweezer-top sell_stop 6.61122439 sl6.65943903 tp6.53890242 — paper-graded (spot can't short)
 - **11-26 14:53 UTC** CANDIDATE(score 5/5) — AVAX/USD C-M15-three-inside-down sell_stop 6.61122439 sl6.65943903 tp6.53890242 — paper-graded (spot can't short)
 - **11-26 14:53 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 2 new · 2 pendings · 3 positions equity $101730.84 · 10s · venue fees $350.35 to date @ 0.02/0.05%
+- **11-26 23:27 UTC** EXPIRED — LINK/USD S18-rsi2-long: entry trigger rested 8.6 h (>6 h), setup no longer valid
+- **11-26 23:27 UTC** EXPIRED — LTC/USD S18-rsi2-long: entry trigger rested 8.6 h (>6 h), setup no longer valid
+- **11-26 23:27 UTC** CANDIDATE(score 4/5) — BTC/USD S23-upthrust-short sell_stop 60688.93362271 sl61096.41594322 tp60079.32828719 — paper-graded (spot can't short)
+- **11-26 23:27 UTC** CANDIDATE(score 4/5) — BTC/USD C-H1-shooting-star sell_stop 60688.93362271 sl61096.41594322 tp60077.71014196 — paper-graded (spot can't short)
+- **11-26 23:27 UTC** CANDIDATE(score 5/5) — BTC/USD C-M15-three-inside-down sell_stop 60386.23362271 sl60771.51594322 tp59808.31014196 — paper-graded (spot can't short)
+- **11-26 23:27 UTC** SKIP — ETH/USD C-M15-tweezer-top: already have pending/position in play
+- **11-26 23:27 UTC** SKIP — XRP/USD S4-band-fade-long: already have pending/position in play
+- **11-26 23:27 UTC** SKIP — XRP/USD C-M15-evening-star: already have pending/position in play
+- **11-26 23:27 UTC** SKIP — SOL/USD C-M15-three-inside-down: already have pending/position in play
+- **11-26 23:27 UTC** ORDER BOOKED — DOGE/USD S4-band-fade-long (score 3/5) limit buy_limit qty 292203.997351 @ 0.05637726 sl0.05612059 tp0.056744 · risk $75.00 · fees ~$16.44 (0.22R)
+- **11-26 23:27 UTC** CANDIDATE(score 4/5) — DOGE/USD C-M15-three-outside-down sell_stop 0.0563551 sl0.05678225 tp0.05571436 — paper-graded (spot can't short)
+- **11-26 23:27 UTC** CANDIDATE(score 4/5) — ADA/USD S22-rsi-bear-div sell_stop 0.14825492 sl0.15156271 tp0.14329323 — paper-graded (spot can't short)
+- **11-26 23:27 UTC** ORDER BOOKED — LTC/USD C-H1-three-soldiers (score 4/5) stop buy_stop qty 203.957597 @ 44.26008514 sl43.76978715 tp44.99553213 · risk $100.00 · fees ~$8.98 (0.09R)
+- **11-26 23:27 UTC** ORDER BOOKED — BCH/USD C-M15-hammer/takuri (score 3/5) stop buy_stop qty 49.296646 @ 210.60611477 sl209.08471308 tp212.88821729 · risk $75.00 · fees ~$10.34 (0.14R)
+- **11-26 23:27 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 3 new · 3 pendings · 3 positions equity $100371.71 · 8s · venue fees $358.58 to date @ 0.02/0.05%
