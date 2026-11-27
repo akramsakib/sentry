@@ -1391,3 +1391,39 @@
 - **11-26 23:27 UTC** ORDER BOOKED — LTC/USD C-H1-three-soldiers (score 4/5) stop buy_stop qty 203.957597 @ 44.26008514 sl43.76978715 tp44.99553213 · risk $100.00 · fees ~$8.98 (0.09R)
 - **11-26 23:27 UTC** ORDER BOOKED — BCH/USD C-M15-hammer/takuri (score 3/5) stop buy_stop qty 49.296646 @ 210.60611477 sl209.08471308 tp212.88821729 · risk $75.00 · fees ~$10.34 (0.14R)
 - **11-26 23:27 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 3 new · 3 pendings · 3 positions equity $100371.71 · 8s · venue fees $358.58 to date @ 0.02/0.05%
+- **11-27 05:15 UTC** BE +1R: ETH/USD stop -> entry 1689.58148957
+- **11-27 05:15 UTC** BE +1R: SOL/USD stop -> entry 70.29
+- **11-27 05:15 UTC** FILL — DOGE/USD S4-band-fade-long 292203.9973506832@0.05629 sl0.05612059 tp0.056744
+- **11-27 05:15 UTC** FILL — LTC/USD C-H1-three-soldiers 203.95759729710414@44.26008514 sl43.76978715 tp44.99553213
+- **11-27 05:15 UTC** FILL — BCH/USD C-M15-hammer/takuri 49.296645647869475@210.60611477 sl209.08471308 tp212.88821729
+- **11-27 05:15 UTC** NOTE — BTC/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-27 05:15 UTC** CANDIDATE(score 3/5) — BTC/USD C-H1-shooting-star sell_stop 61256.62700401 sl61818.13248998 tp60414.36877505 — paper-graded (spot can't short)
+- **11-27 05:15 UTC** CANDIDATE(score 3/5) — BTC/USD C-M15-three-outside-down sell_stop 61331.22700401 sl61617.83248998 tp60901.31877505 — paper-graded (spot can't short)
+- **11-27 05:15 UTC** SKIP — ETH/USD S4-band-fade-short: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — ETH/USD S18-ma-revert-short: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — ETH/USD S13-ichimoku-long: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — XRP/USD S13-ichimoku-long: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — XRP/USD S22-rsi-bear-div: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — XRP/USD S23-upthrust-short: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — XRP/USD C-H1-shooting-star: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — SOL/USD S4-band-fade-short: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — SOL/USD S13-ichimoku-long: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — SOL/USD S23-upthrust-short: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — DOGE/USD S4-band-fade-short: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — DOGE/USD S13-ichimoku-long: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — DOGE/USD S22-rsi-bear-div: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — DOGE/USD S23-upthrust-short: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — DOGE/USD C-M15-marubozu: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — DOGE/USD C-M15-bear-engulfing: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — DOGE/USD C-M15-three-outside-down: already have pending/position in play
+- **11-27 05:15 UTC** NOTE — ADA/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-27 05:15 UTC** CANDIDATE(score 4/5) — LINK/USD S4-band-fade-short sell_limit 9.51721269 sl9.69356086 tp9.29945 — paper-graded (spot can't short)
+- **11-27 05:15 UTC** CANDIDATE(score 3/5) — LINK/USD S18-ma-revert-short sell_limit 9.634 sl9.7332681 tp9.31459358 — paper-graded (spot can't short)
+- **11-27 05:15 UTC** NOTE — LINK/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-27 05:15 UTC** SKIP — LTC/USD S13-ichimoku-long: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — LTC/USD C-H1-shooting-star: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — BCH/USD S13-ichimoku-long: already have pending/position in play
+- **11-27 05:15 UTC** SKIP — BCH/USD C-H1-tweezer-top: already have pending/position in play
+- **11-27 05:15 UTC** CANDIDATE(score 3/5) — AVAX/USD S4-band-fade-short sell_limit 6.72755811 sl6.79018136 tp6.6402 — paper-graded (spot can't short)
+- **11-27 05:15 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
+- **11-27 05:15 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $109110.58 · 8s · venue fees $368.28 to date @ 0.02/0.05%
