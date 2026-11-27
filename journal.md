@@ -1457,3 +1457,27 @@
 - **11-27 15:12 UTC** NOTE — AVAX/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
 - **11-27 15:12 UTC** NOTE — AVAX/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
 - **11-27 15:12 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $98353.87 · 13s · venue fees $386.99 to date @ 0.02/0.05%
+- **11-27 23:30 UTC** EXIT ETH/USD: price crossed stop 1689.58148957 (cur 1657.75) — market close
+- **11-27 23:30 UTC** EXIT BCH/USD: price crossed stop 209.08471308 (cur 206.69) — market close
+- **11-27 23:30 UTC** CANDIDATE(score 4/5) — BTC/USD S13-ichimoku-short sell_stop 59745.63108681 sl60613.13782639 tp58729.25593981 — paper-graded (spot can't short)
+- **11-27 23:30 UTC** NOTE — BTC/USD C-M15-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-27 23:30 UTC** NOTE — BTC/USD C-M15-three-inside-up: soft cap on open items (6) — advisory, skipping
+- **11-27 23:30 UTC** SKIP — ETH/USD S13-ichimoku-short: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — ETH/USD C-M15-tweezer-bottom: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — ETH/USD C-M15-morning-star: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — XRP/USD S13-ichimoku-short: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — XRP/USD C-M15-shooting-star: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — XRP/USD C-M15-gravestone: already have pending/position in play
+- **11-27 23:30 UTC** CANDIDATE(score 4/5) — ADA/USD S13-ichimoku-short sell_stop 0.14746215 sl0.15007571 tp0.14421147 — paper-graded (spot can't short)
+- **11-27 23:30 UTC** CANDIDATE(score 4/5) — LINK/USD S18-rsi2-short sell_limit 9.339 sl9.46049055 tp9.18713682 — paper-graded (spot can't short)
+- **11-27 23:30 UTC** CANDIDATE(score 4/5) — LINK/USD C-H1-tweezer-top sell_stop 9.30987579 sl9.41831053 tp9.14722367 — paper-graded (spot can't short)
+- **11-27 23:30 UTC** CANDIDATE(score 4/5) — LINK/USD C-H1-three-outside-down sell_stop 9.30987579 sl9.41831053 tp9.14722367 — paper-graded (spot can't short)
+- **11-27 23:30 UTC** SKIP — BCH/USD S18-rsi2-short: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — BCH/USD S13-ichimoku-short: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — BCH/USD C-H1-evening-star: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — BCH/USD C-M15-shooting-star: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — BCH/USD C-M15-bear-engulfing: already have pending/position in play
+- **11-27 23:30 UTC** SKIP — BCH/USD C-M15-evening-star: already have pending/position in play
+- **11-27 23:30 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.57467074 sl6.66215852 tp6.44717086 — paper-graded (spot can't short)
+- **11-27 23:30 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-gravestone sell_stop 6.57878049 sl6.62054877 tp6.51612809 — paper-graded (spot can't short)
+- **11-27 23:30 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $100632.00 · 10s · venue fees $395.66 to date @ 0.02/0.05%
