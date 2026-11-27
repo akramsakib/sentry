@@ -1427,3 +1427,33 @@
 - **11-27 05:15 UTC** CANDIDATE(score 3/5) — AVAX/USD S4-band-fade-short sell_limit 6.72755811 sl6.79018136 tp6.6402 — paper-graded (spot can't short)
 - **11-27 05:15 UTC** NOTE — AVAX/USD S13-ichimoku-long: soft cap on open items (6) — advisory, skipping
 - **11-27 05:15 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $109110.58 · 8s · venue fees $368.28 to date @ 0.02/0.05%
+- **11-27 15:11 UTC** EXIT LTC/USD: price crossed stop 43.76978715 (cur 43.463) — market close
+- **11-27 15:11 UTC** EXIT BCH/USD: price crossed stop 209.08471308 (cur 203.74) — market close
+- **11-27 15:11 UTC** BE +1R: DOGE/USD stop -> entry 0.05629
+- **11-27 15:11 UTC** EXIT ETH/USD: price crossed stop 1689.58148957 (cur 1653.62) — market close
+- **11-27 15:12 UTC** NOTE — BTC/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-27 15:12 UTC** NOTE — BTC/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
+- **11-27 15:12 UTC** SKIP — ETH/USD S4-band-fade-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — ETH/USD S18-ma-revert-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — ETH/USD S23-spring-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — ETH/USD C-H1-bear-harami: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — XRP/USD S4-band-fade-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — XRP/USD S18-ma-revert-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — XRP/USD C-H1-marubozu: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — DOGE/USD C-H1-tweezer-bottom: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — DOGE/USD C-H1-three-outside-up: already have pending/position in play
+- **11-27 15:12 UTC** NOTE — ADA/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-27 15:12 UTC** NOTE — ADA/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
+- **11-27 15:12 UTC** NOTE — ADA/USD C-H1-tweezer-bottom: soft cap on open items (6) — advisory, skipping
+- **11-27 15:12 UTC** SKIP — LTC/USD S4-band-fade-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — LTC/USD C-H1-marubozu: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — LTC/USD C-H1-bear-engulfing: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — LTC/USD C-H1-tweezer-top: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — LTC/USD C-H1-three-outside-down: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — BCH/USD S4-band-fade-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — BCH/USD S18-ma-revert-long: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — BCH/USD C-H1-bull-engulfing: already have pending/position in play
+- **11-27 15:12 UTC** SKIP — BCH/USD C-H1-tweezer-bottom: already have pending/position in play
+- **11-27 15:12 UTC** NOTE — AVAX/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-27 15:12 UTC** NOTE — AVAX/USD S18-ma-revert-long: soft cap on open items (6) — advisory, skipping
+- **11-27 15:12 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $98353.87 · 13s · venue fees $386.99 to date @ 0.02/0.05%
