@@ -2,49 +2,52 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-27 23:30 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $-226,101.72 · equity $100,632.00
+**2026-11-28 04:56 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $-208,786.09 · equity $100,690.07
 
-_Venue cost: 0.02 % maker / 0.05 % taker per side · **$395.66 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
+_Venue cost: 0.02 % maker / 0.05 % taker per side · **$396.66 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
-## Orders resting on the book now (0)
+## Orders resting on the book now (1)
 
-_None. Every symbol is scanned each cycle; a resting entry above is a trigger waiting to be hit, not a position._
+| symbol | order | trigger | size | notional | risk | tape | to trigger | age |
+|---|---|---|---|---|---|---|---|---|
+| BCH/USD | buy_stop | 210.20338 | 61.1331 | $12,850 | $75.00 | 208.78 | +0.68% | 0 min |
 
-## Positions (6)
+_Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
+
+## Positions (5)
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| BCH/USD | 49.2966 | 210.60611 | 206.69 | $-193.05 | 209.08471 | 212.88822 | -2.57R |
-| DOGE/USD | 292204 | 0.05629 | 0.05754 | $365.25 | 0.05612059 | 0.056744 | +4.87R |
-| ETH/USD | 9.00073 | 1689.5815 | 1657.75 | $-286.51 | 1678.4713 | 1706.2468 | -2.87R |
-| LTC/USD | 203.958 | 44.260085 | 44.616 | $72.59 | 43.769787 | 44.995532 | +0.73R |
-| SOL/USD | 89.9789 | 70.29 | 71.41 | $100.78 | 69.188628 | 71.689215 | +1.01R |
-| XRP/USD | 5578.33 | 0.9326 | 0.9457 | $73.08 | 0.92035512 | 0.95060611 | +0.97R |
+| DOGE/USD | 292204 | 0.05629 | 0.0573 | $295.13 | 0.05612059 | 0.056744 | +3.94R |
+| ETH/USD | 9.00073 | 1689.5815 | 1661.11 | $-256.26 | 1678.4713 | 1706.2468 | -2.56R |
+| LTC/USD | 203.958 | 44.260085 | 44.503 | $49.54 | 43.769787 | 44.995532 | +0.50R |
+| SOL/USD | 89.9789 | 70.29 | 71.52 | $110.67 | 69.188628 | 71.689215 | +1.11R |
+| XRP/USD | 5578.33 | 0.9326 | 0.9477 | $84.23 | 0.92035512 | 0.95060611 | +1.12R |
 
-## Last 12 signals (848 ever logged)
+## Last 12 signals (877 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
-| 11-27 23:30 | AVAX/USD | C-M15-gravestone | 4/5 | 6.5787805 | 6.6205488 | 6.5161281 | $100.00 | paper-graded (spot cannot short) |
-| 11-27 23:30 | AVAX/USD | S13-ichimoku-short | 4/5 | 6.5746707 | 6.6621585 | 6.4471709 | $100.00 | paper-graded (spot cannot short) |
-| 11-27 23:30 | BCH/USD | C-M15-evening-star | 3/5 | 205.79234 | 207.60416 | 203.07461 | $75.00 | not fired (guard/duplicate) |
-| 11-27 23:30 | BCH/USD | C-M15-bear-engulfing | 3/5 | 205.79234 | 207.60416 | 203.07461 | $75.00 | not fired (guard/duplicate) |
-| 11-27 23:30 | BCH/USD | C-M15-shooting-star | 3/5 | 205.79234 | 207.60416 | 203.07461 | $75.00 | not fired (guard/duplicate) |
-| 11-27 23:30 | BCH/USD | C-H1-evening-star | 3/5 | 205.92234 | 207.80416 | 203.09961 | $75.00 | not fired (guard/duplicate) |
-| 11-27 23:30 | BCH/USD | S13-ichimoku-short | 3/5 | 206.42351 | 211.48299 | 201.96143 | $75.00 | not fired (guard/duplicate) |
-| 11-27 23:30 | BCH/USD | S18-rsi2-short | 4/5 | 206.75 | 209.36195 | 203.48506 | $100.00 | not fired (guard/duplicate) |
-| 11-27 23:30 | LINK/USD | C-H1-three-outside-down | 4/5 | 9.3098758 | 9.4183105 | 9.1472237 | $100.00 | paper-graded (spot cannot short) |
-| 11-27 23:30 | LINK/USD | C-H1-tweezer-top | 4/5 | 9.3098758 | 9.4183105 | 9.1472237 | $100.00 | paper-graded (spot cannot short) |
-| 11-27 23:30 | LINK/USD | S18-rsi2-short | 4/5 | 9.339 | 9.4604905 | 9.1871368 | $100.00 | paper-graded (spot cannot short) |
-| 11-27 23:30 | ADA/USD | S13-ichimoku-short | 4/5 | 0.14746215 | 0.15007571 | 0.14421147 | $100.00 | paper-graded (spot cannot short) |
+| 11-28 04:56 | AVAX/USD | C-M15-gravestone | 3/5 | 6.6014114 | 6.6329715 | 6.5540711 | $75.00 | paper-graded (spot cannot short) |
+| 11-28 04:56 | AVAX/USD | C-H1-three-outside-down | 5/5 | 6.5944114 | 6.6609716 | 6.4945711 | $125.00 | paper-graded (spot cannot short) |
+| 11-28 04:56 | AVAX/USD | C-H1-tweezer-top | 5/5 | 6.5944114 | 6.6609716 | 6.4945711 | $125.00 | paper-graded (spot cannot short) |
+| 11-28 04:56 | AVAX/USD | S13-ichimoku-short | 4/5 | 6.5786171 | 6.6602659 | 6.4640504 | $100.00 | paper-graded (spot cannot short) |
+| 11-28 04:56 | BCH/USD | C-M15-bull-engulfing | 3/5 | 210.20338 | 208.97655 | 212.04363 | $75.00 | order placed |
+| 11-28 04:56 | LTC/USD | C-M15-bear-harami | 4/5 | 44.555067 | 44.872331 | 44.079172 | $100.00 | not fired (guard/duplicate) |
+| 11-28 04:56 | LTC/USD | C-M15-tweezer-top | 4/5 | 44.555067 | 44.872331 | 44.079172 | $100.00 | not fired (guard/duplicate) |
+| 11-28 04:56 | LTC/USD | C-H1-shooting-star | 4/5 | 44.675067 | 45.132331 | 43.989172 | $100.00 | not fired (guard/duplicate) |
+| 11-28 04:56 | LTC/USD | S13-ichimoku-long | 3/5 | 44.567399 | 44.135203 | 45.488515 | $75.00 | not fired (guard/duplicate) |
+| 11-28 04:56 | LTC/USD | S18-rsi2-long | 4/5 | 44.5 | 43.96081 | 45.173987 | $100.00 | not fired (guard/duplicate) |
+| 11-28 04:56 | LINK/USD | C-M15-tweezer-top | 3/5 | 9.220779 | 9.2760525 | 9.1378688 | $75.00 | paper-graded (spot cannot short) |
+| 11-28 04:56 | LINK/USD | C-H1-three-inside-down | 4/5 | 9.289779 | 9.4090525 | 9.1108688 | $100.00 | paper-graded (spot cannot short) |
 
 ## Accuracy so far
 
-14 graded outcomes (5 win / 8 loss / 1 scratch) · win rate 38% · avg -0.05R · sizing today: score 3 -> $75.00 · score 4 -> $100.00 · score 5 -> $125.00
+15 graded outcomes (5 win / 9 loss / 1 scratch) · win rate 36% · avg -0.23R · sizing today: score 3 -> $50.00 · score 4 -> $50.00 · score 5 -> $62.00
 
 _Risk per trade is this bot's own decision: it scales with the accuracy it has demonstrated on its own fills, bounded by `min_risk`/`max_risk`, then by `live_max_risk` on a live venue._
 
-## This cycle: 0 new order(s), 10 symbols scanned
+## This cycle: 1 new order(s), 10 symbols scanned
 
 | line starts with | meaning |
 |---|---|
