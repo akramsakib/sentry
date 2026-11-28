@@ -1481,3 +1481,35 @@
 - **11-27 23:30 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.57467074 sl6.66215852 tp6.44717086 — paper-graded (spot can't short)
 - **11-27 23:30 UTC** CANDIDATE(score 4/5) — AVAX/USD C-M15-gravestone sell_stop 6.57878049 sl6.62054877 tp6.51612809 — paper-graded (spot can't short)
 - **11-27 23:30 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 0 new · 0 pendings · 6 positions equity $100632.00 · 10s · venue fees $395.66 to date @ 0.02/0.05%
+- **11-28 04:56 UTC** CLOSED BCH/USD — graded loss (-2.71R net of 0.14R in venue fees) from exit 206.69
+- **11-28 04:56 UTC** EXIT ETH/USD: price crossed stop 1689.58148957 (cur 1661.11) — market close
+- **11-28 04:56 UTC** CANDIDATE(score 5/5) — BTC/USD C-H1-tweezer-top sell_stop 59859.99869839 sl60349.90325402 tp59125.14186496 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 3/5) — BTC/USD C-M15-tweezer-top sell_stop 59937.39869839 sl60155.20325402 tp59610.69186496 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** SKIP — ETH/USD C-H1-tweezer-top: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — ETH/USD C-M15-shooting-star: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — XRP/USD C-H1-tweezer-top: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — SOL/USD S13-ichimoku-short: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — SOL/USD C-H1-bear-engulfing: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — SOL/USD C-H1-tweezer-top: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — SOL/USD C-M15-homing-pigeon: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — DOGE/USD C-H1-bear-engulfing: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — DOGE/USD C-H1-tweezer-top: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — DOGE/USD C-H1-three-inside-down: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — DOGE/USD C-M15-gravestone: already have pending/position in play
+- **11-28 04:56 UTC** CANDIDATE(score 4/5) — ADA/USD S13-ichimoku-short sell_stop 0.14699371 sl0.15001257 tp0.14417448 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 5/5) — ADA/USD C-H1-three-outside-down sell_stop 0.14746248 sl0.14904381 tp0.14509048 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 3/5) — LINK/USD S13-ichimoku-short sell_stop 9.20616852 sl9.43216296 tp9.01713829 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 4/5) — LINK/USD C-H1-evening-star sell_stop 9.28977901 sl9.40905247 tp9.11086883 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 4/5) — LINK/USD C-H1-three-inside-down sell_stop 9.28977901 sl9.40905247 tp9.11086883 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 3/5) — LINK/USD C-M15-tweezer-top sell_stop 9.22077901 sl9.27605247 tp9.13786883 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** SKIP — LTC/USD S18-rsi2-long: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — LTC/USD S13-ichimoku-long: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — LTC/USD C-H1-shooting-star: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — LTC/USD C-M15-tweezer-top: already have pending/position in play
+- **11-28 04:56 UTC** SKIP — LTC/USD C-M15-bear-harami: already have pending/position in play
+- **11-28 04:56 UTC** ORDER BOOKED — BCH/USD C-M15-bull-engulfing (score 3/5) stop buy_stop qty 61.133077 @ 210.2033805 sl208.97654874 tp212.04362814 · risk $75.00 · fees ~$12.81 (0.17R)
+- **11-28 04:56 UTC** CANDIDATE(score 4/5) — AVAX/USD S13-ichimoku-short sell_stop 6.57861707 sl6.66026586 tp6.46405037 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-tweezer-top sell_stop 6.59441138 sl6.66097155 tp6.49457113 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-three-outside-down sell_stop 6.59441138 sl6.66097155 tp6.49457113 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** CANDIDATE(score 3/5) — AVAX/USD C-M15-gravestone sell_stop 6.60141138 sl6.63297155 tp6.55407113 — paper-graded (spot can't short)
+- **11-28 04:56 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $100690.07 · 7s · venue fees $396.66 to date @ 0.02/0.05%
