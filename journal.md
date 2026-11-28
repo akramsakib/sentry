@@ -1513,3 +1513,35 @@
 - **11-28 04:56 UTC** CANDIDATE(score 5/5) — AVAX/USD C-H1-three-outside-down sell_stop 6.59441138 sl6.66097155 tp6.49457113 — paper-graded (spot can't short)
 - **11-28 04:56 UTC** CANDIDATE(score 3/5) — AVAX/USD C-M15-gravestone sell_stop 6.60141138 sl6.63297155 tp6.55407113 — paper-graded (spot can't short)
 - **11-28 04:56 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $100690.07 · 7s · venue fees $396.66 to date @ 0.02/0.05%
+- **11-28 13:55 UTC** EXPIRED — BCH/USD C-M15-bull-engulfing: entry trigger rested 9.0 h (>6 h), setup no longer valid
+- **11-28 13:55 UTC** EXIT LTC/USD: price crossed stop 43.76978715 (cur 43.718) — market close
+- **11-28 13:55 UTC** EXIT SOL/USD: price crossed stop 70.29 (cur 70.24) — market close
+- **11-28 13:55 UTC** EXIT DOGE/USD: price crossed stop 0.05629 (cur 0.05625) — market close
+- **11-28 13:55 UTC** EXIT ETH/USD: price crossed stop 1689.58148957 (cur 1639.63) — market close
+- **11-28 13:55 UTC** RE-ANCHORED — BTC/USD S4-band-fade-long: trigger 59211.19484 is already through the tape 59059.6 — entering at market, R recomputed (limit must rest on the far side of the tape (pullback), or it fills instantly)
+- **11-28 13:55 UTC** SKIP — BTC/USD S4-band-fade-long: stop only 0.381% of price (<0.40%) — spread noise, not a risk level
+- **11-28 13:55 UTC** CANDIDATE(score 4/5) — BTC/USD S13-ichimoku-short sell_stop 59003.2908176 sl60381.91836481 tp58233.7319914 — paper-graded (spot can't short)
+- **11-28 13:55 UTC** CANDIDATE(score 4/5) — BTC/USD S15-squeeze-short sell_stop 59173.65538898 sl59735.19 tp58163.20453175 — paper-graded (spot can't short)
+- **11-28 13:55 UTC** ORDER BOOKED — BTC/USD C-H1-homing-pigeon (score 3/5) stop buy_stop qty 0.142374 @ 59310.03945494 sl58958.85136266 tp59836.82159335 · risk $50.00 · fees ~$8.42 (0.17R)
+- **11-28 13:55 UTC** NOTE — BTC/USD C-M15-dragonfly: soft cap on open items (6) — advisory, skipping
+- **11-28 13:55 UTC** SKIP — ETH/USD S4-band-fade-long: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — ETH/USD S13-ichimoku-short: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — ETH/USD C-H1-hammer/takuri: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — ETH/USD C-H1-tweezer-bottom: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — ETH/USD C-M15-bear-engulfing: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — ETH/USD C-M15-three-outside-down: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — XRP/USD S4-band-fade-long: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — XRP/USD S13-ichimoku-short: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — XRP/USD S23-spring-long: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — XRP/USD C-H1-tweezer-bottom: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — SOL/USD S21-pivot-R1-long: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — DOGE/USD S4-band-fade-long: already have pending/position in play
+- **11-28 13:55 UTC** SKIP — DOGE/USD S13-ichimoku-short: already have pending/position in play
+- **11-28 13:55 UTC** NOTE — ADA/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-28 13:55 UTC** CANDIDATE(score 3/5) — LINK/USD C-M15-bear-engulfing sell_stop 9.11752892 sl9.17967769 tp9.02430576 — paper-graded (spot can't short)
+- **11-28 13:55 UTC** CANDIDATE(score 3/5) — LINK/USD C-M15-three-outside-down sell_stop 9.11752892 sl9.17967769 tp9.02430576 — paper-graded (spot can't short)
+- **11-28 13:55 UTC** SKIP — LTC/USD C-H1-tweezer-bottom: already have pending/position in play
+- **11-28 13:55 UTC** NOTE — BCH/USD S4-band-fade-long: soft cap on open items (6) — advisory, skipping
+- **11-28 13:55 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-marubozu sell_stop 204.30729363 sl205.71676592 tp202.19308519 — paper-graded (spot can't short)
+- **11-28 13:55 UTC** CANDIDATE(score 4/5) — BCH/USD C-M15-three-outside-down sell_stop 204.30729363 sl205.71676592 tp202.19308519 — paper-graded (spot can't short)
+- **11-28 13:55 UTC** scan ok · venue shadow-ledger(okx-no-key) · 10 symbols · 1 new · 1 pendings · 5 positions equity $95931.83 · 8s · venue fees $425.05 to date @ 0.02/0.05%
