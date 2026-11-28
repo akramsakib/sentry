@@ -2,15 +2,15 @@
 
 _Written by the bot at the end of every cycle. Never edited by hand — if it disagrees with `journal.md`, the journal is right._
 
-**2026-11-28 04:56 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $-208,786.09 · equity $100,690.07
+**2026-11-28 13:55 UTC** · venue `shadow-ledger(okx-no-key)` → shadow book (paper) · cash $-177,511.61 · equity $95,931.83
 
-_Venue cost: 0.02 % maker / 0.05 % taker per side · **$396.66 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
+_Venue cost: 0.02 % maker / 0.05 % taker per side · **$425.05 paid on this book to date** · every graded R is net of it · live orders refused when the fee costs more than 0.25R of the trade's own risk_
 
 ## Orders resting on the book now (1)
 
 | symbol | order | trigger | size | notional | risk | tape | to trigger | age |
 |---|---|---|---|---|---|---|---|---|
-| BCH/USD | buy_stop | 210.20338 | 61.1331 | $12,850 | $75.00 | 208.78 | +0.68% | 0 min |
+| BTC/USD | buy_stop | 59310.039 | 0.142374 | $8,444 | $50.00 | 59011.3 | +0.51% | 0 min |
 
 _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago is not the same trade, it is just an old order._
 
@@ -18,28 +18,28 @@ _Entries expire after 6 h (`pending_ttl_h`): a breakout trigger from 6 hours ago
 
 | symbol | qty | entry | mark | P&L | stop | target | R held |
 |---|---|---|---|---|---|---|---|
-| DOGE/USD | 292204 | 0.05629 | 0.0573 | $295.13 | 0.05612059 | 0.056744 | +3.94R |
-| ETH/USD | 9.00073 | 1689.5815 | 1661.11 | $-256.26 | 1678.4713 | 1706.2468 | -2.56R |
-| LTC/USD | 203.958 | 44.260085 | 44.503 | $49.54 | 43.769787 | 44.995532 | +0.50R |
-| SOL/USD | 89.9789 | 70.29 | 71.52 | $110.67 | 69.188628 | 71.689215 | +1.11R |
-| XRP/USD | 5578.33 | 0.9326 | 0.9477 | $84.23 | 0.92035512 | 0.95060611 | +1.12R |
+| DOGE/USD | 292204 | 0.05629 | 0.05625 | $-11.69 | 0.05612059 | 0.056744 | -0.16R |
+| ETH/USD | 9.00073 | 1689.5815 | 1639.63 | $-449.60 | 1678.4713 | 1706.2468 | -4.50R |
+| LTC/USD | 203.958 | 44.260085 | 43.718 | $-110.56 | 43.769787 | 44.995532 | -1.11R |
+| SOL/USD | 89.9789 | 70.29 | 70.24 | $-4.50 | 69.188628 | 71.689215 | -0.04R |
+| XRP/USD | 5578.33 | 0.9326 | 0.9348 | $12.27 | 0.92035512 | 0.95060611 | +0.16R |
 
-## Last 12 signals (877 ever logged)
+## Last 12 signals (898 ever logged)
 
 | time | symbol | skill | score | entry | stop | target | size | outcome |
 |---|---|---|---|---|---|---|---|---|
-| 11-28 04:56 | AVAX/USD | C-M15-gravestone | 3/5 | 6.6014114 | 6.6329715 | 6.5540711 | $75.00 | paper-graded (spot cannot short) |
-| 11-28 04:56 | AVAX/USD | C-H1-three-outside-down | 5/5 | 6.5944114 | 6.6609716 | 6.4945711 | $125.00 | paper-graded (spot cannot short) |
-| 11-28 04:56 | AVAX/USD | C-H1-tweezer-top | 5/5 | 6.5944114 | 6.6609716 | 6.4945711 | $125.00 | paper-graded (spot cannot short) |
-| 11-28 04:56 | AVAX/USD | S13-ichimoku-short | 4/5 | 6.5786171 | 6.6602659 | 6.4640504 | $100.00 | paper-graded (spot cannot short) |
-| 11-28 04:56 | BCH/USD | C-M15-bull-engulfing | 3/5 | 210.20338 | 208.97655 | 212.04363 | $75.00 | order placed |
-| 11-28 04:56 | LTC/USD | C-M15-bear-harami | 4/5 | 44.555067 | 44.872331 | 44.079172 | $100.00 | not fired (guard/duplicate) |
-| 11-28 04:56 | LTC/USD | C-M15-tweezer-top | 4/5 | 44.555067 | 44.872331 | 44.079172 | $100.00 | not fired (guard/duplicate) |
-| 11-28 04:56 | LTC/USD | C-H1-shooting-star | 4/5 | 44.675067 | 45.132331 | 43.989172 | $100.00 | not fired (guard/duplicate) |
-| 11-28 04:56 | LTC/USD | S13-ichimoku-long | 3/5 | 44.567399 | 44.135203 | 45.488515 | $75.00 | not fired (guard/duplicate) |
-| 11-28 04:56 | LTC/USD | S18-rsi2-long | 4/5 | 44.5 | 43.96081 | 45.173987 | $100.00 | not fired (guard/duplicate) |
-| 11-28 04:56 | LINK/USD | C-M15-tweezer-top | 3/5 | 9.220779 | 9.2760525 | 9.1378688 | $75.00 | paper-graded (spot cannot short) |
-| 11-28 04:56 | LINK/USD | C-H1-three-inside-down | 4/5 | 9.289779 | 9.4090525 | 9.1108688 | $100.00 | paper-graded (spot cannot short) |
+| 11-28 13:55 | BCH/USD | C-M15-three-outside-down | 4/5 | 204.30729 | 205.71677 | 202.19309 | $50.00 | paper-graded (spot cannot short) |
+| 11-28 13:55 | BCH/USD | C-M15-marubozu | 4/5 | 204.30729 | 205.71677 | 202.19309 | $50.00 | paper-graded (spot cannot short) |
+| 11-28 13:55 | LTC/USD | C-H1-tweezer-bottom | 3/5 | 44.098932 | 43.682669 | 44.723328 | $50.00 | not fired (guard/duplicate) |
+| 11-28 13:55 | LINK/USD | C-M15-three-outside-down | 3/5 | 9.1175289 | 9.1796777 | 9.0243058 | $50.00 | paper-graded (spot cannot short) |
+| 11-28 13:55 | LINK/USD | C-M15-bear-engulfing | 3/5 | 9.1175289 | 9.1796777 | 9.0243058 | $50.00 | paper-graded (spot cannot short) |
+| 11-28 13:55 | DOGE/USD | S13-ichimoku-short | 4/5 | 0.05621109 | 0.05779281 | 0.05526936 | $50.00 | not fired (guard/duplicate) |
+| 11-28 13:55 | DOGE/USD | S4-band-fade-long | 4/5 | 0.05638114 | 0.05600437 | 0.0573115 | $50.00 | not fired (guard/duplicate) |
+| 11-28 13:55 | SOL/USD | S21-pivot-R1-long | 4/5 | 69.962713 | 67.843333 | 74.033333 | $50.00 | not fired (guard/duplicate) |
+| 11-28 13:55 | XRP/USD | C-H1-tweezer-bottom | 3/5 | 0.94026457 | 0.93363857 | 0.95020359 | $50.00 | not fired (guard/duplicate) |
+| 11-28 13:55 | XRP/USD | S23-spring-long | 3/5 | 0.94026457 | 0.93363857 | 0.95020161 | $50.00 | not fired (guard/duplicate) |
+| 11-28 13:55 | XRP/USD | S13-ichimoku-short | 4/5 | 0.93360314 | 0.95994372 | 0.91997937 | $50.00 | not fired (guard/duplicate) |
+| 11-28 13:55 | XRP/USD | S4-band-fade-long | 3/5 | 0.93741866 | 0.93061256 | 0.9462 | $50.00 | not fired (guard/duplicate) |
 
 ## Accuracy so far
 
